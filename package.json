@@ -4,6 +4,8 @@
   "private": true,
   "description": "Standalone light-theme Clyra agent conversation simulation",
   "scripts": {
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "node scripts/smoke-test.mjs",
+    "test:browser": "node scripts/browser-test.mjs"
   }
 }
