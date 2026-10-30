@@ -26,6 +26,20 @@ try {
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   page.on('pageerror',error=>errors.push(error.message));
   page.on('console',message=>{if(message.type()==='error'&&!/favicon\.ico|404 \(Not Found\)/i.test(message.text()))errors.push(message.text());});
+  // Deterministic API fixtures validate UI states even if third-party services
+  // are unavailable in CI. Production still uses real Open-Meteo/OSM endpoints.
+  await page.route('https://geocoding-api.open-meteo.com/**',route=>route.fulfill({
+    status:200,contentType:'application/json',body:JSON.stringify({results:[{
+      name:'Sydney',admin1:'New South Wales',country:'Australia',latitude:-33.87,longitude:151.21
+    }]})
+  }));
+  await page.route('https://api.open-meteo.com/**',route=>route.fulfill({
+    status:200,contentType:'application/json',body:JSON.stringify({
+      current:{temperature_2m:23.4,relative_humidity_2m:56,apparent_temperature:24.1,weather_code:2,wind_speed_10m:13.5,time:'2026-10-30T15:00'},
+      daily:{time:['2026-10-30','2026-10-31','2026-11-01'],weather_code:[2,1,3],
+        temperature_2m_max:[25,26,24],temperature_2m_min:[17,16,18]}
+    })
+  }));
   await page.goto(base+'/',{waitUntil:'domcontentloaded'});
   assert.equal(await page.title(),'Clyra — Response & Activity Design Kit');
   const welcome=await page.evaluate(()=>{const r=document.querySelector('#demoComposer').getBoundingClientRect();return {centerY:r.y+r.height/2,width:r.width,viewH:innerHeight}});
@@ -130,6 +144,21 @@ try {
   await slides.locator('[aria-label="Close full screen"]').click();
   assert(!(await slides.evaluate(el=>el.classList.contains('is-slide-fullscreen'))),'Close X exits full screen');
   await page.locator('.c-music-island').waitFor({state:'visible',timeout:150000});
+  const weather=page.locator('.c-weather-card');
+  await weather.waitFor({state:'attached',timeout:30000});
+  await weather.locator('.c-geo-search-input').fill('Sydney');
+  await weather.locator('.c-geo-search button[type="submit"]').click();
+  await weather.locator('.c-geo-choice').first().click();
+  await page.waitForFunction(()=>document.querySelector('.c-weather-temperature')?.textContent==='23°',undefined,{timeout:6000});
+  assert.equal(await weather.locator('.c-weather-day').count(),3,'Three weather forecast days should render');
+  const map=page.locator('.c-location-card');await map.waitFor({state:'attached'});
+  assert((await map.locator('iframe').getAttribute('src')).includes('openstreetmap.org/export/embed.html'),'Map must show a real OpenStreetMap URL');
+  await map.locator('[aria-label="Expand map"]').click();
+  assert(await map.evaluate(el=>el.classList.contains('is-map-fullscreen')),'Map expands to screen');
+  await map.locator('[aria-label="Zoom in"]').click();
+  await map.locator('[aria-label="Close map"]').click();
+  assert(!(await map.evaluate(el=>el.classList.contains('is-map-fullscreen'))),'Map closes with X');
+  await page.screenshot({path:join(shots,'07-weather-map.png')});
   const player=page.locator('.c-music-island');
   const initialTrack=await player.locator('.c-island-track').innerText();
   await player.locator('[aria-label="Show song queue"]').click();
