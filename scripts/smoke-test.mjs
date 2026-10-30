@@ -14,15 +14,17 @@ assert.equal(helper.status,0,'Git upstream repair helper must parse and show hel
 assert.match(helper.stdout,/git pull/);
 assert.match(text('DEMO_PROJECT_RULES.md'),/local.*upstream|tracking information/i);
 new Function(js);
+assert(!js.includes('await playReconnecting(token)'), 'Demo must not play reconnecting sequence');
+assert(!js.includes('is-document-folded'), 'Document must render without a folded state');
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 assert.equal(new Set(ids).size,ids.length,'HTML IDs must be unique');
-for(const id of ['demoComposer','demoInput','demoSend','planMount','assistantTurn','conversationViewport']){
+for(const id of ['demoComposer','demoComposerDock','demoInput','demoSend','planMount','assistantTurn','conversationViewport']){
   assert(ids.includes(id),'Missing UI anchor: '+id);
 }
-for(const key of ['c-sources-inline','c-slide-mini-frame','c-todo-v8','c-wifi-arc','c-demo-composer','c-slide-object-resize']){
+for(const key of ['c-sources-inline','c-sources-inline-slot','c-slide-mini-frame','c-todo-v8','c-composer-dock','c-demo-composer','c-slide-object-resize','c-browser-action-list']){
   assert(css.includes(key),'Missing CSS component: '+key);
 }
-for(const key of ['createPresentationCard','createTodo','addReconnecting','addSourcesFooter','composerForm.requestSubmit()']){
+for(const key of ['createPresentationCard','createTodo','addSourcesFooter','composerForm.requestSubmit()','actions.scrollTo(']){
   assert(js.includes(key),'Missing UI behaviour: '+key);
 }
 const port=52679;
