@@ -65,6 +65,8 @@
     x:'<path d="M5 5l14 14M19 5 5 19"/>',
     download:'<path d="M12 3v12m-4-4 4 4 4-4M5 17v4h14v-4"/>',
     image:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.2" cy="8.2" r="1.7"/><path d="m4 17 5-5 4 4 3-3 4 5"/>',
+    line:'<path d="M4 19 20 5"/><circle cx="4" cy="19" r="1" fill="currentColor"/><circle cx="20" cy="5" r="1" fill="currentColor"/>',
+    table:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M10 4v16M16 4v16M3 15h18"/>',
     brain:'<path d="M12 5.5A3.7 3.7 0 0 0 5.1 7 3.5 3.5 0 0 0 4 13a3.8 3.8 0 0 0 4 6 3.2 3.2 0 0 0 4-2.7V5.5Z"/><path d="M12 5.5A3.7 3.7 0 0 1 18.9 7 3.5 3.5 0 0 1 20 13a3.8 3.8 0 0 1-4 6 3.2 3.2 0 0 1-4-2.7"/><path d="M8.4 9a2.4 2.4 0 0 0-2 2.2M8 15.3a2 2 0 0 1 2.3 1M15.6 9a2.4 2.4 0 0 1 2 2.2M16 15.3a2 2 0 0 0-2.3 1"/>',
     terminal:'<rect x="2.5" y="4" width="19" height="16" rx="2.5"/><path d="m7 9 3 3-3 3M13 16h5"/>',
     book:'<path d="M12 6c-2.9-1.7-5.8-2-9-1v14c3.2-1 6.1-.7 9 1 2.9-1.7 5.8-2 9-1V5c-3.2-1-6.1-.7-9 1Zm0 0v14"/>',
@@ -837,8 +839,8 @@
     function removeSlide(){if(slides.length<2)return;snapshot();slides.splice(current,1);current=Math.min(current,slides.length-1);render();}
     function moveSlide(dir){const to=current+dir;if(to<0||to>=slides.length)return;snapshot();[slides[to],slides[current]]=[slides[current],slides[to]];current=to;render();}
     function addObject(type){
-      snapshot();const obj={id:nextObjectId++,type,x:27,y:37,w:type==='text'?46:28,h:type==='text'?14:25,
-        color:type==='text'?'#222228':'#d5dbe8',text:type==='text'?'New text box':''};
+      snapshot();const obj={id:nextObjectId++,type,x:27,y:37,w:type==='text'?46:type==='line'?40:28,h:type==='text'?14:type==='line'?2:25,
+        color:type==='text'?'#222228':'#d5dbe8',text:type==='text'?'New text box':'',cells:type==='table'?Array(9).fill(''):undefined};
       slides[current].objects.push(obj);selected={field:'object',id:obj.id};render();
     }
     function moveObjectLayer(direction){
@@ -920,6 +922,7 @@
     function render(){
       const slide=slides[current];canvas.replaceChildren();
       canvas.dataset.theme=slide.theme||'minimal';canvas.style.background=slide.bg||'';
+      canvas.style.setProperty('--slide-preview-zoom',String(zoom/100));
       canvas.dataset.layout=slide.layout||'title-body';
       canvas.dataset.transition=slide.transition||'none';canvas.classList.toggle('c-slide-grid-visible',showGrid);
       const eyebrow=element('div','c-slide-eyebrow',slide.eyebrow||'');
@@ -949,6 +952,10 @@
         Object.assign(el.style,{left:obj.x+'%',top:obj.y+'%',width:obj.w+'%',height:obj.h+'%',background:obj.type==='text'?'transparent':obj.color,color:obj.color});
         if(obj.type==='text'){el.textContent=obj.text;el.contentEditable=String(editing);el.spellcheck=false;el.addEventListener('input',()=>{obj.text=el.innerText;});}
         else if(obj.type==='image'&&obj.src){const img=element('img','c-slide-object-image');img.src=obj.src;img.alt='Inserted slide image';img.draggable=false;el.append(img);}
+        else if(obj.type==='table'){const tableGrid=element('div','c-slide-native-table');(obj.cells||Array(9).fill('')).forEach((value,index)=>{
+          const cell=element('div','c-slide-native-cell',value);cell.contentEditable=String(editing);cell.spellcheck=false;
+          cell.setAttribute('aria-label','Table cell '+(index+1));cell.addEventListener('input',()=>{obj.cells[index]=cell.innerText;});
+          tableGrid.append(cell);});el.append(tableGrid);}
         el.classList.toggle('is-element-selected',editing&&selected.field==='object'&&selected.id===obj.id);
         el.addEventListener('click',()=>selectElement('object',obj.id));
         if(editing){
@@ -995,17 +1002,20 @@
       }else group.append(control);});return group;};
     toolbar.append(
       toolbarGroup(tool('New slide','slides',addSlide),tool('Duplicate','copy',duplicateSlide),tool('Delete slide','file',removeSlide),tool('Move up','chevron',()=>moveSlide(-1)),tool('Move down','caret',()=>moveSlide(1))),
-      toolbarGroup(tool('Undo','replay',undo),tool('Redo','replay',redo)),
-      toolbarGroup(tool('Insert text box','type',()=>addObject('text')),tool('Insert rectangle','box',()=>addObject('rect')),tool('Insert ellipse','circle',()=>addObject('ellipse')),tool('Insert image','image',()=>imageInput.click()),tool('Duplicate object','copy',duplicateObject),tool('Bring object forward','layers',()=>moveObjectLayer(1)),tool('Send object backward','layers',()=>moveObjectLayer(-1)),tool('Remove selected object','x',removeObject)),
-      toolbarGroup(fontFamily,fontSize,align),
+      toolbarGroup(tool('Undo','replay',undo),tool('Redo','replay',redo),zoomSelect),
+      toolbarGroup(tool('Insert text box','type',()=>addObject('text')),tool('Insert rectangle','box',()=>addObject('rect')),tool('Insert ellipse','circle',()=>addObject('ellipse')),tool('Insert line','line',()=>addObject('line')),tool('Insert table','table',()=>addObject('table')),tool('Insert image','image',()=>imageInput.click()),tool('Duplicate object','copy',duplicateObject),tool('Bring object forward','layers',()=>moveObjectLayer(1)),tool('Send object backward','layers',()=>moveObjectLayer(-1)),tool('Remove selected object','x',removeObject)),
+      toolbarGroup(layoutSelect,fontFamily,fontSize,align),
       toolbarGroup(tool('Bold','bold',()=>{if(selected.field==='object')return;document.execCommand('bold');}),tool('Italic','italic',()=>{if(selected.field==='object')return;document.execCommand('italic');}),textColour,backgroundColour,theme),
-      toolbarGroup(tool('Speaker notes','file',()=>{showNotes=!showNotes;notes.classList.toggle('is-visible',showNotes);}),tool('Export slides as JSON','download',()=>{
+      toolbarGroup(transitionSelect,tool('Speaker notes','file',()=>{showNotes=!showNotes;notes.classList.toggle('is-visible',showNotes);}),tool('Export slides as JSON','download',()=>{
         const blob=new Blob([JSON.stringify(slides,null,2)],{type:'application/json'});
         const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='clyra-slides-demo.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
       }))
     );
     toolbar.addEventListener('mousedown',event=>{if(event.target.closest('button'))event.preventDefault();});
     fontSize.addEventListener('change',()=>applySelected('size',Number(fontSize.value)));
+    zoomSelect.addEventListener('change',()=>{zoom=Number(zoomSelect.value);canvas.style.setProperty('--slide-preview-zoom',String(zoom/100));});
+    layoutSelect.addEventListener('change',()=>{snapshot();slides[current].layout=layoutSelect.value;render();});
+    transitionSelect.addEventListener('change',()=>{snapshot();slides[current].transition=transitionSelect.value;render();});
     fontFamily.addEventListener('change',()=>applySelected('font',fontFamily.value));
     align.addEventListener('change',()=>applySelected('align',align.value));
     textColour.addEventListener('input',()=>applySelected('color',textColour.value));
