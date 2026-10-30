@@ -1,5 +1,22 @@
 > **This repository's local development requirement:** Read [DEMO_PROJECT_RULES.md](./DEMO_PROJECT_RULES.md) before changing or publishing this standalone demo. The requirement to keep `git pull` followed by `npm run dev` working applies **only to this demo repository**, never to projects that import its response/activity UI.
 
+## Local Git-tracking repair (this demo only)
+
+If a user reports `git pull` failing with **"There is no tracking information for the current branch"**, explain that it is **local branch configuration** and cannot be fixed just by pushing a new GitHub commit. See [DEMO_PROJECT_RULES.md](./DEMO_PROJECT_RULES.md).
+
+For this repository's existing `main` branch, first verify the `origin` URL, then guide the user through:
+
+```bash
+git fetch origin main
+git branch --set-upstream-to=origin/main main
+git pull
+npm run dev
+```
+
+If `origin` is absent, add `https://github.com/lukesimpson01/clyra-agent-ui-demo.git` **only after confirming the folder is this repository**. Never overwrite an unrelated remote, reset local files, or change other projects. Once updated, `npm run setup:git` is an optional guarded one-time convenience command; keep `npm run dev` dependency-free.
+
+**This instruction must NOT be copied into Clyra or another host app** when integrating UI components.
+
 # Agent instructions — Clyra Response UI Kit
 
 You are looking at a **visual fixture**, not a replacement chat application. **DO NOT copy this demonstration's entire page, timeline or harness into the host project.**
