@@ -16,6 +16,14 @@ assert.match(text('DEMO_PROJECT_RULES.md'),/local.*upstream|tracking information
 new Function(js);
 assert(!js.includes('await playReconnecting(token)'), 'Demo must not play reconnecting sequence');
 assert(!js.includes('is-document-folded'), 'Document must render without a folded state');
+assert(js.includes("isPresentationBuilder=label==='Presentation Builder'"), 'Presentation Builder stays a status row without a disclosure');
+for (const name of ['c-slide-menu-bar','const menuDefinitions=[','doExportPNG','c-slide-native-table','skipBack.addEventListener','skipNext.addEventListener','c-sources-inline-direction']){
+  assert(js.includes(name),'Missing Slides/music/sources interaction: '+name);
+}
+assert(css.includes("checklist's width sideways"), 'Todo must collapse to a circle without horizontal width animation');
+assert(css.includes('c-slide-top-toolbar'), 'Slides edit toolbar must live above the canvas');
+assert(css.includes('c-sources-inline-direction'), 'Source disclosure chevron must be styled');
+
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 assert.equal(new Set(ids).size,ids.length,'HTML IDs must be unique');
 for(const id of ['demoComposer','demoComposerDock','demoInput','demoSend','planMount','assistantTurn','conversationViewport']){
