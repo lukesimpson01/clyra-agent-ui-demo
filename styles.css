@@ -2578,3 +2578,10 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
  border:1px solid #e7e8ec!important;border-radius:9px!important;
  box-shadow:0 5px 15px rgba(20,21,30,.06)!important;
 }
+
+/* Keep the final menus inside the card at phone widths. */
+.c-workspace .c-slide-menu-item:nth-last-child(-n+3) .c-slide-menu-options{left:auto;right:0}
+@media(max-width:600px){
+ .c-workspace .c-slide-menu-item:nth-child(n+5) .c-slide-menu-options{left:auto;right:0}
+ .c-workspace .c-slides-v14 .c-slide-menu-options{min-width:min(205px,calc(100vw - 55px));max-width:calc(100vw - 55px)}
+}
