@@ -121,3 +121,15 @@ Required behaviours after this update:
 
 The standalone demo can rely on `git pull` and `npm run dev` without installing runtime dependencies. **None of these fixture-specific layout rules, sample pacing, startup instructions or mocked controls transfer to the host Clyra app.** Preserve the host's own composer, message layout, scroll and editor engine.
 
+
+
+## Additional fixture regression rules
+
+- Collapsed todo **must not compress sideways**. The todo card's alignment slot remains the same width in both states; only a centred circular progress indicator is visible when collapsed. Assert equal bounding-box widths before/after collapse in the browser regression test.
+- Presentation Builder status keeps shimmer but has **no disclosure**. The separate resulting slide artifact opens directly without a tool-detail dropdown.
+- Player must expose working Previous / Pause-Play / Next and scrub, with **no hover title boxes**. Check track navigation and absence of `title`/`data-tooltip` on those controls in the browser test.
+- Source disclosure rotates a visible chevron and slides site icons horizontally on open/close. Icons must not shift on hover; site labels float in their own pills and click opens correct links.
+- Presentation Edit mode should follow a professional header/menu/toolbar/filmstrip/canvas arrangement. Use real handlers for visible commands. Check File menu opening, insertion of shapes/tables, layout switching, zoom, notes and menu dismissal. Document unsupported professional parity rather than claiming Google Slides feature equivalence.
+- Use official Google Slides help for reference; the REA repository explicitly says to skip reverse-engineering tooling for ordinary source-repository analysis. If there is no supplied app artifact/allowed live runtime, do not install REA or invent inspection evidence.
+- The **demo-only** startup and safety rules do not transfer to a Clyra host project.
+
