@@ -133,3 +133,23 @@ The standalone demo can rely on `git pull` and `npm run dev` without installing 
 - Use official Google Slides help for reference; the REA repository explicitly says to skip reverse-engineering tooling for ordinary source-repository analysis. If there is no supplied app artifact/allowed live runtime, do not install REA or invent inspection evidence.
 - The **demo-only** startup and safety rules do not transfer to a Clyra host project.
 
+
+## Mandatory design-language and visual QA rules — this demo only
+
+**Every new UI element must match the current project's design language, not merely function.** The established style is white surfaces, graphite typography, fine grey 1px borders, small consistent icons, restrained functional blue, lightweight shadows, clear hierarchy, 4px-based spacing and smooth low-jank motion. No glassmorphism, massive rounded cards, thick hovers, black cursor-following tooltips, or arbitrary gradient/colour noise.
+
+Before EVERY push involving UI:
+- Render the full real demo, not just parse JS/CSS. Inspect **welcome, action-in-progress, browser animation, todo open/closed/completed, documents/slides, rich response and finished answer**, at desktop (~1440–1536px) and mobile (~390px).
+- Check alignment, font consistency, baseline, accessible labels, stable hover targets, border radii, spacing, text truncation, overflow, layering and visual hierarchy. Compare screenshots with prior project UI, reject anything that looks foreign or awkward.
+- Run `npm run dev`, `npm test`, and real Chromium interactions; capture screenshots. Correct regressions before pushing. If the full browser test cannot run, disclose this honestly and DO NOT call representative mock screenshots full-app verification.
+- Respect `prefers-reduced-motion`; animate transform/opacity where possible; no jumpy reveal, disappearing target, flicker, slow unresponsive menus or blocking animation.
+
+### v18 behaviour contract
+
+- AI browser: 0–3s grey shimmer. 3–10s contained softly moving blue glow and a small simulated white/navy cursor. After 10s gently fade cursor/glow **before** collapsing. Simulated, never real control.
+- Composer: initial centred input max 565px, after Enter/send animated into the bottom dock max 600px; **do not change the 760px conversation reading width**.
+- Todo: **collapsed HORIZONTAL pill** with left circular progress ring, visible To-dos label, count and chevron (not a lone ball). Open checklist expands vertically. Ticks pop cleanly and strikes reveal left-to-right; icon and text must align.
+- Rich response: native MathML fractions, radicals, sums, integrals and matrices remain usable offline; user-triggered KaTeX covers additional LaTeX if internet is available, without new npm dependencies. Editorial headings, lists, quotes, tables, small charts, code, inline artifacts, sources and tool actions share existing visual tokens.
+- Any new control must have an accessible name and a real demo handler; production integrations use the host's existing Markdown/math, browser, agent and editor components.
+
+**Scope:** These release/design requirements belong ONLY to `lukesimpson01/clyra-agent-ui-demo`, not to the main Clyra app or other projects.
