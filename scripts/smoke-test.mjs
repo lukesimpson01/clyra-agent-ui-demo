@@ -1,11 +1,18 @@
 // Dependency-free smoke test for the standalone visual fixture.
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {spawn} from 'node:child_process';
+import {spawn,spawnSync} from 'node:child_process';
 import {setTimeout as pause} from 'node:timers/promises';
 const text=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 const html=text('index.html'),css=text('styles.css'),js=text('main.js'),pkg=JSON.parse(text('package.json'));
 assert.equal(pkg.scripts.dev,'node server.js');
+assert.equal(pkg.scripts['setup:git'],'node scripts/setup-git.mjs');
+const helper=spawnSync(process.execPath,['scripts/setup-git.mjs','--help'],{
+  cwd:new URL('../',import.meta.url),encoding:'utf8'
+});
+assert.equal(helper.status,0,'Git upstream repair helper must parse and show help');
+assert.match(helper.stdout,/git pull/);
+assert.match(text('DEMO_PROJECT_RULES.md'),/local.*upstream|tracking information/i);
 new Function(js);
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 assert.equal(new Set(ids).size,ids.length,'HTML IDs must be unique');
@@ -36,5 +43,5 @@ try {
     assert((await response.text()).includes(expected),route+' must serve current source');
   }
   assert.equal((await fetch('http://localhost:'+port+'/missing-file')).status,404);
-  console.log('PASS: syntax, unique IDs, UI hooks, server startup, assets, 404');
+  console.log('PASS: syntax, unique IDs, Git repair helper, UI hooks, server startup, assets, 404');
 } finally {child.kill('SIGTERM');}
