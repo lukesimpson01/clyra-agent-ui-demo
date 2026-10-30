@@ -785,7 +785,6 @@
     const saved=element('span','c-slide-saved-status','Local demo');
     const actions=element('div','c-slide-top-actions');actions.append(saved,editBtn,fullBtn);top.append(name,actions);
     const menuBar=element('nav','c-slide-menu-bar');menuBar.setAttribute('aria-label','Presentation menus');
-    const menuPopup=element('div','c-slide-menu-popup');menuPopup.setAttribute('role','menu');
     const topToolbar=element('div','c-slide-top-toolbar');
     const editor=element('div','c-slide-workspace');
     const filmstrip=element('div','c-slide-filmstrip');filmstrip.setAttribute('aria-label','Slide thumbnails');
@@ -1151,6 +1150,18 @@
       button.addEventListener('click',event=>{event.stopPropagation();const open=activeMenu===menuLabel;closeMenu();if(!open){activeMenu=menuLabel;wrap.classList.add('is-open');button.setAttribute('aria-expanded','true');}});
       wrap.append(button,panel);menuBar.append(wrap);
     }
+    menuBar.addEventListener('keydown',event=>{
+      const buttons=[...menuBar.querySelectorAll('.c-slide-menu-trigger')],on=buttons.indexOf(event.target);
+      if(on>=0&&(event.key==='ArrowRight'||event.key==='ArrowLeft')){
+        event.preventDefault();buttons[(on+(event.key==='ArrowRight'?1:buttons.length-1))%buttons.length].focus();
+      }else if(on>=0&&event.key==='ArrowDown'){
+        event.preventDefault();if(event.target.getAttribute('aria-expanded')!=='true')event.target.click();
+        event.target.nextElementSibling?.querySelector('.c-slide-menu-option')?.focus();
+      }else if(event.target.classList.contains('c-slide-menu-option')&&(event.key==='ArrowDown'||event.key==='ArrowUp')){
+        event.preventDefault();const options=[...event.target.parentElement.querySelectorAll('.c-slide-menu-option')];
+        const index=options.indexOf(event.target);options[(index+(event.key==='ArrowDown'?1:options.length-1))%options.length]?.focus();
+      }
+    });
     document.addEventListener('pointerdown',event=>{if(card.isConnected&&!menuBar.contains(event.target))closeMenu();});
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&card.isConnected){closeMenu();help.hidden=true;}});
     filename.addEventListener('input',()=>{saved.textContent='Local draft';});
