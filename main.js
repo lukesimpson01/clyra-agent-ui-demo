@@ -651,7 +651,7 @@
     toolbar.addEventListener('mousedown',e=>{if(e.target.closest('button')&& !e.target.closest('input'))e.preventDefault();});
     toolbarClip.append(toolbar);toolbarShell.append(toolbarClip);
     const aiSelection=element('button','c-ai-selection-action');aiSelection.type='button';aiSelection.innerHTML=svg('sparkles')+'<span>Ask AI about selection</span>';aiSelection.hidden=true;
-    aiSelection.title='Use selected text in the existing host AI composer';
+    aiSelection.dataset.tooltip='Ask AI about selection';aiSelection.setAttribute('aria-label','Ask AI about selection');
     const syncSelection=()=>{const sel=window.getSelection();const active=sel&&!sel.isCollapsed&&content.contains(sel.anchorNode)&&content.contains(sel.focusNode);aiSelection.hidden=!active;if(active)preserveSelection();};
     document.addEventListener('selectionchange',syncSelection);
     aiSelection.addEventListener('click',()=>{const txt=window.getSelection()?.toString()?.trim();if(!txt)return;composerInput.value='Improve this text: '+txt;composerSend.disabled=false;composerInput.focus();aiSelection.hidden=true;});
@@ -675,7 +675,7 @@
       } else if(kind==='text'||kind==='highlight'){
         const colors=[['Black','#202124'],['Grey','#77777b'],['Red','#d93025'],['Orange','#e37400'],['Yellow','#f9c846'],['Green','#188038'],['Teal','#008577'],['Blue','#1a73e8'],['Purple','#8e24aa'],['Pink','#d81b60'],['White','#ffffff'],['None',kind==='highlight'?'transparent':'#202124']];
         const grid=element('div','c-editor-swatches');surface.append(grid);
-        colors.forEach(([name,hex])=>{const b=element('button','c-editor-swatch');b.type='button';b.style.setProperty('--swatch',hex);b.setAttribute('aria-label',name);b.title=name;b.addEventListener('click',()=>{command(kind==='text'?'foreColor':'hiliteColor',hex);closePopup();});grid.append(b);});
+        colors.forEach(([name,hex])=>{const b=element('button','c-editor-swatch');b.type='button';b.style.setProperty('--swatch',hex);b.setAttribute('aria-label',name);b.dataset.tooltip=name;b.addEventListener('click',()=>{command(kind==='text'?'foreColor':'hiliteColor',hex);closePopup();});grid.append(b);});
       } else if(kind==='lists'){
         [['disc','• Bullets','insertUnorderedList'],['circle','◦ Circles','insertUnorderedList'],['square','▪ Squares','insertUnorderedList'],['decimal','1. Numbers','insertOrderedList'],['lower-alpha','a. Letters','insertOrderedList']].forEach(([style,text,cmd])=>{const o=element('button','c-editor-menu-item',text);o.type='button';o.addEventListener('click',()=>{command(cmd);let node=window.getSelection()?.anchorNode;const root=(node?.nodeType===1?node:node?.parentElement)?.closest('ul,ol');if(root)root.style.listStyleType=style;buttons.bullets.setAttribute('aria-pressed',String(cmd==='insertUnorderedList'));buttons.numbered.setAttribute('aria-pressed',String(cmd==='insertOrderedList'));closePopup();});surface.append(o);});
       } else if(kind==='table'){
@@ -719,7 +719,7 @@
   function addFooter(){
     const footer=element('div','c-footer-actions');footer.setAttribute('aria-label','Response actions');
     function action(name,label){
-      const b=element('button','c-action-btn');b.type='button';b.title=label;b.dataset.tooltip=label;b.setAttribute('aria-label',label);b.innerHTML=svg(name);
+      const b=element('button','c-action-btn');b.type='button';b.dataset.tooltip=label;b.setAttribute('aria-label',label);b.innerHTML=svg(name);
       return b;
     }
     const copy=action('copy','Copy response');
@@ -1041,7 +1041,7 @@
     const card=element('section','c-music-island c-island-v10');card.setAttribute('aria-label','Now playing');
     const art=element('span','c-island-art');art.innerHTML=svg('music');
     const info=element('div','c-island-info');const title=element('span','c-island-track','Quiet Momentum');const artist=element('span','c-island-artist','Studio North');info.append(title,artist);
-    const play=element('button','c-island-control c-island-toggle');play.type='button';play.title='Play or pause';play.setAttribute('aria-label','Play music');play.innerHTML=svg('play');
+    const play=element('button','c-island-control c-island-toggle');play.type='button';play.dataset.tooltip='Play or pause';play.setAttribute('aria-label','Play music');play.innerHTML=svg('play');
     const scrub=element('input','c-island-scrubber');scrub.type='range';scrub.min='0';scrub.max='192';scrub.value='42';scrub.setAttribute('aria-label','Seek song playback');
     const elapsed=element('span','c-island-elapsed','0:42');const duration=element('span','c-island-duration','3:12');
     const time=element('div','c-island-time');time.append(elapsed,duration);
