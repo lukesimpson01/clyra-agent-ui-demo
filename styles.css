@@ -2183,3 +2183,175 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
 .c-workspace .c-slides-v14 .c-slide-layer-name{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .c-workspace .c-slides-v14 .c-slide-layer-dot{width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:#b2bbc6}
 .c-workspace .c-slide-image-picker[hidden]{display:none!important}
+
+/* V16 — Attached composer and fixed-geometry source hover. This demo-only
+   dock replaces the disjoint fixed plan/composer offsets from earlier versions. */
+.c-workspace .c-composer-dock{
+  position:fixed!important;z-index:150!important;
+  left:50%!important;right:auto!important;top:auto!important;bottom:14px!important;
+  transform:translateX(-50%)!important;
+  width:min(760px,calc(100vw - 32px))!important;
+  max-width:calc(100vw - 20px)!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;
+  justify-content:flex-end!important;gap:11px!important;
+  box-sizing:border-box!important;pointer-events:none!important;
+}
+.c-workspace .c-composer-dock .c-plan-rail{
+  position:relative!important;inset:auto!important;left:auto!important;right:auto!important;
+  top:auto!important;bottom:auto!important;transform:none!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  margin:0!important;padding:0!important;
+  width:auto!important;min-width:0!important;max-width:100%!important;
+  height:auto!important;min-height:0!important;overflow:visible!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+  pointer-events:none!important;z-index:auto!important;
+}
+.c-workspace .c-composer-dock .c-plan-rail-inner,
+.c-workspace .c-composer-dock #planMount{
+  position:static!important;inset:auto!important;transform:none!important;
+  display:flex!important;justify-content:center!important;align-items:flex-end!important;
+  width:auto!important;max-width:100%!important;height:auto!important;min-height:0!important;
+  padding:0!important;margin:0!important;overflow:visible!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  pointer-events:none!important;
+}
+.c-workspace .c-composer-dock #planMount > .c-todo{pointer-events:auto!important}
+.c-workspace .c-composer-dock .c-todo.c-todo-v8{
+  margin:0!important;max-width:min(280px,calc(100vw - 32px))!important;
+  box-shadow:0 6px 21px rgba(16,17,24,.055)!important;
+}
+.c-workspace .c-composer-dock .c-todo.c-todo-v8.is-open{
+  width:min(280px,calc(100vw - 32px))!important;
+}
+.c-workspace .c-composer-dock .c-demo-composer{
+  position:relative!important;inset:auto!important;top:auto!important;
+  left:auto!important;right:auto!important;bottom:auto!important;
+  transform:none!important;flex:none!important;
+  margin:0!important;padding:13px 15px 11px!important;gap:8px!important;
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  justify-content:space-between!important;overflow:visible!important;
+  width:100%!important;height:auto!important;min-height:102px!important;
+  max-height:min(38vh,230px)!important;box-sizing:border-box!important;
+  border:1px solid #e4e5ea!important;border-radius:27px!important;
+  background:#fff!important;box-shadow:0 8px 28px rgba(16,18,24,.05)!important;
+  pointer-events:auto!important;
+}
+.c-workspace .c-composer-dock .c-demo-input-wrap{
+  position:relative!important;display:block!important;
+  width:100%!important;height:auto!important;min-height:30px!important;
+  margin:0!important;padding:1px 4px!important;
+  flex:none!important;overflow:visible!important;
+}
+.c-workspace .c-composer-dock textarea#demoInput{
+  display:block!important;position:relative!important;
+  top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;
+  margin:0!important;padding:0!important;
+  width:100%!important;max-height:112px!important;min-height:27px!important;
+  height:auto;box-sizing:border-box!important;border:0!important;outline:0!important;
+  font:400 15px/25px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif!important;
+  color:#292a2f!important;resize:none!important;background:transparent!important;
+}
+.c-workspace .c-composer-dock .c-demo-composer-foot{
+  position:relative!important;inset:auto!important;transform:none!important;
+  flex:none!important;display:flex!important;align-items:center!important;
+  justify-content:space-between!important;gap:8px!important;
+  width:100%!important;height:35px!important;min-height:35px!important;
+  margin:0!important;padding:0 0 0 4px!important;box-sizing:border-box!important;
+}
+.c-workspace .c-composer-dock .c-demo-composer-hint{
+  display:block!important;position:static!important;transform:none!important;
+  min-width:0!important;max-width:calc(100% - 47px)!important;
+  color:#9b9ca5!important;font:400 11px/17px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+.c-workspace .c-composer-dock button.c-demo-send{
+  position:relative!important;inset:auto!important;transform:none!important;
+  flex:0 0 34px!important;width:34px!important;height:34px!important;
+  margin:0!important;padding:0!important;border-radius:50%!important;
+  display:grid!important;place-items:center!important;box-sizing:border-box!important;
+}
+.c-workspace .c-composer-dock .c-demo-send svg{width:17px!important;height:17px!important}
+.c-workspace .c-lane{padding-bottom:max(260px,24vh)!important}
+@media(max-width:540px){
+ .c-workspace .c-composer-dock{bottom:8px!important;width:calc(100vw - 22px)!important;gap:8px!important}
+ .c-workspace .c-composer-dock .c-demo-composer{border-radius:23px!important;padding:12px 12px 10px!important}
+ .c-workspace .c-composer-dock .c-demo-composer-hint{font-size:10px!important}
+}
+
+/* Browser activity stays in place and starts scrolling only after three rows.
+   The viewport does not grow as actions continue; current action auto-follows. */
+.c-workspace .c-browser-action-list{
+ display:flex!important;flex-direction:column!important;gap:3px!important;
+ max-height:calc(3 * 31px + 6px)!important;min-height:0!important;
+ overflow-y:auto!important;overflow-x:hidden!important;
+ overscroll-behavior:contain!important;scroll-behavior:smooth!important;
+ scrollbar-width:thin!important;scrollbar-color:#dfdfe3 transparent!important;
+}
+.c-workspace .c-browser-action-list .c-browser-action{
+ min-height:31px!important;height:31px!important;flex:none!important;
+ box-sizing:border-box!important;padding:5px 1px!important;
+}
+
+/* Documents and slide previews are complete inline cards, never an accordion.
+   Editing controls can still be toggled, but not the artifact itself. */
+.c-workspace .c-writing-card{overflow:visible!important}
+.c-workspace .c-writing-card .c-writing-content{
+ display:block!important;opacity:1!important;visibility:visible!important;
+ max-height:none!important;overflow:visible!important;
+ transition:opacity .23s ease!important;
+}
+.c-workspace .c-slides-v14 .c-slide-workspace{
+ display:grid!important;opacity:1!important;visibility:visible!important;
+ max-height:none!important;
+}
+.c-workspace .c-slides-v14 .c-slide-filmstrip{max-height:310px!important}
+
+/* A fixed-width icon rail: hovering one icon cannot relocate any neighbour.
+   Only a small floating name pill animates, preserving hit targets. */
+.c-workspace .c-sources-inline{gap:5px!important;max-width:100%!important}
+.c-workspace .c-sources-inline-clip{max-width:0!important;overflow:visible!important;opacity:0!important;visibility:hidden!important;transition:max-width .36s cubic-bezier(.22,1,.36,1),opacity .2s ease,visibility .36s!important}
+.c-workspace .c-sources-inline.is-open .c-sources-inline-clip{
+ max-width:min(145px,calc(100vw - 150px))!important;opacity:1!important;visibility:visible!important;
+}
+.c-workspace .c-sources-inline-links{
+ display:flex!important;align-items:center!important;gap:7px!important;
+ padding:2px 3px!important;width:max-content!important;min-width:0!important;overflow:visible!important;
+}
+.c-workspace .c-sources-inline-slot{
+ position:relative!important;display:block!important;
+ flex:0 0 32px!important;width:32px!important;height:32px!important;
+ z-index:1!important;overflow:visible!important;
+}
+.c-workspace .c-sources-inline-slot:hover,.c-workspace .c-sources-inline-slot:focus-within{z-index:20!important}
+.c-workspace .c-sources-inline-slot .c-sources-inline-link{
+ position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;
+ width:32px!important;max-width:32px!important;min-width:32px!important;height:32px!important;
+ padding:5px!important;box-sizing:border-box!important;
+ overflow:visible!important;border-radius:999px!important;
+ transform:none!important;transition:background .2s ease,border-color .2s ease,opacity .25s ease!important;
+}
+.c-workspace .c-sources-inline-link:hover,.c-workspace .c-sources-inline-link:focus-visible{
+ width:32px!important;max-width:32px!important;min-width:32px!important;
+}
+.c-workspace .c-sources-inline-slot .c-sources-inline-site{
+ position:absolute!important;left:50%!important;bottom:calc(100% + 7px)!important;
+ top:auto!important;max-width:160px!important;width:max-content!important;
+ padding:5px 9px!important;box-sizing:border-box!important;
+ background:#fff!important;border:1px solid #e9e9ec!important;
+ box-shadow:0 5px 16px rgba(11,12,18,.055)!important;
+ border-radius:999px!important;color:#555760!important;
+ transform:translate(-50%,4px)!important;opacity:0!important;
+ pointer-events:none!important;white-space:nowrap!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;
+ transition:opacity .18s ease,transform .2s cubic-bezier(.22,1,.36,1)!important;
+}
+.c-workspace .c-sources-inline-slot:hover .c-sources-inline-site,
+.c-workspace .c-sources-inline-slot:focus-within .c-sources-inline-site{
+ opacity:1!important;transform:translate(-50%,0)!important;
+}
+.c-workspace .c-sources-inline-slot .c-sources-inline-favicon{
+ width:20px!important;min-width:20px!important;height:20px!important;transform:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+ .c-workspace .c-sources-inline-clip,.c-workspace .c-sources-inline-site{transition:none!important}
+}
