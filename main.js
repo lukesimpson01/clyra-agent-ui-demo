@@ -762,12 +762,13 @@
   }
   async function playSkill(label,details,token,delay,kind='wand'){
     const group=addActivityGroup();
-    const activity=addActivity(group,{label:'Using skill · '+label,icon:kind,disclose:true,details});
-    activity.autoSetExpanded(true);
+    const isPresentationBuilder=label==='Presentation Builder';
+    const activity=addActivity(group,{label:'Using skill · '+label,icon:kind,disclose:!isPresentationBuilder,details:isPresentationBuilder?[]:details});
+    if(!isPresentationBuilder)activity.autoSetExpanded(true);
     await delay(900);
     completed(activity,'Used skill · '+label);
     await delay(170);
-    activity.autoSetExpanded(false);
+    if(!isPresentationBuilder)activity.autoSetExpanded(false);
     return activity;
   }
   function createPresentationCard(){
@@ -1008,7 +1009,7 @@
       toolbarGroup(tool('Bold','bold',()=>{if(selected.field==='object')return;document.execCommand('bold');}),tool('Italic','italic',()=>{if(selected.field==='object')return;document.execCommand('italic');}),textColour,backgroundColour,theme),
       toolbarGroup(transitionSelect,tool('Speaker notes','file',()=>{showNotes=!showNotes;notes.classList.toggle('is-visible',showNotes);}),tool('Export slides as JSON','download',()=>{
         const blob=new Blob([JSON.stringify(slides,null,2)],{type:'application/json'});
-        const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='clyra-slides-demo.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+        const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=safeFilename()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
       }))
     );
     toolbar.addEventListener('mousedown',event=>{if(event.target.closest('button'))event.preventDefault();});
