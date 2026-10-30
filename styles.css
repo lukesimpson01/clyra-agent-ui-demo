@@ -2355,3 +2355,11 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
 @media(prefers-reduced-motion:reduce){
  .c-workspace .c-sources-inline-clip,.c-workspace .c-sources-inline-site{transition:none!important}
 }
+
+/* Subtle composer-area backdrop keeps scrolling chat text from bleeding through
+   the attached todo at narrow viewports; it is purely visual, not interactive. */
+.c-workspace .c-composer-dock::before{
+ content:"";position:absolute;z-index:-1;pointer-events:none;
+ left:-12px;right:-12px;top:-30px;bottom:-14px;
+ background:linear-gradient(to bottom,rgba(255,255,255,0),rgba(255,255,255,.92) 26%,#fff 68%);
+}
