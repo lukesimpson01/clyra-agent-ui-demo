@@ -1990,3 +1990,120 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
 .c-workspace .c-sources-disclosure-links .c-source-link-title{font:400 12px/18px var(--c-font)}
 .c-workspace .c-sources-disclosure-links .c-source-link-domain{font:400 11px/16px var(--c-font)}
 @media(prefers-reduced-motion:reduce){.c-workspace .c-sources-disclosure,.c-workspace .c-sources-disclosure-panel,.c-workspace .c-sources-disclosure-links,.c-workspace .c-sources-disclosure-arrow{animation:none!important;transition:none!important}}
+
+/* v14 | quiet, responsive response demo polish. This stylesheet must not
+   override the production app's own composer or message wrappers. */
+.c-workspace .c-demo-composer,
+.c-demo-composer{
+  display:flex!important;flex-direction:column!important;gap:4px!important;
+  width:min(760px,calc(100vw - 32px))!important;bottom:18px!important;
+  box-sizing:border-box!important;margin:0!important;
+  padding:11px 12px 9px!important;
+  border:1px solid #e9e9ed!important;border-radius:26px!important;
+  background:#fff!important;box-shadow:0 9px 32px rgba(13,13,20,.055)!important;
+  transition:border-color .2s ease,box-shadow .3s cubic-bezier(.22,1,.36,1)!important;
+}
+.c-demo-composer:focus-within{border-color:#d5d5db!important;box-shadow:0 12px 34px rgba(13,13,20,.075)!important}
+.c-demo-composer .c-demo-input-wrap{display:block!important;flex:none!important;padding:2px 5px 4px!important;width:100%;box-sizing:border-box}
+.c-demo-composer textarea{width:100%!important;min-height:30px!important;max-height:132px!important;overflow-y:auto!important;border:0!important;outline:0!important;background:transparent!important;color:#242429!important;font:400 15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif!important;resize:none!important}
+.c-demo-composer textarea::placeholder{color:#a1a1a9!important}
+.c-demo-composer .c-demo-composer-foot{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:36px;padding:0 1px 0 5px}
+.c-demo-composer .c-demo-composer-hint{font:400 11px/16px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:#aaaab0;letter-spacing:0}
+.c-demo-composer .c-demo-send{display:grid!important;place-items:center!important;width:33px!important;height:33px!important;border-radius:13px!important;background:#1d1d22!important;color:#fff!important;border:0!important;padding:0!important;transform:none!important;transition:background .2s ease,opacity .2s ease,box-shadow .2s ease!important}
+.c-demo-composer .c-demo-send svg{width:17px;height:17px}
+.c-demo-composer .c-demo-send:hover:not(:disabled){background:#35353b!important;box-shadow:0 3px 8px rgba(0,0,0,.12)!important}
+.c-demo-composer .c-demo-send:disabled{background:#e9e9ed!important;color:#9999a0!important;box-shadow:none!important;cursor:default}
+@media(max-width:540px){.c-demo-composer .c-demo-composer-hint{font-size:10px}.c-workspace .c-demo-composer,.c-demo-composer{bottom:10px!important;width:calc(100vw - 22px)!important;border-radius:23px!important}}
+
+/* Circular plan: collapsed state is a live 44px ring, not a square card.
+   Expanding grows right/left around its own centre and reveals details upward. */
+.c-workspace .c-todo.c-todo-v8{width:44px!important;max-width:min(288px,calc(100vw - 24px))!important;min-width:0!important;overflow:hidden!important;min-height:44px!important;padding:0!important;border:1px solid #e9e9ee!important;border-radius:25px!important;background:#fff!important;box-shadow:0 5px 20px rgba(15,15,20,.045)!important;transition:width .46s cubic-bezier(.22,1,.36,1),border-radius .46s cubic-bezier(.22,1,.36,1),box-shadow .3s ease!important}
+.c-workspace .c-todo.c-todo-v8.is-open{width:min(288px,calc(100vw - 24px))!important;border-radius:20px!important}
+.c-workspace .c-todo-v8-trigger{height:44px!important;min-height:44px!important;border-radius:25px!important;display:flex!important;gap:8px!important;padding:0 11px!important;white-space:nowrap!important;overflow:hidden!important;transition:padding .34s ease,background .2s ease!important}
+.c-workspace .c-todo-v8-trigger:hover{background:#fbfbfc!important}
+.c-workspace .c-todo:not(.is-open) .c-todo-v8-trigger{width:44px!important;padding:0 8px!important;gap:0!important;justify-content:center!important}
+.c-workspace .c-todo:not(.is-open) .c-todo-v8-trigger :is(.c-todo-v8-title,.c-todo-v8-counter,.c-todo-v8-chevron){max-width:0!important;opacity:0!important;min-width:0!important;overflow:hidden!important;flex:0 0 0px!important;margin:0!important;padding:0!important}
+.c-workspace .c-todo-v8-title,.c-workspace .c-todo-v8-counter,.c-workspace .c-todo-v8-chevron{transition:max-width .36s cubic-bezier(.22,1,.36,1),opacity .22s ease!important;max-width:140px;min-width:0}
+.c-workspace .c-todo-v8-title{font:400 12px/18px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif!important}
+.c-workspace .c-todo-v8-counter{font:400 11px/18px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif!important;color:#85858c}
+.c-workspace .c-todo-v8-headicon{position:relative;width:26px!important;height:26px!important;flex:0 0 26px!important;display:grid;place-items:center}
+.c-workspace .c-todo-v8-headicon .c-todo-progress-ring{inset:1px!important;width:24px!important;height:24px!important;background:conic-gradient(#555660 0 var(--todo-percentage,0%),#ebebef var(--todo-percentage,0%) 100%)!important;border-radius:50%!important;opacity:1!important;transform:none!important;transition:background .3s ease,opacity .3s ease!important}
+.c-workspace .c-todo-v8-headicon .c-todo-progress-ring::after{content:"";position:absolute;inset:4px;border-radius:50%;background:white}
+.c-workspace .c-todo-v8-headicon .c-todo-glyph-list{opacity:0!important}
+.c-workspace .c-todo-v8-headicon.is-all-done .c-todo-progress-ring{opacity:0!important}
+.c-workspace .c-todo-v8-disclosure{transition:grid-template-rows .48s cubic-bezier(.22,1,.36,1),opacity .3s ease!important}
+.c-workspace .c-todo-v8-item{border-radius:12px!important}
+.c-workspace .c-todo-v8-itemtext{font:400 12px/19px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif!important}
+.c-workspace .c-todo-v8-itemtext::after{transition:transform .42s cubic-bezier(.22,1,.36,1)!important}
+.c-workspace .c-plan-rail{left:50%!important;right:auto!important;width:auto!important;bottom:108px!important;transform:translateX(-50%)!important;display:flex!important;justify-content:center!important;pointer-events:none}
+.c-workspace .c-plan-rail #planMount{display:flex;justify-content:center;pointer-events:auto;width:auto!important}
+@media(max-width:540px){.c-workspace .c-plan-rail{bottom:96px!important;width:auto!important}}
+
+/* Sources: compact trigger reveals a horizontal sequence of favicons. Each
+   favicon becomes a pill containing its real host name on hover/focus. */
+.c-workspace .c-sources-inline{display:flex;align-items:center;gap:6px;max-width:100%;margin:14px 0 6px;white-space:nowrap}
+.c-workspace .c-sources-inline-trigger{display:inline-flex;align-items:center;gap:6px;height:30px;padding:3px 10px 3px 7px;flex-shrink:0;border-radius:999px;border:1px solid #eeeef1;background:#fff;font:400 12px/18px var(--c-font);color:#68686e;cursor:pointer;transition:border-color .25s ease,background .25s ease}
+.c-workspace .c-sources-inline-trigger:hover{background:#fafafb;border-color:#dedee3}
+.c-workspace .c-sources-inline-count{font-size:11px;color:#9b9ba1}
+.c-workspace .c-sources-inline-clip{max-width:0;min-width:0;overflow:hidden;opacity:0;pointer-events:none;transition:max-width .55s cubic-bezier(.22,1,.36,1),opacity .3s ease}
+.c-workspace .c-sources-inline.is-open .c-sources-inline-clip{max-width:min(460px,calc(100vw - 154px));opacity:1;pointer-events:auto}
+.c-workspace .c-sources-inline-links{display:flex;align-items:center;gap:5px;width:max-content;padding:3px 2px}
+.c-workspace .c-sources-inline-link{box-sizing:border-box;display:flex;align-items:center;gap:6px;min-width:29px;width:29px;max-width:29px;height:29px;padding:4px;border:1px solid #ececf0;border-radius:999px;overflow:hidden;background:#fff;color:#57575f;text-decoration:none;opacity:0;transform:translateX(-12px);transition:width .38s cubic-bezier(.22,1,.36,1),max-width .38s cubic-bezier(.22,1,.36,1),border-color .2s ease,background .2s ease,opacity .4s ease,transform .45s cubic-bezier(.22,1,.36,1);transition-delay:0ms}
+.c-workspace .c-sources-inline.is-open .c-sources-inline-link{opacity:1;transform:translateX(0);transition-delay:calc(var(--source-index,0) * 75ms)}
+.c-workspace .c-sources-inline-link:hover,.c-workspace .c-sources-inline-link:focus-visible{width:155px;max-width:155px;background:#fafafb;border-color:#dfdfe4;outline-offset:2px;transition-delay:0ms}
+.c-workspace .c-sources-inline-favicon{width:19px;height:19px;min-width:19px;display:grid;place-items:center;overflow:hidden;border-radius:50%}
+.c-workspace .c-sources-inline-favicon svg{width:100%;height:100%}
+.c-workspace .c-sources-inline-site{font:400 11px/18px var(--c-font);min-width:0;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .17s ease}
+.c-workspace .c-sources-inline-link:hover .c-sources-inline-site,.c-workspace .c-sources-inline-link:focus-visible .c-sources-inline-site{opacity:1}
+@media(max-width:550px){.c-workspace .c-sources-inline-link:hover,.c-workspace .c-sources-inline-link:focus-visible{width:120px;max-width:120px}.c-workspace .c-sources-inline.is-open .c-sources-inline-clip{overflow-x:auto;scrollbar-width:none}}
+
+/* Wi-Fi is drawn as five nested curves, without a bouncing spinner.
+   Only signal segments fade and draw as strength increases. */
+.c-workspace .c-wifi-curves{width:24px;height:24px;display:inline-grid;place-items:center}
+.c-workspace .c-wifi-curves svg{width:23px;height:23px;stroke-width:1.9}
+.c-workspace .c-wifi-arc{opacity:.16;stroke-dasharray:28;stroke-dashoffset:0;transition:opacity .6s cubic-bezier(.22,1,.36,1),stroke .4s ease!important}
+.c-workspace .c-wifi-arc.is-live{opacity:1!important}
+.c-workspace .c-reconnect-label{font:400 13px/20px var(--c-font)!important}
+
+/* Slide thumbnails are actual tiny slide previews, not bulky text rows. */
+.c-workspace .c-slides-v14 .c-slide-workspace{grid-template-columns:93px minmax(0,1fr)!important;gap:11px!important}
+.c-workspace .c-slides-v14 .c-slide-filmstrip{gap:7px!important;align-items:stretch!important}
+.c-workspace .c-slides-v14 .c-slide-mini{display:flex;align-items:center;gap:5px;min-height:0!important;padding:4px!important;border:1px solid transparent!important;border-radius:13px!important;background:transparent!important}
+.c-workspace .c-slides-v14 .c-slide-mini:hover{background:#f9f9fa!important}
+.c-workspace .c-slides-v14 .c-slide-mini.is-selected{border-color:#dddddf!important;background:#fafafb!important}
+.c-workspace .c-slide-mini-number{font:400 9px/14px var(--c-font);color:#aaaab0;width:11px;flex:0 0 11px;text-align:right}
+.c-workspace .c-slide-mini-frame{aspect-ratio:16/9;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:7px!important;box-sizing:border-box;border:1px solid #e9e9ed;border-radius:7px;background:#fff;overflow:hidden;text-align:left;box-shadow:0 1px 2px rgba(0,0,0,.02)}
+.c-workspace .c-slide-mini-frame[data-theme="warm"]{background:#fff8f3}
+.c-workspace .c-slide-mini-frame[data-theme="cool"]{background:#eef4fc}
+.c-workspace .c-slide-mini-frame[data-theme="dark"]{background:#282b33;color:#fff}
+.c-workspace .c-slide-mini-eyebrow{font:400 5px/7px var(--c-font);letter-spacing:.06em;opacity:.65}
+.c-workspace .c-slide-mini-title{font:500 7px/10px var(--c-font);color:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;margin-top:2px}
+.c-workspace .c-slide-mini-body{font:400 5px/7px var(--c-font);opacity:.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.c-workspace .c-slides-v14 .c-slide-stage-wrap{min-width:0}
+.c-workspace .c-slides-v14 .c-slide-canvas{position:relative;overflow:hidden}
+.c-workspace .c-slides-v14 .c-slide-object{position:absolute;z-index:3;border-radius:6px;touch-action:none;cursor:grab;outline:1px solid transparent}
+.c-workspace .c-slides-v14 .c-slide-object.is-element-selected{outline:1.5px solid #6a89ba;outline-offset:1px}
+.c-workspace .c-slides-v14 .c-slide-object-text{background:transparent;font:400 17px/1.25 var(--c-font);color:#222;cursor:text}
+.c-workspace .c-slides-v14 .c-slide-object-ellipse{border-radius:50%}
+.c-workspace .c-slides-v14 .c-slide-v14-toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:7px 0}
+.c-workspace .c-slide-v14-group{display:inline-flex;align-items:center;gap:3px;padding-right:6px;margin-right:1px;border-right:1px solid #ededf0;flex-wrap:wrap}
+.c-workspace .c-slide-v14-group:last-child{border:0}
+.c-workspace .c-slides-v14 .c-slide-tool{border-radius:10px!important;width:30px;height:30px;min-width:30px;transition:background .2s ease!important}
+.c-workspace .c-slides-v14 .c-slide-v10-select{border-radius:9px;max-width:102px}
+.c-workspace .c-slide-v14-font{max-width:124px!important}
+.c-workspace .c-slide-v14-colour{width:28px;height:28px;padding:4px;border:1px solid #ececf0;border-radius:9px;background:#fff;cursor:pointer}
+.c-workspace .c-slide-v14-notes{display:block;box-sizing:border-box;width:100%;max-height:0;min-height:0;margin:0;padding:0 9px;opacity:0;overflow:hidden;resize:vertical;border:0 solid #e9e9ee;border-radius:11px;background:#fff;font:400 12px/1.5 var(--c-font);transition:max-height .35s cubic-bezier(.22,1,.36,1),padding .35s ease,opacity .26s ease,border-width .35s ease}
+.c-workspace .c-slide-v14-notes.is-visible{min-height:60px;max-height:120px;margin-top:6px;padding:8px 10px;opacity:1;border-width:1px}
+.c-workspace .c-slide-v14-notes:focus{outline:2px solid #dfe5ed}
+.c-workspace .c-slide-canvas[data-theme="dark"]{background:#282b33;color:#fff}
+.c-workspace .c-slide-canvas[data-theme="dark"] .c-slide-eyebrow,.c-workspace .c-slide-canvas[data-theme="dark"] .c-slide-num{color:#ddd}
+.c-workspace .c-slides-v14 .c-slide-inspector{transition:max-height .4s cubic-bezier(.22,1,.36,1),opacity .26s ease!important}
+@media(max-width:600px){.c-workspace .c-slides-v14 .c-slide-workspace{grid-template-columns:66px minmax(0,1fr)!important;gap:7px!important}.c-workspace .c-slide-mini-frame{padding:4px!important}.c-workspace .c-slide-mini-number{width:8px;flex-basis:8px;font-size:8px}.c-workspace .c-slides-v14 .c-slide-v14-toolbar{gap:4px}.c-workspace .c-slide-v14-group{gap:2px;padding-right:4px}}
+
+/* Tool labels are anchored white popovers; native browser title tooltips are
+   intentionally not used. No dark cursor-following tooltip. */
+.c-workspace [data-tooltip]:is(button,select,input){position:relative}
+.c-workspace [data-tooltip]:is(button,select,input)::after{content:attr(data-tooltip);position:absolute;top:auto;bottom:calc(100% + 7px);left:50%;min-width:max-content;max-width:190px;transform:translate(-50%,4px);opacity:0;pointer-events:none;z-index:900;background:#fff!important;color:#57575f!important;border:1px solid #e7e7eb!important;border-radius:9px!important;box-shadow:0 6px 16px rgba(14,14,18,.07)!important;padding:5px 8px!important;font:400 11px/14px var(--c-font)!important;white-space:nowrap;transition:opacity .17s ease,transform .2s cubic-bezier(.22,1,.36,1)!important}
+.c-workspace [data-tooltip]:is(button,select,input):hover::after,.c-workspace [data-tooltip]:is(button,select,input):focus-visible::after{opacity:1!important;transform:translate(-50%,0)!important}
+.c-workspace .c-writing-format-btn::after,.c-workspace .c-editor-font-button::after,.c-workspace .c-terminal-copy::after,.c-workspace .c-code-demo-button::after{background:#fff!important;color:#57575f!important;border:1px solid #e7e7eb!important;box-shadow:0 6px 16px rgba(14,14,18,.07)!important}
+@media(prefers-reduced-motion:reduce){.c-workspace .c-todo,.c-workspace .c-todo-v8-disclosure,.c-workspace .c-sources-inline-clip,.c-workspace .c-sources-inline-link,.c-workspace .c-slide-object,.c-demo-composer{transition:none!important;animation:none!important}}
