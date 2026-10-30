@@ -1358,7 +1358,7 @@
     const queueList=element('div','c-music-queue-list');queueInner.append(queueList);queueClip.append(queueInner);
     const status=element('span','c-music-seek-status');status.setAttribute('aria-live','polite');
     card.append(header,scrub,times,queueClip,status);
-    let index=0,seconds=42,playing=false,queueOpen=false;
+    let index=0,seconds=42,playing=false,queueOpen=false,lastQueueIndex=-1;
     const format=n=>Math.floor(n/60)+':'+String(n%60).padStart(2,'0');
     const artwork=(i)=>{
       const [a,b,c]=tracks[i].tone;
@@ -1377,7 +1377,7 @@
       scrub.max=String(track.seconds);scrub.value=String(seconds);
       scrub.style.setProperty('--progress',(seconds/track.seconds*100)+'%');
       elapsed.textContent=format(seconds);duration.textContent=format(track.seconds);
-      renderQueue();
+      if(lastQueueIndex!==index){renderQueue();lastQueueIndex=index;}
     }
     function renderQueue(){
       queueList.replaceChildren();
@@ -1419,7 +1419,7 @@
       });
       button.addEventListener('pointerup',stop);
       button.addEventListener('pointercancel',()=>{stop();held=false;});
-      button.addEventListener('pointerleave',()=>{if(arm||interval)stop();});
+      button.addEventListener('pointerleave',()=>{if(arm||interval){stop();held=false;}});
       button.addEventListener('click',()=>{
         if(held){held=false;return;}
         if(direction<0){if(seconds>3){seconds=0;update();}else chooseTrack(index-1);}
