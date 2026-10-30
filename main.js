@@ -524,7 +524,9 @@
     trigger.setAttribute('aria-controls','c-sources-inline-items-'+session);
     const logos=element('span','c-sources-logos');
     SOURCES.forEach(source=>logos.appendChild(sourceLogo(source,'c-sources-logo')));
-    trigger.append(logos,element('span','c-sources-inline-heading','Sources'),element('span','c-sources-inline-count',String(SOURCES.length)));
+    const directionIcon=element('span','c-sources-inline-direction');directionIcon.innerHTML=svg('chevron');
+    trigger.setAttribute('aria-label','Show sources');
+    trigger.append(logos,element('span','c-sources-inline-heading','Sources'),element('span','c-sources-inline-count',String(SOURCES.length)),directionIcon);
     const clip=element('div','c-sources-inline-clip');clip.id='c-sources-inline-items-'+session;
     clip.setAttribute('aria-hidden','true');clip.inert=true;
     const links=element('div','c-sources-inline-links');
@@ -540,6 +542,7 @@
     trigger.addEventListener('click',()=>{
       const open=trigger.getAttribute('aria-expanded')!=='true';
       trigger.setAttribute('aria-expanded',String(open));
+      trigger.setAttribute('aria-label',open?'Hide sources':'Show sources');
       clip.setAttribute('aria-hidden',String(!open));
       clip.inert=!open;
       paint(()=>root.classList.toggle('is-open',open));
