@@ -59,6 +59,11 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ICONS = {
 
+    type:'<path d="M4 6V4h16v2M12 4v16M8 20h8"/>',
+    box:'<rect x="3.5" y="4" width="17" height="16" rx="2"/>',
+    circle:'<circle cx="12" cy="12" r="8.5"/>',
+    x:'<path d="M5 5l14 14M19 5 5 19"/>',
+    download:'<path d="M12 3v12m-4-4 4 4 4-4M5 17v4h14v-4"/>',
     brain:'<path d="M12 5.5A3.7 3.7 0 0 0 5.1 7 3.5 3.5 0 0 0 4 13a3.8 3.8 0 0 0 4 6 3.2 3.2 0 0 0 4-2.7V5.5Z"/><path d="M12 5.5A3.7 3.7 0 0 1 18.9 7 3.5 3.5 0 0 1 20 13a3.8 3.8 0 0 1-4 6 3.2 3.2 0 0 1-4-2.7"/><path d="M8.4 9a2.4 2.4 0 0 0-2 2.2M8 15.3a2 2 0 0 1 2.3 1M15.6 9a2.4 2.4 0 0 1 2 2.2M16 15.3a2 2 0 0 0-2.3 1"/>',
     terminal:'<rect x="2.5" y="4" width="19" height="16" rx="2.5"/><path d="m7 9 3 3-3 3M13 16h5"/>',
     book:'<path d="M12 6c-2.9-1.7-5.8-2-9-1v14c3.2-1 6.1-.7 9 1 2.9-1.7 5.8-2 9-1V5c-3.2-1-6.1-.7-9 1Zm0 0v14"/>',
