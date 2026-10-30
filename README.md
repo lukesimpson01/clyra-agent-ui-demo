@@ -2,9 +2,20 @@
 
 A standalone, light-theme **visual reference** for AI answer text, thinking, search, file-edit diffs, document/slide/music artifacts, command execution, browser preview and general tool activity. The demo shows **three broad phases**, with only two later dividers; longer narration connects related actions.
 
-**Important:** The HTML demo intentionally has **no chat composer or sample user bubble**. It is **not** the replacement for your application's entire chat, message UI, app layout or agent loop. Keep your own host app's message bubbles, composer/input bar, position, size, animations, scroll behaviour and backend harness untouched. Reuse only the styles and renderers for assistant response *content* and tool/status UI.
+**Important:** This standalone fixture includes a **temporary demo composer and sample message**, strictly for triggering its simulated activities. They must **not** replace the host application's own composer or message bubbles. It is **not** the replacement for your application's entire chat, message UI, app layout or agent loop. Keep your own host app's message bubbles, composer/input bar, position, size, animations, scroll behaviour and backend harness untouched. Reuse only the styles and renderers for assistant response *content* and tool/status UI.
 
 Read **[AGENTS.md](./AGENTS.md)** for coding-agent implementation boundaries, then **[INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)** before copying any component into your main app. Detailed comments in `index.html`, `styles.css`, and `main.js` explain the boundaries.
+
+## Project-only update rule
+
+This standalone GitHub repository has its own [DEMO_PROJECT_RULES.md](./DEMO_PROJECT_RULES.md). Every update must keep this existing-clone workflow working **without any extra installation**:
+
+```bash
+git pull
+npm run dev
+```
+
+The repository must also pass `npm test` (dependency-free startup checks); GitHub Actions additionally runs Chromium browser interaction tests. **These demo rules do not transfer to any project which imports the UI components.**
 
 ## Run
 
@@ -20,13 +31,13 @@ Visit <http://localhost:5173/>. Only Node.js and npm are required, no npm instal
 
 - Thin brain icon + neutral dots and compact `Thought 2s` completion
 - Smooth response text and active status shimmer
-- Sliding web-source favicon stack, compact sources disclosure
+- Sliding web-source favicon stack, expandable horizontal source-icon strip
 - Rounded browser shimmer preview, collapsible action history
 - Pencil file edits with rolling red/green counts and collapsible diff
 - Writing card and stable white formatting toolbar with font and size
 - Editable/full-screen slide previews, compact music playback, terminal output
-- Collapsible 44px To-dos list on a separate right rail; mobile drawer
-- Copy, regenerate, feedback and reduced-motion support
+- Compact circular progress To-dos above the demo composer, expanding to a checklist
+- Copy, regenerate and reduced-motion support
 
 All actions and commands are visual samples. No files, music, browser sessions or external services are actually changed.
 
