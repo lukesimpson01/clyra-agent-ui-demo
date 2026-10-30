@@ -1,6 +1,9 @@
 // Real Chromium interaction test. CI-only: Playwright is installed in the
 // workflow; npm run dev remains dependency-free.
 import assert from 'node:assert/strict';
+import {mkdirSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import {join} from 'node:path';
 import {spawn} from 'node:child_process';
 import {setTimeout as pause} from 'node:timers/promises';
 import {chromium} from 'playwright';
@@ -9,6 +12,8 @@ const server=spawn(process.execPath,['server.js'],{cwd:new URL('../',import.meta
 let log='';server.stderr.on('data',chunk=>log+=chunk);
 let browser;
 const errors=[];
+const shots= fileURLToPath(new URL('../test-results/',import.meta.url));
+mkdirSync(shots,{recursive:true});
 try {
   let running=false;
   for(let i=0;i<60;i++){
@@ -37,6 +42,7 @@ try {
   assert(geometry.composer.y>=geometry.todo.bottom+5,'Todo must sit directly above the composer');
   assert(geometry.send.bottom<=geometry.composer.bottom-4&&geometry.send.y>=geometry.composer.y+3,'Send button must stay inside composer');
   assert(geometry.hint.bottom<=geometry.composer.bottom-3,'Keyboard hint must stay inside composer');
+  await page.screenshot({path:join(shots,'01-desktop-composer-todo.png')});
   const todo=page.locator('.c-todo-v8-trigger');
   await todo.click();
   assert.equal(await todo.getAttribute('aria-expanded'),'false');
@@ -53,6 +59,7 @@ try {
   assert.equal(await writing.locator('[aria-label="Expand writing"]').count(),0,'No document expand dropdown');
   assert(!(await writing.evaluate(el=>el.classList.contains('is-document-folded'))),'Document is never folded');
   await writing.locator('[aria-label="Edit writing"]').click();
+  await page.screenshot({path:join(shots,'02-document-editor.png')});
   assert.equal(await writing.locator('[aria-label="Document content"]').getAttribute('contenteditable'),'true');
   await writing.locator('[aria-label="Document content"]').click();
   assert((await writing.locator('[aria-label="Document content"]').count())===1);
@@ -74,6 +81,7 @@ try {
   await slides.locator('.c-slide-image-picker').setInputFiles({name:'test.png',mimeType:'image/png',buffer:png});
   await slides.locator('.c-slide-object-image').waitFor({state:'attached',timeout:6000});
   assert((await slides.locator('.c-slide-object-image').count())===1,'Image inserted');
+  await page.screenshot({path:join(shots,'03-slide-editor.png')});
   await slides.locator('[aria-label="Speaker notes"]').click();
   assert(await slides.locator('.c-slide-v14-notes').evaluate(el=>el.classList.contains('is-visible')),'Notes opened');
   await slides.locator('[aria-label="Full screen"]').click();
@@ -92,6 +100,7 @@ try {
   const pillWidth=await page.locator('.c-sources-inline-link').first().evaluate(el=>el.getBoundingClientRect().width);
   const afterSlots=await page.locator('.c-sources-inline-slot').evaluateAll(els=>els.map(el=>Math.round(el.getBoundingClientRect().x)));
   assert.deepEqual(afterSlots,beforeSlots,'Hovered source must not shift any neighbouring icons');
+  await page.screenshot({path:join(shots,'04-sources-expanded.png')});
   const pill=page.locator('.c-sources-inline-site').first();
   assert(await pill.evaluate(el=>getComputedStyle(el).opacity)>0.5,'Website label pill must appear on hover');
   const href=await page.locator('.c-sources-inline-link').first().getAttribute('href');
@@ -111,6 +120,7 @@ try {
   });
   assert(Math.abs(mobileDock.todoCenter-mobileDock.composerCenter)<4,'Mobile todo/composer centered');
   assert(mobileDock.sendBottom<mobileDock.composerBottom&&mobileDock.composerBottom<=mobileDock.viewportHeight,'Mobile controls contained');
+  await page.screenshot({path:join(shots,'05-mobile-composer-todo.png')});
   const sizes=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,inner:window.innerWidth}));
   assert(sizes.scroll<=sizes.inner+2,'Mobile document must not overflow horizontally: '+JSON.stringify(sizes));
   assert.equal(errors.length,0,'Uncaught browser errors: '+errors.join('\n'));
