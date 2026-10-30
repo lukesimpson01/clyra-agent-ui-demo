@@ -1139,9 +1139,9 @@
     try {
       await delay(320);
       const todo=createTodo([
-        'Research the request and establish context',
-        'Create and refine the deliverables',
-        'Run connected actions and verify results'
+        'Research the request',
+        'Create the deliverables',
+        'Verify the changes'
       ]);
 
       // SECTION 1 / 3 — group web, browser and recovery activity under one phase.
