@@ -173,3 +173,18 @@ The repository-specific requirements in `DEMO_PROJECT_RULES.md` apply here only.
 - Inspect full-size and mobile screenshots plus functional interactions before claiming a UI change is complete. If only a representative `page.set_content()` layout can be inspected, disclose that the full live browser was not visually tested; retain Chromium CI checks.
 
 These constraints apply **only to this demo repository** and must not change the host app's composer, editor, routing, networking or agent loop.
+
+
+## Current editor requirements — standalone fixture only
+
+1. Never animate the todo card horizontally from its checklist width to a circle. Keep the centred slot fixed; the *visual content* collapses into the circular progress button without lateral squeezing.
+2. The Presentation Builder **status action** is a non-disclosing shimmer row. Its *result*, the separate presentation artifact, remains fully accessible and editable.
+3. Music controls must expose Previous / Play-Pause / Next and scrub, but **no native or custom hover-name boxes** on the music capsule. Real hosts invoke their own media connector.
+4. Source-icon reveals have a rotating chevron and staggered, reversible slide-in/out; fixed-width icon slots prevent hover shifts. Preserve keyboard focus and real link navigation.
+5. In Edit mode, the slide artifact has a restrained Google Slides-like top header, filename, menu strip and contextual toolbar. Implement menu actions against the fixture's local slide model (do not add inert labels masquerading as features). Use the actual host slide engine for full production capabilities, PPTX and persistence.
+6. Keep the icon and font weight restrained; no cursor-following black tooltip overlays, bulky borders or jumping subpanels. Every hover control needs a stable focus target and an accessible name.
+7. Preserve the same startup contract (`git pull` then `npm run dev`) and validate the source, server, and browser interaction scripts before each push; clearly disclose any unavailable visual browser run.
+8. Reverse Engineer Anything (REA): its upstream `SKILL.md` instructs a normal source-analysis route for ordinary repositories. Do not install REA tooling merely for this web-source UI work. Only use REA with a concrete permitted target and real provider/runtime evidence; never represent inferred source patterns as observed production behaviour.
+
+**These are rules for the standalone demo repository only.** Do not migrate its mocked composer, menu harness, fake media tracks, sample server or testing workflow into the host Clyra app.
+
