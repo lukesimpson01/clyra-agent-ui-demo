@@ -85,3 +85,25 @@ The standalone reference hides its conversation scrollbar, uses a compact disclo
 - Keep task counts driven by real events. Todo completion and disclosure expansion change height gradually and should not shift surrounding message elements.
 - The music card is a small, white, border-only playback capsule. Supply title, artist, playing state, and duration from the host's real music connector. It does not create a playlist or start playback by itself. Its details animate to their measured height, with an instant fallback under `prefers-reduced-motion`.
 - The demo's three groups and scripted animations remain inspection fixtures; migrate only response/tool visuals, not workflow sequencing, message positioning, or composer behavior.
+
+
+## v10 — Demo composer and integration boundaries
+
+This repository now includes a **demo-only** input bar in `index.html` (`#demoComposer`). Sending a message starts the scripted visual fixture. The host application MUST **keep its own composer** and message bubbles, with their original layout, focus, send behavior, keyboard shortcuts, streaming events, and scroll logic. Do **not** transplant `#demoComposer`, `#demoUserMessage`, the demo lane, or the `runDemo()` simulation into a production chat.
+
+Replace **only** the presentation of existing tool and assistant activities with component patterns demonstrated here: thought activity, reconnecting curved Wi-Fi, web searching with staggered site favicons, inline source chips, code diff reviews, terminal actions, document writing, slide editing, media player, and task progress. Host workflow and backend events remain the sole source of truth.
+
+The todo belongs **above the existing composer**, compact and centred. It starts as a narrow collapsed progress disclosure and expands upwards on user demand; completion ticks and strike-throughs animate. There are no thumbs-up/down actions in the reference footer. Website sources no longer have a dropdown: each icon grows into a named pill on hover and opens its referenced URL when clicked. Reconnecting has no thinking dots. The music capsule offers play/pause and seek only, never an expand button or track skipping.
+
+Writing opens smoothly and enters edit mode when clicked inside; its toolbar reveals only during edit mode and every control has an accessible label and hover tooltip. Selecting text exposes a demo `Ask AI about selection` shortcut, which routes the selection into the demo input; production hosts should wire this into their own AI assistance action instead. The local slide editor supports text content editing, theme/size/alignment, insert, duplicate, delete, undo and fullscreen inside the demo; production data must be driven by real artifacts, not demo slide arrays.
+
+The three scripted phases and sample text exist solely for demonstration. They are **not** agent orchestration instructions.
+
+
+## v11 — Editor and activity UI component contract
+
+- **File edits:** use the small outlined pencil stroke shown by `svg('edit')` rather than a document-shaped icon. Keep hover fills almost invisible, do not add heavy borders or hover scaling; retain real file paths and actual line counts from the host. The exact proprietary Codex icon path is not embedded or claimed.
+- **Terminal:** use the rounded `createCommandView` visual treatment (icon, plain status, exact command text, white expandable terminal, small copy-output control). Connect output to real command events; never run example commands from the demo.
+- **Document editor:** the 15-font searchable picker, font size, real text/highlight colour palettes, link, heading, quote, numbered/bulleted list with style choices, alignment, and table grid are **prototypes** in `addWritingCard`. Use the host application's **existing document editor, table component, selection model, undo/redo, and serialization** when integrating. Do NOT transplant `document.execCommand` as a new production editor, or overwrite stored document data. The table example is intentionally only a mock of table insertion.
+- **Code blocks:** the standalone `addCodeBlock` is a small **visual mock**. In production reuse the host project's existing code-block renderer, syntax highlighter, copy behavior and execution sandbox. The mock Run button does NOT execute code (it displays sample output). Never evaluate arbitrary code in the browser or pass code to shell without existing permissions/security mechanisms.
+- **Controls:** icon buttons have instant accessible hover labels, rounded pale hover states, subtle motion and no bulky fills. Use real tool/event data and preserve host composer, user/assistant bubbles, scroll policy and backend harness.
