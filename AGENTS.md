@@ -1,3 +1,14 @@
+## Required pre-push verification for this demo
+
+For every subsequent change to this **standalone demo repository**:
+
+1. Run the actual `npm run dev` locally and verify the URL it prints serves the page.
+2. Run `npm test` (startup checks and occupied-port regression).
+3. When server code changes, deliberately occupy port `5173` and confirm `npm run dev` successfully falls back to another port without an uncaught `EADDRINUSE` exception.
+4. Push only after the runnable checks pass, then verify the remote files and check CI; disclose any browser-test limitation. Never claim tests were run if they were not.
+
+An already-running server is not an error: use the fallback URL printed by the console. **Never kill another application's process to make 5173 free.** The above procedure is local to this demo. When integrating components into Clyra, preserve the host's dev scripts, port handling, and project workflows.
+
 > **This repository's local development requirement:** Read [DEMO_PROJECT_RULES.md](./DEMO_PROJECT_RULES.md) before changing or publishing this standalone demo. The requirement to keep `git pull` followed by `npm run dev` working applies **only to this demo repository**, never to projects that import its response/activity UI.
 
 ## Local Git-tracking repair (this demo only)
