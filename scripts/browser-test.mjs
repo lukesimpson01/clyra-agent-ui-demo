@@ -28,6 +28,7 @@ try {
   await page.locator('.c-todo-v8-trigger').waitFor({timeout:15000});
   await page.waitForTimeout(700);
   assert(await page.locator('.c-todo-v8-trigger').getAttribute('aria-expanded')==='true','Todo should unfold when task starts');
+  assert.equal(await page.locator('.c-todo-progress-svg .c-todo-progress-value').count(),1,'Circular SVG progress must be present');
   const todo=page.locator('.c-todo-v8-trigger');
   await todo.click();
   assert.equal(await todo.getAttribute('aria-expanded'),'false');
@@ -48,6 +49,15 @@ try {
   assert((await slides.locator('.c-slide-mini').count())>=4,'New slide inserted');
   await slides.locator('[aria-label="Insert rectangle"]').click();
   assert((await slides.locator('.c-slide-object-rect').count())>=1,'Shape inserted');
+  assert((await slides.locator('.c-slide-layer-item').count())>=1,'Object layers visible');
+  await slides.locator('[aria-label="Duplicate object"]').click();
+  assert((await slides.locator('.c-slide-object-rect').count())>=2,'Shape duplication');
+  await slides.locator('[aria-label="Bring object forward"]').click();
+  await slides.locator('[aria-label="Insert image"]').click();
+  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRycAAAAASUVORK5CYII=','base64');
+  await slides.locator('.c-slide-image-picker').setInputFiles({name:'test.png',mimeType:'image/png',buffer:png});
+  await slides.locator('.c-slide-object-image').waitFor({state:'attached',timeout:6000});
+  assert((await slides.locator('.c-slide-object-image').count())===1,'Image inserted');
   await slides.locator('[aria-label="Speaker notes"]').click();
   assert(await slides.locator('.c-slide-v14-notes').evaluate(el=>el.classList.contains('is-visible')),'Notes opened');
   await slides.locator('[aria-label="Full screen"]').click();
@@ -60,6 +70,10 @@ try {
   await sources.click();
   assert.equal(await sources.getAttribute('aria-expanded'),'true');
   assert((await page.locator('.c-sources-inline-link').count())>=3,'Sources render website links');
+  await page.locator('.c-sources-inline-link').first().hover();
+  await page.waitForTimeout(450);
+  const pillWidth=await page.locator('.c-sources-inline-link').first().evaluate(el=>el.getBoundingClientRect().width);
+  assert(pillWidth>50,'Hovered source should expand into a labelled pill');
   const href=await page.locator('.c-sources-inline-link').first().getAttribute('href');
   assert(href?.startsWith('https://'),'Sources have external URLs');
   await sources.click();
@@ -67,6 +81,7 @@ try {
   assert.equal(await page.locator('.c-footer-actions [aria-label="Regenerate response"]').count(),1);
   // Check responsive layout after completing the same live session.
   await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.locator('#demoComposer').count(),1,'Demo-only composer present');
   await page.waitForTimeout(300);
   const sizes=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,inner:window.innerWidth}));
   assert(sizes.scroll<=sizes.inner+2,'Mobile document must not overflow horizontally: '+JSON.stringify(sizes));
