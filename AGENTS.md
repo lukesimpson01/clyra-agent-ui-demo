@@ -16,14 +16,14 @@ You are looking at a **visual fixture**, not a replacement chat application. **D
 
 1. **Thinking:** small brain and neutral animated dots while thinking; after completion, same brain with elapsed `Thought 2s` text. Measure actual elapsed seconds, not sample timers.
 2. **Status/action rows:** matched thin line icons, 13px normal text, visible shimmer only when running, quiet past-tense label at completion; no status checkmarks.
-3. **Search:** site favicons reveal left-to-right in staggered circular stack next to the row; no automatically expanded search panel. Web-source disclosure beneath the answer stays small, white and rounded.
+3. **Search:** site favicons reveal left-to-right in staggered circular stack next to the row; no automatically expanded search panel. Web-source control beneath the answer starts collapsed; a click unfolds circular site icons *horizontally*. Each icon expands into a small website-name pill on hover or keyboard focus, and clicking opens its real source URL.
 4. **Assistant response:** copy readable font weight/line height/word appearance, but inherit the host's assistant message width and padding; never relocate the whole message.
 5. **File editing:** pencil icon, filename and precise additions/removals returned from the host; completed edit can expand to a line-numbered green/red diff with Accept/Reject when permission requires it.
 6. **Commands:** show the exact command currently running and actual output; animate disclosure collapse on completion.
 7. **Browser/computer use:** 16:9 rounded neutral loading viewport during execution; shimmer and real action labels, collapse into a short row when done.
 8. **Artifactual results:** white rounded writing card with functional formatting toolbar, editable/full-screen presentation preview, compact now-playing capsule, genuine tool results. Wire controls to the host's actual handlers.
-9. **Task plans:** reuse the plan card design only if the host already supports a plan panel. Keep plan OUTSIDE chat messages; do not force a new sidebar into the host.
-10. **Footer actions:** visually reuse icons but invoke real host Copy, Regenerate and feedback callbacks.
+9. **Task plans:** reuse the plan card design only if the host already supports a plan panel. Keep plan OUTSIDE chat messages; do not force a new sidebar into the host. In the fixture the todo starts as a 44px circular progress indicator next to/above the demo composer and unfolds to a lightweight checklist. In production anchor to the host's existing composer-adjacent slot, not the fixture's coordinates.
+10. **Footer actions:** visually reuse Copy and Regenerate icons and invoke real host callbacks; do not re-add thumbs-up/down buttons.
 
 ## State-to-view mapping
 
@@ -107,3 +107,12 @@ The three scripted phases and sample text exist solely for demonstration. They a
 - **Document editor:** the 15-font searchable picker, font size, real text/highlight colour palettes, link, heading, quote, numbered/bulleted list with style choices, alignment, and table grid are **prototypes** in `addWritingCard`. Use the host application's **existing document editor, table component, selection model, undo/redo, and serialization** when integrating. Do NOT transplant `document.execCommand` as a new production editor, or overwrite stored document data. The table example is intentionally only a mock of table insertion.
 - **Code blocks:** the standalone `addCodeBlock` is a small **visual mock**. In production reuse the host project's existing code-block renderer, syntax highlighter, copy behavior and execution sandbox. The mock Run button does NOT execute code (it displays sample output). Never evaluate arbitrary code in the browser or pass code to shell without existing permissions/security mechanisms.
 - **Controls:** icon buttons have instant accessible hover labels, rounded pale hover states, subtle motion and no bulky fills. Use real tool/event data and preserve host composer, user/assistant bubbles, scroll policy and backend harness.
+
+## Latest fixture interaction details
+
+- The demo composer is intentionally styled as a calm rounded white input for testing. **Never transplant or replace the host's composer**; the host's input surface, message animations, submit behaviour, upload controls and business logic remain authoritative.
+- Wi-Fi reconnecting uses nested signal curves that reveal one layer at a time, adapting iOS-style variable-colour symbol progression. Use actual connection state in production, not the fixture's 3-second intervals.
+- The slide editor now demonstrates thumbnail filmstrip previews, text editing, inserted objects, themes, alignment, notes, undo/redo, reordering, fullscreen and JSON export. **It is not a replacement for a production presentation editor**. Reuse the host project's existing slide renderer, file format, storage, shapes, collaboration and export services.
+- Tooltips are white, anchored to each control, and appear on hover/focus without dark cursor-tracking overlays. On icon buttons, expose an accessible name and do not rely exclusively on a tooltip.
+- Source URL links open only after deliberate click; never trigger navigation on hover. Preserve real source domain, title and URL from the host. The fixture uses demonstrative citation data.
+- Respect `prefers-reduced-motion` for Wi-Fi, todo expansion, favicon glide and all slide/editor transitions.
