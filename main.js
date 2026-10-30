@@ -764,6 +764,8 @@
     });
     inner.append(list);disclosure.append(inner);card.append(trigger,disclosure);planMount.replaceChildren(card);
     let done=0,open=false;setOpen(false);
+    // Begin as a single progress circle, then unfold the plan when work starts.
+    setTimeout(()=>{if(card.isConnected&&done<items.length)setOpen(true);},480);
     function setOpen(next){open=next;trigger.setAttribute('aria-expanded',String(open));card.classList.toggle('is-open',open);disclosure.classList.toggle('is-open',open);}
     trigger.addEventListener('click',()=>setOpen(!open));
     function render(){
