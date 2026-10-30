@@ -65,7 +65,7 @@ try {
   await browserViewport.locator('.c-browser-blue-field').waitFor({state:'attached'});
   await page.waitForTimeout(900);
   assert(!(await browserViewport.evaluate(el=>el.classList.contains('is-agent-working'))),'Grey shimmer must last approximately 3 seconds');
-  await page.waitForFunction(()=>document.querySelector('.c-browser-v18')?.classList.contains('is-agent-working'),{timeout:7000});
+  await page.waitForFunction(()=>document.querySelector('.c-browser-v18')?.classList.contains('is-agent-working'),undefined,{timeout:7000});
   await page.screenshot({path:join(shots,'01-browser-blue-cursor.png')});
   await page.locator('.c-browser-action-list .c-browser-action').nth(3).waitFor({state:'attached',timeout:120000});
   await page.waitForTimeout(500);
