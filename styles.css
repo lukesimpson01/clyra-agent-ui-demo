@@ -3140,3 +3140,167 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
 .c-workspace .c-slide-toolbar-popover-trigger:focus-visible{
  outline:2px solid #abc0dd!important;outline-offset:2px!important;
 }
+
+/* V20 - non-destructive adaptive refinements. Never transplant fixture shell CSS into Clyra. */
+.c-workspace .c-lane,.c-workspace .c-assistant-turn,.c-workspace .c-stream-block,
+.c-workspace .c-activity-group,.c-workspace .c-activity-row,
+.c-workspace .c-browser-unit,.c-workspace .c-command-unit,
+.c-workspace .c-edit-review,.c-workspace .c-writing-card,
+.c-workspace .c-slides-v14,.c-workspace .c-geo-card,
+.c-workspace .c-music-v19,.c-workspace .c-rich-response{
+  min-width:0;max-width:100%;box-sizing:border-box;
+}
+.c-workspace .c-activity-label,.c-workspace .c-command-label,
+.c-workspace .c-edit-review-label,.c-workspace .c-geo-place,
+.c-workspace .c-location-subtitle,.c-workspace .c-weather-description,
+.c-workspace .c-slide-filename,.c-workspace .c-location-place-caption{
+  min-width:0;overflow-wrap:anywhere;
+}
+.c-workspace .c-terminal,.c-workspace .c-terminal-output,.c-workspace .c-code-demo-pre,
+.c-workspace .c-edit-code-viewport,.c-workspace .c-rich-tex-result{
+  min-width:0;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;
+}
+.c-workspace .c-writing-content,.c-workspace .c-stream-block p,
+.c-workspace .c-geo-status,.c-workspace .c-location-empty{overflow-wrap:anywhere}
+.c-workspace .c-slides-v14 {container:clyra-slide / inline-size}
+.c-workspace .c-geo-card {container:clyra-geo / inline-size}
+.c-workspace .c-music-v19 {container:clyra-music / inline-size}
+.c-workspace .c-writing-card {container:clyra-writing / inline-size}
+.c-workspace .c-slides-v14 .c-slide-toolbar-zone{max-width:100%;min-width:0}
+.c-workspace .c-slides-v14 .c-slide-v14-toolbar,
+.c-workspace .c-slides-v14 .c-slide-workspace,
+.c-workspace .c-slides-v14 .c-slide-stage-wrap,
+.c-workspace .c-slides-v14 .c-slide-filmstrip{
+  min-width:0;max-width:100%;
+}
+.c-workspace .c-slides-v14 .c-slide-toolbar-popover-panel{
+  max-width:min(220px,calc(100vw - 24px));overflow-y:auto;max-height:min(60dvh,340px);
+}
+.c-workspace .c-slides-v14 .c-slide-toolbar-zone .c-slide-v14-group{
+  flex-wrap:wrap!important;min-width:0;
+}
+.c-workspace .c-slides-v14 .c-slide-toolbar-zone .c-slide-v10-select{min-width:47px}
+.c-workspace .c-slides-v14.is-slide-fullscreen{
+  min-height:0!important;overflow-x:clip!important;overscroll-behavior:contain;
+}
+.c-workspace .c-slides-v14.is-slide-fullscreen .c-slide-stage-wrap,
+.c-workspace .c-slides-v14.is-slide-fullscreen .c-presentation-stage{
+  min-width:0!important;max-width:100%!important;
+}
+.c-workspace .c-slides-v14 .c-slide-toolbar-popover:last-child .c-slide-toolbar-popover-panel{
+  left:auto;right:0;
+}
+
+/* The document editor has an actual fullscreen mode, not a visual-only button. */
+.c-workspace .c-writing-card.is-expanded{
+  position:fixed!important;inset:0!important;z-index:1900!important;
+  width:100vw!important;height:100dvh!important;max-width:none!important;
+  margin:0!important;border-radius:0!important;background:#fff!important;
+  padding:clamp(10px,2.4vw,26px)!important;
+  display:flex!important;flex-direction:column!important;
+  min-width:0;min-height:0;overflow-y:auto!important;overflow-x:clip!important;
+  overscroll-behavior:contain;
+  box-shadow:0 0 0 100vmax rgba(18,23,30,.20)!important;
+  animation:c-document-enter .36s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes c-document-enter{
+  from{opacity:.90;transform:translate3d(0,10px,0) scale(.996)}
+  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+.c-workspace .c-writing-card.is-expanded .c-writing-header{
+  position:sticky;top:-1px;z-index:35;flex:0 0 auto;
+  background:#fff;min-width:0;max-width:100%;
+}
+.c-workspace .c-writing-card.is-expanded .c-writing-header-actions{
+  display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0;
+}
+.c-workspace .c-writing-card.is-expanded .c-writing-toolbar-shell{
+  flex:0 0 auto;min-width:0;max-width:100%;
+}
+.c-workspace .c-writing-card.is-expanded .c-writing-toolbar{
+  flex-wrap:wrap;max-width:100%;min-width:0;
+}
+.c-workspace .c-writing-card.is-expanded .c-writing-content{
+  flex:1 1 auto;min-height:200px;min-width:0;max-width:min(100%,840px);
+  width:100%;margin-inline:auto;overflow-wrap:anywhere;
+}
+.c-workspace .c-writing-card.is-expanded .c-writing-toolbar-clip{max-width:100%;overflow-x:auto}
+.c-document-fullscreen-active{overflow:hidden!important}
+
+/* Follow component width, not only browser width: also works in split panes. */
+@container clyra-slide (max-width:860px){
+  .c-slides-v14.is-slide-fullscreen .c-slide-menu-bar,
+  .c-slides-v14.is-slide-fullscreen .c-slide-top-toolbar,
+  .c-slides-v14.is-slide-fullscreen .c-slide-filmstrip{
+    position:relative!important;top:auto!important;
+  }
+  .c-slides-v14 .c-slide-toolbar-zone{
+    flex:1 1 135px!important;max-width:100%;min-width:0!important;
+  }
+}
+@container clyra-slide (max-width:620px){
+  .c-slides-v14.is-slide-fullscreen .c-slide-workspace{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:10px!important;padding:10px!important;align-content:start!important;
+  }
+  .c-slides-v14.is-slide-fullscreen .c-slide-stage-wrap{grid-row:1;min-width:0}
+  .c-slides-v14.is-slide-fullscreen .c-slide-filmstrip{
+    grid-row:2;display:flex!important;flex-direction:row!important;gap:8px!important;
+    overflow-x:auto!important;overflow-y:hidden!important;
+    max-height:none!important;width:100%!important;padding-bottom:5px;
+    overscroll-behavior-x:contain;
+  }
+  .c-slides-v14.is-slide-fullscreen .c-slide-film-item{
+    flex:0 0 95px!important;max-width:125px!important;
+  }
+  .c-slides-v14 .c-slide-v14-toolbar{gap:5px!important}
+  .c-slides-v14 .c-slide-toolbar-zone .c-slide-v14-group{flex-wrap:wrap!important}
+}
+@container clyra-geo (max-width:360px){
+  .c-geo-header{flex-wrap:wrap;align-items:flex-start}
+  .c-geo-heading{min-width:0}
+  .c-geo-search{min-width:0;flex-wrap:wrap}
+  .c-geo-search-input{flex:1 1 130px;min-width:0}
+  .c-weather-metrics{gap:6px}
+  .c-weather-metric{min-width:0;flex:1 1 95px}
+  .c-weather-day{grid-template-columns:minmax(38px,auto) minmax(0,1fr);gap:5px}
+  .c-weather-day strong{grid-column:2;min-width:0}
+  .c-location-footer{flex-wrap:wrap}
+  .c-location-frame{min-width:0;width:100%}
+}
+@container clyra-music (max-width:290px){
+  .c-music-v19 .c-island-body{flex-wrap:wrap!important}
+  .c-music-v19 .c-island-info{flex:1 1 110px!important;min-width:0}
+  .c-music-v19 .c-island-playback-controls{flex:1 1 100%!important;justify-content:center}
+}
+.c-workspace .c-weather-day > *, .c-workspace .c-geo-header > *,
+.c-workspace .c-music-v19 .c-island-info{min-width:0}
+.c-workspace .c-location-card.is-map-fullscreen{
+  overflow-y:auto;overflow-x:clip;overscroll-behavior:contain;
+  padding:
+    max(10px,env(safe-area-inset-top,0px))
+    max(10px,env(safe-area-inset-right,0px))
+    max(10px,env(safe-area-inset-bottom,0px))
+    max(10px,env(safe-area-inset-left,0px));
+}
+.c-workspace .c-location-card.is-map-fullscreen .c-location-frame{
+  min-height:150px;height:clamp(160px,55dvh,900px);
+}
+@media(max-width:340px){
+  .c-workspace .c-slides-v14.is-slide-fullscreen .c-slide-workspace{padding:7px!important}
+  .c-workspace .c-slides-v14.is-slide-fullscreen .c-preview-top{flex-wrap:wrap}
+  .c-workspace .c-writing-card.is-expanded{padding:10px!important}
+  .c-workspace .c-geo-card{padding:11px 10px}
+}
+@media(max-height:500px){
+  .c-workspace .c-writing-card.is-expanded .c-writing-content{min-height:140px}
+  .c-workspace .c-location-card.is-map-fullscreen .c-location-frame{
+    height:clamp(145px,45dvh,350px);min-height:145px;
+  }
+  .c-workspace .c-slides-v14.is-slide-fullscreen .c-slide-filmstrip{
+    max-height:160px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .c-workspace .c-writing-card.is-expanded{animation:none!important;transition:none!important}
+}
