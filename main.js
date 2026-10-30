@@ -1083,20 +1083,49 @@
         wrapper.dataset.tooltip=control.getAttribute('aria-label')||control.dataset.tooltip||'Formatting';
         control.removeAttribute('data-tooltip');wrapper.append(control);group.append(wrapper);
       }else group.append(control);});return group;};
-    toolbar.append(
-      toolbarGroup(tool('New slide','slides',addSlide),tool('Duplicate','copy',duplicateSlide),tool('Delete slide','file',removeSlide),tool('Move up','chevron',()=>moveSlide(-1)),tool('Move down','caret',()=>moveSlide(1))),
-      toolbarGroup(tool('Undo','replay',undo),tool('Redo','replay',redo),zoomSelect),
-      toolbarGroup(tool('Insert text box','type',()=>addObject('text')),tool('Insert rectangle','box',()=>addObject('rect')),tool('Insert ellipse','circle',()=>addObject('ellipse')),tool('Insert line','line',()=>addObject('line')),tool('Insert table','table',()=>addObject('table')),tool('Insert image','image',()=>imageInput.click()),tool('Duplicate object','copy',duplicateObject),tool('Bring object forward','layers',()=>moveObjectLayer(1)),tool('Send object backward','layers',()=>moveObjectLayer(-1)),tool('Remove selected object','x',removeObject)),
-      toolbarGroup(layoutSelect,fontFamily,fontSize,align),
-      toolbarGroup(tool('Bold','bold',()=>applySelected('bold',!targetValue('bold',false))),
-        tool('Italic','italic',()=>applySelected('italic',!targetValue('italic',false))),
-        tool('Underline','underline',()=>applySelected('underline',!targetValue('underline',false))),
-        textColour,backgroundColour,theme),
-      toolbarGroup(transitionSelect,tool('Speaker notes','file',()=>{showNotes=!showNotes;notes.classList.toggle('is-visible',showNotes);}),tool('Export slides as JSON','download',()=>{
-        const blob=new Blob([JSON.stringify(slides,null,2)],{type:'application/json'});
-        const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=safeFilename()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-      }))
-    );
+    // Four predictable toolbar zones. Insert/Arrange controls stay in white
+    // popovers, never scattered as a wall of ungrouped icon buttons.
+    const makeToolLabel=text=>element('span','c-slide-toolbar-section-label',text);
+    const buildPopover=(label,icon,entries)=>{
+      const group=element('div','c-slide-toolbar-popover');
+      const trigger=element('button','c-slide-tool c-slide-toolbar-popover-trigger');
+      trigger.type='button';trigger.setAttribute('aria-label',label);trigger.setAttribute('aria-expanded','false');
+      trigger.dataset.tooltip=label;trigger.innerHTML=svg(icon)+'<span>'+label+'</span>'+svg('chevron');
+      const panel=element('div','c-slide-toolbar-popover-panel');panel.setAttribute('role','group');
+      panel.setAttribute('aria-label',label+' tools');
+      entries.forEach(([title,iconName,fn])=>{
+        const button=tool(title,iconName,()=>{fn();closeToolPopovers();});
+        button.classList.add('c-slide-popover-action');
+        button.append(element('span','c-slide-popover-label',title));panel.append(button);
+      });
+      const closeToolPopovers=()=>topToolbar.querySelectorAll('.c-slide-toolbar-popover').forEach(pop=>{
+        pop.classList.remove('is-open');pop.querySelector('.c-slide-toolbar-popover-trigger')?.setAttribute('aria-expanded','false');
+      });
+      trigger.addEventListener('click',event=>{event.stopPropagation();const opening=!group.classList.contains('is-open');closeToolPopovers();group.classList.toggle('is-open',opening);trigger.setAttribute('aria-expanded',String(opening));});
+      group.append(trigger,panel);return group;
+    };
+    const slidesGroup=element('div','c-slide-toolbar-zone');slidesGroup.append(makeToolLabel('SLIDES'),
+      toolbarGroup(tool('New slide','slides',addSlide),tool('Undo','replay',undo),tool('Redo','replay',redo),zoomSelect,layoutSelect));
+    const insertGroup=element('div','c-slide-toolbar-zone');insertGroup.append(makeToolLabel('INSERT'),
+      toolbarGroup(tool('Insert text box','type',()=>addObject('text')),tool('Insert image','image',()=>imageInput.click()),
+      makeToolLabel(''),buildPopover('Shapes & tables','box',[
+        ['Insert rectangle','box',()=>addObject('rect')],['Insert ellipse','circle',()=>addObject('ellipse')],
+        ['Insert line','line',()=>addObject('line')],['Insert table','table',()=>addObject('table')]
+      ])));
+    const textGroup=element('div','c-slide-toolbar-zone');textGroup.append(makeToolLabel('TEXT'),
+      toolbarGroup(fontFamily,fontSize,align,tool('Bold','bold',()=>applySelected('bold',!targetValue('bold',false))),
+      tool('Italic','italic',()=>applySelected('italic',!targetValue('italic',false))),
+      tool('Underline','underline',()=>applySelected('underline',!targetValue('underline',false))),textColour));
+    const arrangeGroup=element('div','c-slide-toolbar-zone');arrangeGroup.append(makeToolLabel('ARRANGE'),
+      toolbarGroup(buildPopover('Objects','layers',[
+        ['Duplicate object','copy',duplicateObject],['Bring object forward','layers',()=>moveObjectLayer(1)],
+        ['Send object backward','layers',()=>moveObjectLayer(-1)],['Remove selected object','x',removeObject],
+        ['Duplicate slide','copy',duplicateSlide],['Delete slide','file',removeSlide],
+        ['Move up','chevron',()=>moveSlide(-1)],['Move down','caret',()=>moveSlide(1)]
+      ]),theme,backgroundColour,transitionSelect,
+      tool('Speaker notes','file',()=>{showNotes=!showNotes;notes.classList.toggle('is-visible',showNotes);})));
+    toolbar.append(slidesGroup,insertGroup,textGroup,arrangeGroup);
+    document.addEventListener('pointerdown',event=>{if(card.isConnected&&!topToolbar.contains(event.target))topToolbar.querySelectorAll('.c-slide-toolbar-popover').forEach(pop=>{pop.classList.remove('is-open');pop.querySelector('.c-slide-toolbar-popover-trigger')?.setAttribute('aria-expanded','false');});});
     toolbar.addEventListener('mousedown',event=>{if(event.target.closest('button'))event.preventDefault();});
     fontSize.addEventListener('change',()=>applySelected('size',Number(fontSize.value)));
     zoomSelect.addEventListener('change',()=>{zoom=Number(zoomSelect.value);canvas.style.setProperty('--slide-preview-zoom',String(zoom/100));});
@@ -1247,11 +1276,17 @@
     topToolbar.append(toolbar);
     editor.append(filmstrip,stageWrap);stageWrap.append(inspector);card.append(top,menuBar,topToolbar,editor);
     function setEditing(next){editing=next;closeMenu();card.classList.toggle('is-slide-editing',editing);
-      editBtn.setAttribute('aria-pressed',String(editing));editBtn.querySelector('span').textContent=editing?'Done':'Edit';render();}
+      editBtn.setAttribute('aria-pressed',String(editing));editBtn.querySelector('span').textContent=editing?'Done':'Edit';
+      if(next)setFullscreen(true);else if(card.classList.contains('is-slide-fullscreen'))setFullscreen(false);
+      render();}
     editBtn.addEventListener('click',()=>setEditing(!editing));
     const setFullscreen=next=>{
       card.classList.toggle('is-slide-fullscreen',next);document.body.classList.toggle('c-slide-fullscreen-active',next);
-      fullBtn.querySelector('span').textContent=next?'Minimise':'Full screen';render();
+      fullBtn.innerHTML=next?svg('x')+'<span>Close</span>':svg('expand')+'<span>Full screen</span>';
+      fullBtn.setAttribute('aria-label',next?'Close full screen':'Full screen');
+      fullBtn.dataset.tooltip=next?'Close editor':'Full screen';
+      if(!next&&editing){editing=false;card.classList.remove('is-slide-editing');editBtn.setAttribute('aria-pressed','false');editBtn.querySelector('span').textContent='Edit';}
+      render();
     };
     fullBtn.addEventListener('click',()=>setFullscreen(!card.classList.contains('is-slide-fullscreen')));
     window.addEventListener('keydown',event=>{
