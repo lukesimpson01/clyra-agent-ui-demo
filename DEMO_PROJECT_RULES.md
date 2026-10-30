@@ -105,3 +105,19 @@ node scripts/smoke-test.mjs
 ```
 
 Browser tests are also available in CI and can be run locally *only when Playwright and Chromium are already present*.
+
+## UI layout & interaction regression contract (this demo only)
+
+When changing the demo UI, **review both the actual rendered appearance and behaviour**, not only syntax/HTTP 200. Capture and inspect desktop (approximately 1440–1536px) and phone (approximately 390px) layouts after triggering the fixture, and inspect the relevant mid-flow and finished states. Add or update repeatable browser assertions for changed interactions.
+
+Required behaviours after this update:
+- The demo todo and composer must be inside **one shared bottom dock**, horizontally centred together. The todo panel expands directly above the composer. Composer hint and send button must be fully inside its rounded border at desktop and mobile sizes; there must be no page-wide horizontal overflow.
+- Reconnecting/Wi-Fi simulation is **absent from the demo flow**. Do not reintroduce it without an explicit request.
+- The browser tool’s action list shows no more than three full rows; on the fourth and later actions the list scrolls *inside itself* to follow new items, without enlarging the browser preview.
+- Documents and presentation previews remain **inline and visible**, never collapsed into a document/slide dropdown. Formatting tools can enter an edit state without collapsing the artifact.
+- The sources strip expands only into a **short, fixed-position icon row**. The site name appears in a small floating pill on hover/focus. **Neighbouring icon positions must not move when a site is hovered**; hovering another icon must remain possible. Actual site links only open on click.
+- Correctly preserve all other existing agent presentation components unless removal is expressly requested. Retain lightweight, reduced-motion-safe transitions.
+- If visual inspection is blocked by the runtime, use `page.set_content()` with a representative fixture for layout review and clearly label it as a *layout-only preview*; don't claim it proves the full app works. Keep CI Chromium browser tests for the full product.
+
+The standalone demo can rely on `git pull` and `npm run dev` without installing runtime dependencies. **None of these fixture-specific layout rules, sample pacing, startup instructions or mocked controls transfer to the host Clyra app.** Preserve the host's own composer, message layout, scroll and editor engine.
+
