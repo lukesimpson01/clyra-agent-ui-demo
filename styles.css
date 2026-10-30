@@ -2564,3 +2564,17 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
  transition:none!important;animation:none!important
  }
 }
+
+/* Contextual buttons wrap into clean rows so their custom white hover labels
+   remain visible instead of being clipped by a horizontal scroll viewport. */
+.c-workspace .c-slides-v14 .c-slide-top-toolbar .c-slide-v14-toolbar{
+ flex-wrap:wrap!important;overflow:visible!important;
+ align-content:start!important;row-gap:5px!important;
+}
+.c-workspace .c-slides-v14 .c-slide-top-toolbar{overflow:visible!important}
+.c-workspace .c-slides-v14 .c-slide-v14-group{flex-wrap:nowrap!important}
+.c-workspace .c-slides-v14 .c-slide-tool[data-tooltip]::after{
+ background:#fff!important;color:#555862!important;
+ border:1px solid #e7e8ec!important;border-radius:9px!important;
+ box-shadow:0 5px 15px rgba(20,21,30,.06)!important;
+}
