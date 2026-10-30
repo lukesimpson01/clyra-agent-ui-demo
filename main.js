@@ -254,7 +254,7 @@
     function finish(){
       placeholder.classList.remove('is-agent-working');placeholder.classList.add('is-agent-closing');
       setLabel('Used browser · 5 actions',false);
-      setTimeout(()=>{if(outer.isConnected)expand(false);},450);
+      setTimeout(()=>{if(outer.isConnected)expand(false);},760);
     }
     return {outer,header,shell,addAction,finishAction,activate,finish};
   }
@@ -274,7 +274,7 @@
       await delay(ms);browser.finishAction(action,done);await delay(230);
     }
     // 3000ms + 4620ms of actions + 1150ms between actions + 1230ms = 10s.
-    await delay(1230);browser.finish();await delay(530);return browser;
+    await delay(1230);browser.finish();await delay(840);return browser;
   }
 
   async function streamParagraph(chunks, token){
