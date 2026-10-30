@@ -12,7 +12,6 @@
 <main class="conversation-content" id="conversationViewport" aria-label="Demonstration chat conversation">
   <div class="c-lane" id="conversationLane">
     <div id="demoUserMessage" class="c-demo-user-message"></div>
-    <div id="demoUserMessage" class="c-demo-user-message"></div>
     <!-- DESIGN REFERENCE ONLY: the demo composer is outside the assistant response.
          The host application supplies and preserves all user/assistant message wrappers,
          message positioning, scroll ownership, streaming architecture and transitions.
@@ -29,14 +28,20 @@
   </div>
 </aside>
 <form id="demoComposer" class="c-demo-composer" aria-label="Demo message input">
-  <label class="c-demo-input-wrap"><span class="sr-only">Message</span><textarea id="demoInput" rows="1" placeholder="Ask Clyra to work on something…" aria-label="Message"></textarea></label>
-  <button id="demoSend" class="c-demo-send" type="submit" aria-label="Send message" disabled>↑</button>
+  <!-- Demo-only input: AGENTS.md requires integration to preserve the host app's existing composer. -->
+  <label class="c-demo-input-wrap"><span class="sr-only">Message</span><textarea id="demoInput" rows="1" placeholder="Ask anything…" aria-label="Message"></textarea></label>
+  <div class="c-demo-composer-foot">
+    <span class="c-demo-composer-hint">Enter to send · Shift+Enter for a new line</span>
+    <button id="demoSend" class="c-demo-send" type="submit" aria-label="Send message" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
+    </button>
+  </div>
 </form>
 <button type="button" class="c-plan-close" id="planClose" hidden aria-label="Close plan">×</button>
 <button type="button" class="c-plan-fab" id="planToggle" aria-label="Show task plan" aria-expanded="false">☷ <span>Plan</span></button>
 <div class="c-plan-scrim" id="planScrim" aria-hidden="true"></div>
 </div>
-<!-- main.js auto-plays a SAMPLE sequence solely for visual inspection.
+<!-- main.js runs a SAMPLE sequence after submitting the demo composer.
      Integrating into a host app? Do not copy this HTML shell or its sample timeline.
      Use INTEGRATION_GUIDE.md to migrate only the response/artifact components. -->
 <script src="./main.js"></script>
