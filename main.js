@@ -615,7 +615,8 @@
     const syncSelection=()=>{const sel=window.getSelection();const active=sel&&!sel.isCollapsed&&content.contains(sel.anchorNode)&&content.contains(sel.focusNode);aiSelection.hidden=!active;if(active)preserveSelection();};
     document.addEventListener('selectionchange',syncSelection);
     aiSelection.addEventListener('click',()=>{const txt=window.getSelection()?.toString()?.trim();if(!txt)return;composerInput.value='Improve this text: '+txt;composerSend.disabled=false;composerInput.focus();aiSelection.hidden=true;});
-    card.classList.add('is-document-folded');card.append(header,toolbarShell,content,aiSelection,notice);
+    // The document is presented as an inline artifact from the start, not a dropdown.
+    card.append(header,toolbarShell,content,aiSelection,notice);
     function closePopup(){if(popup){popup.remove();popup=null;}document.removeEventListener('pointerdown',onOutside,true);document.removeEventListener('keydown',onEscape,true);}
     function onOutside(e){if(popup&&!popup.contains(e.target)&&!toolbar.contains(e.target))closePopup();}
     function onEscape(e){if(e.key==='Escape')closePopup();}
@@ -667,7 +668,7 @@
     size.addEventListener('change',()=>{content.style.fontSize=size.value+'px';});
     paint(()=>assistant.append(card));
     async function revealAndType(token,delay){
-      card.classList.remove('is-document-folded');card.classList.add('is-document-opening');
+      card.classList.add('is-document-opening');
       const sections=[['h4','Product launch brief'],['h5','One thoughtful workspace ✨'],['p','Bring research, documents and connected tools together in a focused environment.'],['p','Objective. Make complex workflows feel simple, clear and dependable.'],['p','Approach. Plan, act and verify — with each step visible when you need it.']];
       for(const [tag,text] of sections){const line=element(tag,'c-document-typed');content.append(line);for(const word of text.match(/\S+\s*/g)||[]){line.append(element('span','c-document-word',word));await delay(25);}await delay(110);}
       card.classList.remove('is-document-opening');card.classList.add('is-document-ready');
