@@ -130,3 +130,18 @@ Refined pencil and terminal UI; richer white document editing toolbar (15 search
 ## Smoke tests
 
 Run `node scripts/smoke-test.mjs` to check HTML IDs, JavaScript parseability, key UI hooks and the actual local development server with no dependency installation. GitHub Actions runs this check on pushes and pull requests. Interactive browser tests are still useful before integrating these demo components into a real application.
+
+## Latest UI implementation
+
+The currently committed demo includes:
+
+- A light, rounded composer with a growing textarea; this input is **fixture-only**, not a replacement for Clyra's real composer.
+- A centred circular todo indicator with a smooth SVG progress stroke; it expands to a checklist after the demo starts.
+- Five fixed-position, curved Wi-Fi symbol layers using progressive opacity, inspired by Apple's variable-colour SF Symbols guidance.
+- Anchored white labels on document, presentation and response toolbar controls, without native dark browser tooltip popups.
+- Smaller miniature slide thumbnails with live text previews and drag-and-drop ordering.
+- A working standalone **subset** of slide editing: editable text, fonts, sizes, alignment, themes, colour, text boxes, shapes, local image insertion (PNG/JPEG/WebP under 3 MB), dragging, resizing, object duplication/layer order, speaker notes, undo/redo, full-screen view and JSON export.
+- Horizontally expanding source favicons; hover or keyboard focus expands each into a website-name pill, and click opens its URL.
+
+**Not included:** complete Google Slides/PowerPoint compatibility, PPTX import/export, shared editing, full animation timelines or production storage. Reuse the host's presentation subsystem for those features. The fixture uses simulated tools and does not change external accounts.
+
