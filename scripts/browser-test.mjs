@@ -140,8 +140,8 @@ try {
   await slides.locator('[aria-label="Insert image"]').click();
   const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRycAAAAASUVORK5CYII=','base64');
   await slides.locator('.c-slide-image-picker').setInputFiles({name:'test.png',mimeType:'image/png',buffer:png});
-  await slides.locator('.c-slide-object-image').waitFor({state:'attached',timeout:6000});
-  assert((await slides.locator('.c-slide-object-image').count())===1,'Image inserted');
+  await slides.locator('img.c-slide-object-image').waitFor({state:'attached',timeout:6000});
+  assert((await slides.locator('img.c-slide-object-image').count())===1,'Image inserted');
   await page.screenshot({path:join(shots,'03-slide-editor.png')});
   await slides.locator('[aria-label="Speaker notes"]').click();
   assert(await slides.locator('.c-slide-v14-notes').evaluate(el=>el.classList.contains('is-visible')),'Notes opened');
