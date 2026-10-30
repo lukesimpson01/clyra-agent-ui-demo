@@ -944,6 +944,9 @@
         item.style.fontFamily=slide[pre+'Font']||'system-ui';
         item.style.color=slide[pre+'Color']||'#17171b';
         item.style.textAlign=slide[pre+'Align']||slide.align||'left';
+        item.style.fontWeight=slide[pre+'Bold']?'700':'400';
+        item.style.fontStyle=slide[pre+'Italic']?'italic':'normal';
+        item.style.textDecoration=slide[pre+'Underline']?'underline':'none';
         item.classList.toggle('is-element-selected',editing&&selected.field===field);
       }
       canvas.append(eyebrow,title,body);
@@ -951,7 +954,11 @@
         const el=element('div','c-slide-object c-slide-object-'+obj.type);
         el.dataset.field='object';el.dataset.objectId=obj.id;
         Object.assign(el.style,{left:obj.x+'%',top:obj.y+'%',width:obj.w+'%',height:obj.h+'%',background:obj.type==='text'?'transparent':obj.color,color:obj.color});
-        if(obj.type==='text'){el.textContent=obj.text;el.contentEditable=String(editing);el.spellcheck=false;el.addEventListener('input',()=>{obj.text=el.innerText;});}
+        if(obj.type==='text'){el.textContent=obj.text;el.contentEditable=String(editing);el.spellcheck=false;
+          el.style.fontFamily=obj.font||'system-ui';el.style.fontSize=(obj.size||17)+'px';
+          el.style.fontWeight=obj.bold?'700':'400';el.style.fontStyle=obj.italic?'italic':'normal';
+          el.style.textDecoration=obj.underline?'underline':'none';
+          el.addEventListener('input',()=>{obj.text=el.innerText;});}
         else if(obj.type==='image'&&obj.src){const img=element('img','c-slide-object-image');img.src=obj.src;img.alt='Inserted slide image';img.draggable=false;el.append(img);}
         else if(obj.type==='table'){const tableGrid=element('div','c-slide-native-table');(obj.cells||Array(9).fill('')).forEach((value,index)=>{
           const cell=element('div','c-slide-native-cell',value);cell.contentEditable=String(editing);cell.spellcheck=false;
@@ -1006,7 +1013,10 @@
       toolbarGroup(tool('Undo','replay',undo),tool('Redo','replay',redo),zoomSelect),
       toolbarGroup(tool('Insert text box','type',()=>addObject('text')),tool('Insert rectangle','box',()=>addObject('rect')),tool('Insert ellipse','circle',()=>addObject('ellipse')),tool('Insert line','line',()=>addObject('line')),tool('Insert table','table',()=>addObject('table')),tool('Insert image','image',()=>imageInput.click()),tool('Duplicate object','copy',duplicateObject),tool('Bring object forward','layers',()=>moveObjectLayer(1)),tool('Send object backward','layers',()=>moveObjectLayer(-1)),tool('Remove selected object','x',removeObject)),
       toolbarGroup(layoutSelect,fontFamily,fontSize,align),
-      toolbarGroup(tool('Bold','bold',()=>{if(selected.field==='object')return;document.execCommand('bold');}),tool('Italic','italic',()=>{if(selected.field==='object')return;document.execCommand('italic');}),textColour,backgroundColour,theme),
+      toolbarGroup(tool('Bold','bold',()=>applySelected('bold',!targetValue('bold',false))),
+        tool('Italic','italic',()=>applySelected('italic',!targetValue('italic',false))),
+        tool('Underline','underline',()=>applySelected('underline',!targetValue('underline',false))),
+        textColour,backgroundColour,theme),
       toolbarGroup(transitionSelect,tool('Speaker notes','file',()=>{showNotes=!showNotes;notes.classList.toggle('is-visible',showNotes);}),tool('Export slides as JSON','download',()=>{
         const blob=new Blob([JSON.stringify(slides,null,2)],{type:'application/json'});
         const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=safeFilename()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -1112,7 +1122,7 @@
         ['Slide transition',()=>setTransition('slide')],['No transition',()=>setTransition('none')]
       ]],
       ['Format',[
-        ['Bold',()=>document.execCommand('bold')],['Italic',()=>document.execCommand('italic')],
+        ['Bold',()=>applySelected('bold',!targetValue('bold',false))],['Italic',()=>applySelected('italic',!targetValue('italic',false))],['Underline',()=>applySelected('underline',!targetValue('underline',false))],
         ['Align left',()=>applySelected('align','left')],['Align centre',()=>applySelected('align','center')],
         ['Align right',()=>applySelected('align','right')],['Text colour…',()=>textColour.click()],
         ['Slide background…',()=>backgroundColour.click()]
@@ -1164,6 +1174,10 @@
       if(event.target?.isContentEditable&&(event.metaKey||event.ctrlKey)&&['z','y'].includes(event.key.toLowerCase()))return;
       if((event.key==='Delete'||event.key==='Backspace')&&selected.field==='object'&&!event.target?.isContentEditable&&event.target?.tagName!=='INPUT'&&event.target?.tagName!=='TEXTAREA'){event.preventDefault();removeObject();}
       if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='d'&&selected.field==='object'&&!event.target?.isContentEditable){event.preventDefault();duplicateObject();}
+      if((event.metaKey||event.ctrlKey)&&!event.target?.isContentEditable&&['b','i','u'].includes(event.key.toLowerCase())){
+        event.preventDefault();const key={b:'bold',i:'italic',u:'underline'}[event.key.toLowerCase()];
+        applySelected(key,!targetValue(key,false));
+      }
       if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='m'){event.preventDefault();addSlide();}
       if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='z'&&!event.shiftKey){event.preventDefault();undo();}
       if((event.metaKey||event.ctrlKey)&&((event.key.toLowerCase()==='y')||(event.key.toLowerCase()==='z'&&event.shiftKey))){event.preventDefault();redo();}
