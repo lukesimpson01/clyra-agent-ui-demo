@@ -2112,3 +2112,7 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
 .c-workspace .c-slide-v14-toolwrap{position:relative;display:inline-flex;align-items:center}
 .c-workspace .c-slide-v14-toolwrap::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 7px);left:50%;transform:translate(-50%,4px);opacity:0;pointer-events:none;z-index:900;border:1px solid #e8e8eb;border-radius:9px;background:#fff;color:#57575f;box-shadow:0 6px 16px rgba(14,14,18,.07);padding:5px 8px;font:400 11px/15px var(--c-font);white-space:nowrap;transition:transform .2s cubic-bezier(.22,1,.36,1),opacity .17s ease}
 .c-workspace .c-slide-v14-toolwrap:hover::after,.c-workspace .c-slide-v14-toolwrap:focus-within::after{opacity:1;transform:translate(-50%,0)}
+
+/* Visible only while editing and the object is selected. */
+.c-workspace .c-slides-v14 .c-slide-object-resize{position:absolute;right:-5px;bottom:-5px;width:10px;height:10px;border:1.5px solid #fff;border-radius:3px;background:#6482ac;cursor:nwse-resize;touch-action:none;opacity:0;pointer-events:none;transition:opacity .18s ease;z-index:9}
+.c-workspace .c-slides-v14 .c-slide-object.is-element-selected .c-slide-object-resize{opacity:1;pointer-events:auto}
