@@ -216,47 +216,6 @@
     });
   }
 
-  function updateReconnectLabel(node,text){
-    if(node.textContent===text)return;
-    // Crossfade in place: the 1/5 counter does not roll, translate or change baseline.
-    node.textContent=text;
-    if(!reducedMotion)node.animate([{opacity:.38},{opacity:1}],{duration:380,easing:'cubic-bezier(.22,1,.36,1)'});
-  }
-  function addReconnecting(){
-    const row=element('div','c-reconnect');row.setAttribute('role','status');
-    // Each level lights a curved wireless arc; this deliberately avoids cellular-style bars.
-    const bars=element('span','c-wifi-curves');bars.setAttribute('aria-hidden','true');
-    // Five independently animated layers: central point and four increasingly wide arcs.
-    // Entire symbol stays stationary, following variable-strength SF Symbol behaviour.
-    bars.innerHTML='<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'+
-      '<circle class="c-wifi-arc is-live c-wifi-dot" cx="14" cy="23" r="1.65" fill="currentColor" stroke="none"/>'+
-      '<path class="c-wifi-arc" d="M11 20a4.25 4.25 0 0 1 6 0"/>'+
-      '<path class="c-wifi-arc" d="M8 17a8.5 8.5 0 0 1 12 0"/>'+
-      '<path class="c-wifi-arc" d="M5 14a12.7 12.7 0 0 1 18 0"/>'+
-      '<path class="c-wifi-arc" d="M2.5 10.5a16.25 16.25 0 0 1 23 0"/>'+'</svg>';
-    const label=element('span','c-reconnect-label c-active-shimmer','Reconnecting · 1/5');
-    row.append(bars,label);paint(()=>assistant.appendChild(row));
-    return {row,bars,label};
-  }
-  async function playReconnecting(token){
-    const status=addReconnecting();
-    // Every 3 seconds, the next curved Wi-Fi arc smoothly fills. No dots.
-    for(let n=2;n<=5;n++){
-      await sleep(3000,token);
-      paint(()=>{
-        [...status.bars.querySelectorAll('.c-wifi-arc')].forEach((arc,i)=>{const rising=i<n&&!arc.classList.contains('is-live');arc.classList.toggle('is-live',i<n);if(rising&&!reducedMotion)arc.animate([{opacity:.16},{opacity:1}],{duration:580,easing:'cubic-bezier(.22,1,.36,1)'});});
-        updateReconnectLabel(status.label,'Reconnecting · '+n+'/5');
-      });
-    }
-    await sleep(650,token);
-    paint(()=>{
-      status.row.classList.add('is-finished');
-      status.bars.classList.add('is-connected');
-      status.label.classList.remove('c-active-shimmer');
-      updateReconnectLabel(status.label,'Reconnected');
-    });
-    return status;
-  }
   function createBrowserPreview(){
     const outer=element('section','c-browser-unit');outer.setAttribute('aria-label','Browser agent activity');
     const header=element('button','c-browser-toggle');header.type='button';header.setAttribute('aria-expanded','true');
@@ -280,7 +239,7 @@
       const row=element('div','c-browser-action');row.dataset.actionIcon=icon;
       row.innerHTML='<span class="c-action-icon">'+svg(icon)+'</span>';
       const name=element('span','c-active-shimmer',description);row.appendChild(name);
-      paint(()=>actions.appendChild(row));return {row,name};
+      paint(()=>{actions.appendChild(row);if(actions.children.length>3){actions.classList.add('is-scrollable');actions.scrollTo({top:actions.scrollHeight,behavior:reducedMotion?'instant':'smooth'});}});return {row,name};
     }
     function finishAction(item,description){item.name.classList.remove('c-active-shimmer');item.row.classList.add('is-finished');updateLabel(item.name,description);}
     function finish(){placeholder.classList.add('is-complete');setLabel('Used browser · 5 actions',false);expand(false);}
@@ -568,11 +527,12 @@
     clip.setAttribute('aria-hidden','true');clip.inert=true;
     const links=element('div','c-sources-inline-links');
     SOURCES.forEach((source,index)=>{
+      const slot=element('span','c-sources-inline-slot');
       const a=element('a','c-sources-inline-link');a.href=source.href;a.target='_blank';a.rel='noopener noreferrer';
       a.setAttribute('aria-label','Open '+source.name);
       a.style.setProperty('--source-index',index);
       a.append(sourceLogo(source,'c-sources-inline-favicon'),element('span','c-sources-inline-site',source.name));
-      links.append(a);
+      slot.append(a);links.append(slot);
     });
     clip.append(links);root.append(trigger,clip);
     trigger.addEventListener('click',()=>{
@@ -618,9 +578,8 @@
       b.innerHTML=svg(icon)+(text?'<span>'+text+'</span>':'');return b;
     }
     const copy=headButton('copy','Copy writing');
-    const expand=headButton('expand','Expand writing');
     const edit=headButton('edit','Edit writing','Edit');edit.setAttribute('aria-pressed','false');
-    actions.append(copy,expand,edit);header.append(title,actions);
+    actions.append(copy,edit);header.append(title,actions);
     const toolbarShell=element('div','c-writing-toolbar-shell');toolbarShell.setAttribute('aria-hidden','true');
     const toolbarClip=element('div','c-writing-toolbar-clip');
     const toolbar=element('div','c-writing-toolbar');toolbar.setAttribute('role','toolbar');toolbar.setAttribute('aria-label','Document formatting');
@@ -705,12 +664,10 @@
     edit.addEventListener('click',()=>setEditing(!editing));
     content.addEventListener('click',()=>{if(!editing&&card.classList.contains('is-document-ready'))setEditing(true);});
     copy.addEventListener('click',async()=>{const ok=await writeClipboard(content.innerText.trim());if(ok){copy.innerHTML=svg('check');setTimeout(()=>{if(copy.isConnected)copy.innerHTML=svg('copy');},1150);}else notify('Copy unavailable');});
-    expand.addEventListener('click',()=>{const on=card.classList.toggle('is-expanded');document.body.classList.toggle('c-document-expanded',on);expand.setAttribute('aria-label',on?'Minimise writing':'Expand writing');});
-    window.addEventListener('keydown',e=>{if(e.key==='Escape'&&card.classList.contains('is-expanded')){card.classList.remove('is-expanded');document.body.classList.remove('c-document-expanded');closePopup();}});
     size.addEventListener('change',()=>{content.style.fontSize=size.value+'px';});
     paint(()=>assistant.append(card));
     async function revealAndType(token,delay){
-      await delay(320);card.classList.remove('is-document-folded');card.classList.add('is-document-opening');await delay(250);
+      card.classList.remove('is-document-folded');card.classList.add('is-document-opening');
       const sections=[['h4','Product launch brief'],['h5','One thoughtful workspace ✨'],['p','Bring research, documents and connected tools together in a focused environment.'],['p','Objective. Make complex workflows feel simple, clear and dependable.'],['p','Approach. Plan, act and verify — with each step visible when you need it.']];
       for(const [tag,text] of sections){const line=element(tag,'c-document-typed');content.append(line);for(const word of text.match(/\S+\s*/g)||[]){line.append(element('span','c-document-word',word));await delay(25);}await delay(110);}
       card.classList.remove('is-document-opening');card.classList.add('is-document-ready');
@@ -1211,10 +1168,8 @@
       addCitations();
       await streamParagraph([
         'The initial research confirms the direction: the interface should prioritise readable text, clear editing controls, and subtle motion that communicates progress without drawing attention to itself. ',
-        'I’m also retaining a visible recovery state for interrupted connections, so an in-progress operation remains understandable rather than suddenly disappearing.'
+        'The browser actions below will remain readable and keep their own activity area compact as the work proceeds.'
       ],token);
-      await actionPause();
-      await playReconnecting(token);
       await actionPause();
       await playBrowserAgent(token,delay);
       todo.advance();
