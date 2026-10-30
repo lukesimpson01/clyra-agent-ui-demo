@@ -1108,7 +1108,7 @@
       toolbarGroup(tool('New slide','slides',addSlide),tool('Undo','replay',undo),tool('Redo','replay',redo),zoomSelect,layoutSelect));
     const insertGroup=element('div','c-slide-toolbar-zone');insertGroup.append(makeToolLabel('INSERT'),
       toolbarGroup(tool('Insert text box','type',()=>addObject('text')),tool('Insert image','image',()=>imageInput.click()),
-      makeToolLabel(''),buildPopover('Shapes & tables','box',[
+      buildPopover('Shapes & tables','box',[
         ['Insert rectangle','box',()=>addObject('rect')],['Insert ellipse','circle',()=>addObject('ellipse')],
         ['Insert line','line',()=>addObject('line')],['Insert table','table',()=>addObject('table')]
       ])));
@@ -1141,7 +1141,12 @@
     // Google Slides-inspired command row. Every available command is backed by
     // the fixture's actual slide model; absent enterprise features are not faked.
     const safeFilename=()=>filename.value.trim().replace(/[^a-z0-9_\- ]/gi,'').replace(/\s+/g,'-').slice(0,60)||'Clyra-presentation';
-    const doExportJSON=()=>toolbar.querySelector('[aria-label="Export slides as JSON"]')?.click();
+    const doExportJSON=()=>{
+      const blob=new Blob([JSON.stringify(slides,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;
+      link.download=safeFilename()+'.json';link.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    };
     const downloadBlob=(blob,extension)=>{
       const url=URL.createObjectURL(blob),a=document.createElement('a');
       a.href=url;a.download=safeFilename()+extension;a.click();
