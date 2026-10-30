@@ -17,6 +17,28 @@ npm run dev
 
 The repository must also pass `npm test` (dependency-free startup checks); GitHub Actions additionally runs Chromium browser interaction tests. **These demo rules do not transfer to any project which imports the UI components.**
 
+### One-time repair if `git pull` says "no tracking information"
+
+That error is from your **local** `.git/config`, not this repository's source files. If you are already in the correct Clyra demo folder and `git remote -v` shows `origin` pointing to `lukesimpson01/clyra-agent-ui-demo`, run:
+
+```bash
+git fetch origin main
+git branch --set-upstream-to=origin/main main
+git pull
+npm run dev
+```
+
+If there is no `origin`, first add `git remote add origin https://github.com/lukesimpson01/clyra-agent-ui-demo.git` **after verifying this is the correct project**. If `origin` points to an unrelated repo, stop instead of overwriting it. The helper `npm run setup:git` is available in updated checkouts, but older copies that cannot yet pull it need the commands above once.
+
+**After this one-time fix, subsequent updates use only:**
+
+```bash
+git pull
+npm run dev
+```
+
+More detail and safety rules: [DEMO_PROJECT_RULES.md](./DEMO_PROJECT_RULES.md).
+
 ## Run
 
 Extract project. Open its folder and run:
@@ -48,6 +70,8 @@ All actions and commands are visual samples. No files, music, browser sessions o
 - `main.js`: component prototypes and demonstration event sequence
 - `INTEGRATION_GUIDE.md`: explicit instructions to your coding agent
 - `server.js`, `package.json`: zero-install local server
+- `scripts/setup-git.mjs`: optional one-time local tracking repair (never used in production integration)
+- `DEMO_PROJECT_RULES.md`: demo-only Git/update/testing contract
 
 ### Latest UI refinements
 
@@ -71,7 +95,7 @@ These decisions apply to the reference demo. `AGENTS.md` explains how to reuse o
 
 ## Composer-adjacent progress and quiet music capsule (v9)
 
-- The demo's compact To-dos disclosure is an overlay above **reserved space for an existing composer**. No input field or message bubble is included. In an actual app, attach the todo to the existing composer-adjacent slot, respecting the host's layout, keyboard avoidance, safe areas, and scroll ownership; **do not copy the demo's absolute/fixed positioning or add an input bar**.
+- The demo's compact To-dos disclosure is an overlay above **a temporary fixture composer**; the fixture also displays a sample user message. Do not copy either into the real host. In an actual app, attach the todo to the existing composer-adjacent slot, respecting the host's layout, keyboard avoidance, safe areas, and scroll ownership; **do not copy the demo's absolute/fixed positioning or add an input bar**.
 - Keep task counts driven by real events. Todo completion and disclosure expansion change height gradually and should not shift surrounding message elements.
 - The music card is a small, white, border-only playback capsule. Supply title, artist, playing state, and duration from the host's real music connector. It does not create a playlist or start playback by itself. Its details animate to their measured height, with an instant fallback under `prefers-reduced-motion`.
 - The demo's three groups and scripted animations remain inspection fixtures; migrate only response/tool visuals, not workflow sequencing, message positioning, or composer behavior.
