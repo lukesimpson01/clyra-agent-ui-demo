@@ -39,6 +39,26 @@ npm run dev
 
 More detail and safety rules: [DEMO_PROJECT_RULES.md](./DEMO_PROJECT_RULES.md).
 
+## Fix for macOS `EADDRINUSE` on port 5173
+
+The dev server now handles occupied ports automatically. If `localhost:5173` is already in use, **`npm run dev` will try `5174`, then `5175`, etc.** and print the actual working URL, for example:
+
+```text
+Port 5173 is already in use. Trying another available port…
+Clyra UI Demo → http://localhost:5174/
+```
+
+Open the **URL actually printed in Terminal**. You do not need to delete folders, reinstall packages, kill another app or change the command. If you want 5173 specifically, stop your earlier dev server by pressing **Ctrl+C** in the terminal where it is running.
+
+After the one-time local Git upstream setup, your update workflow stays:
+
+```bash
+git pull
+npm run dev
+```
+
+The built-in `npm test` command now includes a real busy-port regression and asset-serving checks. **Before future pushes, run the actual npm server and these tests**; details are in `DEMO_PROJECT_RULES.md`. This rule and port fallback belong only to this standalone demo, not Clyra itself.
+
 ## Run
 
 Extract project. Open its folder and run:
