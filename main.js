@@ -794,58 +794,186 @@
     return activity;
   }
   function createPresentationCard(){
-    const card=element('section','c-presentation c-slides-v10');card.setAttribute('aria-label','Editable presentation');
-    const top=element('div','c-preview-top');const name=element('div','c-preview-name');name.innerHTML=svg('slides')+'<span>Presentation</span>';
-    const editBtn=element('button','c-slide-action');editBtn.type='button';editBtn.title='Edit slides';editBtn.innerHTML=svg('edit')+'<span>Edit</span>';
-    const fullBtn=element('button','c-slide-action');fullBtn.type='button';fullBtn.title='Full screen';fullBtn.innerHTML=svg('expand')+'<span>Full screen</span>';
+    // A usable local slide editor for this visual fixture. Production apps MUST
+    // reuse their own slide engine, file formats, collaboration and persistence.
+    const card=element('section','c-presentation c-slides-v10 c-slides-v14');
+    card.setAttribute('aria-label','Editable presentation');
+    const top=element('div','c-preview-top');
+    const name=element('div','c-preview-name');name.innerHTML=svg('slides')+'<span>Presentation</span>';
+    const editBtn=element('button','c-slide-action');editBtn.type='button';editBtn.dataset.tooltip='Edit slides';editBtn.setAttribute('aria-label','Edit slides');editBtn.innerHTML=svg('edit')+'<span>Edit</span>';
+    const fullBtn=element('button','c-slide-action');fullBtn.type='button';fullBtn.dataset.tooltip='Full screen';fullBtn.setAttribute('aria-label','Full screen');fullBtn.innerHTML=svg('expand')+'<span>Full screen</span>';
     const actions=element('div','c-slide-top-actions');actions.append(editBtn,fullBtn);top.append(name,actions);
-    const editor=element('div','c-slide-workspace');const filmstrip=element('div','c-slide-filmstrip');
-    const stage=element('div','c-presentation-stage');const canvas=element('div','c-slide-canvas');stage.append(canvas);
-    const inspector=element('div','c-slide-inspector');const toolbar=element('div','c-slide-v10-toolbar');
-    const button=(label,icon,action)=>{const b=element('button','c-slide-tool');b.type='button';b.title=label;b.setAttribute('aria-label',label);b.innerHTML=svg(icon);b.addEventListener('click',action);return b;};
-    const picker=(label,options)=>{const sel=element('select','c-slide-v10-select');sel.title=label;sel.setAttribute('aria-label',label);options.forEach(([val,txt])=>{const option=element('option','',txt);option.value=val;sel.append(option);});return sel;};
-    const fontSize=picker('Selected element font size',[[18,'18'],[24,'24'],[32,'32'],[40,'40'],[48,'48'],[56,'56']]);fontSize.value='40';
-    const theme=picker('Slide theme',[['minimal','Minimal'],['warm','Warm'],['cool','Cool']]);
-    const align=picker('Text alignment',[['left','Left'],['center','Centre'],['right','Right']]);
-    const slides=[
-      {title:'One workspace.',body:'Research, create and act from one place.',eyebrow:'INTRODUCTION',theme:'minimal'},
-      {title:'Less friction.',body:'A quieter workflow for meaningful work.',eyebrow:'DIRECTION',theme:'minimal'},
-      {title:'Made to move.',body:'Bring documents and actions into focus.',eyebrow:'OUTCOME',theme:'minimal'}
-    ];
-    let current=0,editing=false,selected='title';const history=[];
-    function saveSnapshot(){history.push(JSON.stringify(slides));if(history.length>50)history.shift();}
-    function updateCurrent(){const s=slides[current];canvas.replaceChildren();canvas.dataset.theme=s.theme||'minimal';
-      const eyebrow=element('div','c-slide-eyebrow',s.eyebrow);const title=element('div','c-slide-heading c-slide-selectable',s.title);
-      const body=element('div','c-slide-body c-slide-selectable',s.body);
-      title.dataset.field='title';body.dataset.field='body';
-      for(const item of [title,body]){item.contentEditable=String(editing);item.spellcheck=false;item.addEventListener('focus',()=>selectElement(item.dataset.field));item.addEventListener('click',()=>selectElement(item.dataset.field));item.addEventListener('input',()=>{slides[current][item.dataset.field]=item.innerText;refreshThumb();});}
-      title.style.fontSize=(s.titleSize||40)+'px';body.style.fontSize=(s.bodySize||16)+'px';
-      title.style.textAlign=body.style.textAlign=s.align||'left';
-      canvas.append(eyebrow,title,body,element('span','c-slide-rule'),element('span','c-slide-num',String(current+1).padStart(2,'0')));
-      fontSize.value=String(selected==='title'?(s.titleSize||40):(s.bodySize||16));align.value=s.align||'left';theme.value=s.theme||'minimal';
-      filmstrip.replaceChildren();slides.forEach((slide,index)=>{const b=element('button','c-slide-film-item'+(index===current?' is-selected':''));b.type='button';b.innerHTML='<span>'+(index+1)+'</span><strong></strong>';b.querySelector('strong').textContent=slide.title||'Untitled';b.setAttribute('aria-label','Open slide '+(index+1));b.addEventListener('click',()=>{current=index;updateCurrent();});filmstrip.append(b);});
-      canvas.querySelector('[data-field="'+selected+'"]').classList.toggle('is-element-selected',editing);
-    }
-    function refreshThumb(){const thumb=filmstrip.children[current]?.querySelector('strong');if(thumb)thumb.textContent=slides[current].title||'Untitled';}
-    function selectElement(field){selected=field;canvas.querySelectorAll('.c-slide-selectable').forEach(el=>el.classList.toggle('is-element-selected',el.dataset.field===field&&editing));fontSize.value=String(field==='title'?(slides[current].titleSize||40):(slides[current].bodySize||16));}
-    const add=()=>{saveSnapshot();slides.splice(current+1,0,{title:'New slide',body:'Click to edit this text.',eyebrow:'SECTION',theme:theme.value});current++;updateCurrent();};
-    toolbar.append(button('New slide','slides',add),button('Duplicate slide','copy',()=>{saveSnapshot();slides.splice(current+1,0,{...slides[current]});current++;updateCurrent();}),button('Delete slide','file',()=>{if(slides.length===1)return;saveSnapshot();slides.splice(current,1);current=Math.min(current,slides.length-1);updateCurrent();}),button('Undo','replay',()=>{if(!history.length)return;const prev=JSON.parse(history.pop());slides.splice(0,slides.length,...prev);current=Math.min(current,slides.length-1);updateCurrent();}),element('span','c-slide-v10-divider'),fontSize,theme,align,button('Bold selected text','bold',()=>{document.execCommand('bold');}),button('Italic selected text','italic',()=>{document.execCommand('italic');}));
-    toolbar.addEventListener('mousedown',event=>{if(event.target.closest('button'))event.preventDefault();});
-    fontSize.addEventListener('change',()=>{const prop=selected==='title'?'titleSize':'bodySize';slides[current][prop]=Number(fontSize.value);const el=canvas.querySelector('[data-field="'+selected+'"]');if(el)el.style.fontSize=fontSize.value+'px';});
-    theme.addEventListener('change',()=>{slides[current].theme=theme.value;canvas.dataset.theme=theme.value;});
-    align.addEventListener('change',()=>{slides[current].align=align.value;canvas.querySelectorAll('.c-slide-selectable').forEach(e=>e.style.textAlign=align.value);});
-    inspector.append(element('p','c-slide-instructions','Choose a slide, select its title or text, and type directly to edit.'));inspector.append(toolbar);
+    const editor=element('div','c-slide-workspace');
+    const filmstrip=element('div','c-slide-filmstrip');filmstrip.setAttribute('aria-label','Slide thumbnails');
+    const stage=element('div','c-presentation-stage');
+    const canvas=element('div','c-slide-canvas');canvas.setAttribute('aria-label','Slide canvas');stage.append(canvas);
+    const inspector=element('div','c-slide-inspector');const toolbar=element('div','c-slide-v10-toolbar c-slide-v14-toolbar');
+    const controls=element('div','c-slide-v14-controls');
+    const notes=element('textarea','c-slide-v14-notes');notes.placeholder='Add speaker notes…';notes.setAttribute('aria-label','Speaker notes');notes.rows=2;
     const stageWrap=element('div','c-slide-stage-wrap');stageWrap.append(stage,inspector);
-    editor.append(filmstrip,stageWrap);card.append(top,editor);
-    function setEditing(next){editing=next;card.classList.toggle('is-slide-editing',editing);editBtn.setAttribute('aria-pressed',String(editing));editBtn.querySelector('span').textContent=editing?'Done':'Edit';updateCurrent();}
+    const slides=[
+      {title:'One workspace.',body:'Research, create and act from one place.',eyebrow:'INTRODUCTION',theme:'minimal',objects:[],notes:''},
+      {title:'Less friction.',body:'A quieter workflow for meaningful work.',eyebrow:'DIRECTION',theme:'minimal',objects:[],notes:''},
+      {title:'Made to move.',body:'Bring documents and actions into focus.',eyebrow:'OUTCOME',theme:'minimal',objects:[],notes:''}
+    ];
+    let current=0,editing=false,selected={field:'title',id:null},showNotes=false;
+    let history=[],future=[],nextObjectId=1;
+    const clone=()=>JSON.parse(JSON.stringify({slides,current}));
+    function snapshot(){history.push(clone());if(history.length>80)history.shift();future=[];}
+    function restore(state){slides.splice(0,slides.length,...state.slides);current=Math.max(0,Math.min(slides.length-1,state.current));render();}
+    function undo(){if(!history.length)return;future.push(clone());restore(history.pop());}
+    function redo(){if(!future.length)return;history.push(clone());restore(future.pop());}
+    const tool=(label,icon,handler)=>{
+      const btn=element('button','c-slide-tool');btn.type='button';
+      btn.setAttribute('aria-label',label);btn.dataset.tooltip=label;
+      btn.innerHTML=svg(icon);btn.addEventListener('click',handler);return btn;
+    };
+    const select=(label,options,css='c-slide-v10-select')=>{
+      const sel=element('select',css);sel.setAttribute('aria-label',label);
+      sel.dataset.tooltip=label;
+      options.forEach(([value,display])=>{const o=element('option','',display);o.value=value;sel.append(o);});
+      return sel;
+    };
+    const fontSize=select('Font size',[[14,'14'],[16,'16'],[18,'18'],[24,'24'],[28,'28'],[32,'32'],[40,'40'],[48,'48'],[56,'56']]);
+    const fontFamily=select('Font',[
+      ['system-ui','System'],['Arial, sans-serif','Arial'],['Georgia, serif','Georgia'],['Verdana, sans-serif','Verdana'],
+      ['Trebuchet MS, sans-serif','Trebuchet'],['Times New Roman, serif','Times New Roman']
+    ],'c-slide-v10-select c-slide-v14-font');
+    const theme=select('Slide theme',[['minimal','White'],['warm','Warm'],['cool','Blue'],['dark','Dark']]);
+    const align=select('Alignment',[['left','Left'],['center','Centre'],['right','Right']]);
+    const textColour=element('input','c-slide-v14-colour');textColour.type='color';textColour.value='#17171b';textColour.dataset.tooltip='Text colour';textColour.setAttribute('aria-label','Text colour');
+    const backgroundColour=element('input','c-slide-v14-colour');backgroundColour.type='color';backgroundColour.value='#ffffff';backgroundColour.dataset.tooltip='Slide background';backgroundColour.setAttribute('aria-label','Slide background');
+    function addSlide(){snapshot();slides.splice(current+1,0,{title:'New slide',body:'Select and edit the text.',eyebrow:'SECTION',theme:theme.value,objects:[],notes:''});current++;render();}
+    function duplicateSlide(){snapshot();slides.splice(current+1,0,JSON.parse(JSON.stringify(slides[current])));current++;render();}
+    function removeSlide(){if(slides.length<2)return;snapshot();slides.splice(current,1);current=Math.min(current,slides.length-1);render();}
+    function moveSlide(dir){const to=current+dir;if(to<0||to>=slides.length)return;snapshot();[slides[to],slides[current]]=[slides[current],slides[to]];current=to;render();}
+    function addObject(type){
+      snapshot();const obj={id:nextObjectId++,type,x:27,y:37,w:type==='text'?46:28,h:type==='text'?14:25,
+        color:type==='text'?'#222228':'#d5dbe8',text:type==='text'?'New text box':''};
+      slides[current].objects.push(obj);selected={field:'object',id:obj.id};render();
+    }
+    function removeObject(){
+      if(selected.field!=='object')return;
+      snapshot();slides[current].objects=slides[current].objects.filter(o=>o.id!==selected.id);
+      selected={field:'title',id:null};render();
+    }
+    function targetValue(prop,fallback){
+      const slide=slides[current];if(selected.field==='object'){const obj=slide.objects.find(o=>o.id===selected.id);return obj?.[prop]??fallback;}
+      const pre=selected.field==='body'?'body':'title';return slide[pre+prop[0].toUpperCase()+prop.slice(1)]??fallback;
+    }
+    function applySelected(prop,value){
+      snapshot();const slide=slides[current];
+      if(selected.field==='object'){
+        const o=slide.objects.find(o=>o.id===selected.id);if(o)o[prop]=value;
+      } else slide[selected.field+prop[0].toUpperCase()+prop.slice(1)]=value;
+      render();
+    }
+    function selectElement(field,id=null){
+      selected={field,id};canvas.querySelectorAll('.c-slide-selectable,.c-slide-object').forEach(el=>{
+        el.classList.toggle('is-element-selected',(el.dataset.field===field)&&(field!=='object'||Number(el.dataset.objectId)===id)&&editing);
+      });updateSelections();
+    }
+    function updateSelections(){
+      const slide=slides[current];
+      const isBody=selected.field==='body';
+      fontSize.value=String(targetValue('size',selected.field==='title'?40:isBody?16:22));
+      fontFamily.value=targetValue('font','system-ui');
+      align.value=targetValue('align',slide.align||'left');
+      textColour.value=targetValue('color','#17171b');
+      theme.value=slide.theme||'minimal';backgroundColour.value=slide.bg||'#ffffff';
+    }
+    function renderThumbnail(slide,index){
+      const btn=element('button','c-slide-film-item c-slide-mini'+(index===current?' is-selected':''));btn.type='button';
+      btn.setAttribute('aria-label','Open slide '+(index+1)+': '+slide.title);
+      const number=element('span','c-slide-mini-number',String(index+1));
+      const miniature=element('span','c-slide-mini-frame');miniature.dataset.theme=slide.theme||'minimal';
+      miniature.style.background=slide.bg||'';
+      const eyebrow=element('span','c-slide-mini-eyebrow',slide.eyebrow||'');
+      const title=element('span','c-slide-mini-title',slide.title||'Untitled');
+      const body=element('span','c-slide-mini-body',slide.body||'');
+      miniature.append(eyebrow,title,body);btn.append(number,miniature);
+      btn.addEventListener('click',()=>{current=index;selected={field:'title',id:null};render();});
+      return btn;
+    }
+    function render(){
+      const slide=slides[current];canvas.replaceChildren();
+      canvas.dataset.theme=slide.theme||'minimal';canvas.style.background=slide.bg||'';
+      const eyebrow=element('div','c-slide-eyebrow',slide.eyebrow||'');
+      const title=element('div','c-slide-heading c-slide-selectable',slide.title||'');
+      const body=element('div','c-slide-body c-slide-selectable',slide.body||'');
+      for(const item of [title,body]){
+        const field=item===title?'title':'body';item.dataset.field=field;
+        item.contentEditable=String(editing);item.spellcheck=false;
+        item.addEventListener('click',()=>selectElement(field));
+        item.addEventListener('focus',()=>selectElement(field));
+        item.addEventListener('input',()=>{slide[field]=item.innerText;filmstrip.replaceChildren(...slides.map(renderThumbnail));});
+        const pre=field==='title'?'title':'body';
+        item.style.fontSize=(slide[pre+'Size']||(field==='title'?40:16))+'px';
+        item.style.fontFamily=slide[pre+'Font']||'system-ui';
+        item.style.color=slide[pre+'Color']||'#17171b';
+        item.style.textAlign=slide[pre+'Align']||slide.align||'left';
+        item.classList.toggle('is-element-selected',editing&&selected.field===field);
+      }
+      canvas.append(eyebrow,title,body);
+      slide.objects.forEach(obj=>{
+        const el=element('div','c-slide-object c-slide-object-'+obj.type);
+        el.dataset.field='object';el.dataset.objectId=obj.id;
+        Object.assign(el.style,{left:obj.x+'%',top:obj.y+'%',width:obj.w+'%',height:obj.h+'%',background:obj.type==='text'?'transparent':obj.color,color:obj.color});
+        if(obj.type==='text'){el.textContent=obj.text;el.contentEditable=String(editing);el.spellcheck=false;el.addEventListener('input',()=>{obj.text=el.innerText;});}
+        el.classList.toggle('is-element-selected',editing&&selected.field==='object'&&selected.id===obj.id);
+        el.addEventListener('click',()=>selectElement('object',obj.id));
+        el.addEventListener('pointerdown',event=>{
+          if(!editing||event.button!==0||event.target.isContentEditable)return;
+          event.preventDefault();selectElement('object',obj.id);el.setPointerCapture(event.pointerId);
+          const rect=canvas.getBoundingClientRect(),startX=event.clientX,startY=event.clientY,x=obj.x,y=obj.y;let moved=false;
+          const move=e=>{if(!moved){snapshot();moved=true;}obj.x=Math.max(0,Math.min(100-obj.w,x+(e.clientX-startX)/rect.width*100));obj.y=Math.max(0,Math.min(100-obj.h,y+(e.clientY-startY)/rect.height*100));el.style.left=obj.x+'%';el.style.top=obj.y+'%';};
+          const finish=()=>{el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',finish);el.removeEventListener('pointercancel',finish);};
+          el.addEventListener('pointermove',move);el.addEventListener('pointerup',finish);el.addEventListener('pointercancel',finish);
+        });canvas.append(el);
+      });
+      canvas.append(element('span','c-slide-rule'),element('span','c-slide-num',String(current+1).padStart(2,'0')));
+      filmstrip.replaceChildren(...slides.map(renderThumbnail));
+      notes.value=slide.notes||'';updateSelections();
+    }
+    const toolbarGroup=(...els)=>{const group=element('span','c-slide-v14-group');group.append(...els);return group;};
+    toolbar.append(
+      toolbarGroup(tool('New slide','slides',addSlide),tool('Duplicate','copy',duplicateSlide),tool('Delete slide','file',removeSlide),tool('Move up','chevron',()=>moveSlide(-1)),tool('Move down','caret',()=>moveSlide(1))),
+      toolbarGroup(tool('Undo','replay',undo),tool('Redo','replay',redo)),
+      toolbarGroup(tool('Insert text box','type',()=>addObject('text')),tool('Insert rectangle','box',()=>addObject('rect')),tool('Insert ellipse','circle',()=>addObject('ellipse')),tool('Remove selected object','x',removeObject)),
+      toolbarGroup(fontFamily,fontSize,align),
+      toolbarGroup(tool('Bold','bold',()=>{if(selected.field==='object')return;document.execCommand('bold');}),tool('Italic','italic',()=>{if(selected.field==='object')return;document.execCommand('italic');}),textColour,backgroundColour,theme),
+      toolbarGroup(tool('Speaker notes','file',()=>{showNotes=!showNotes;notes.classList.toggle('is-visible',showNotes);}),tool('Export slides as JSON','download',()=>{
+        const blob=new Blob([JSON.stringify(slides,null,2)],{type:'application/json'});
+        const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='clyra-slides-demo.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+      }))
+    );
+    toolbar.addEventListener('mousedown',event=>{if(event.target.closest('button'))event.preventDefault();});
+    fontSize.addEventListener('change',()=>applySelected('size',Number(fontSize.value)));
+    fontFamily.addEventListener('change',()=>applySelected('font',fontFamily.value));
+    align.addEventListener('change',()=>applySelected('align',align.value));
+    textColour.addEventListener('input',()=>applySelected('color',textColour.value));
+    backgroundColour.addEventListener('input',()=>{snapshot();slides[current].bg=backgroundColour.value;canvas.style.background=backgroundColour.value;});
+    theme.addEventListener('change',()=>{snapshot();slides[current].theme=theme.value;render();});
+    notes.addEventListener('input',()=>{slides[current].notes=notes.value;});
+    inspector.append(element('p','c-slide-instructions','Select a slide, edit text, insert shapes or add speaker notes.'));
+    inspector.append(toolbar,notes);
+    editor.append(filmstrip,stageWrap);stageWrap.append(inspector);card.append(top,editor);
+    function setEditing(next){editing=next;card.classList.toggle('is-slide-editing',editing);editBtn.setAttribute('aria-pressed',String(editing));editBtn.querySelector('span').textContent=editing?'Done':'Edit';render();}
     editBtn.addEventListener('click',()=>setEditing(!editing));
-    const setFullscreen=next=>{card.classList.toggle('is-slide-fullscreen',next);document.body.classList.toggle('c-slide-fullscreen-active',next);fullBtn.querySelector('span').textContent=next?'Minimise':'Full screen';};
+    const setFullscreen=next=>{
+      card.classList.toggle('is-slide-fullscreen',next);document.body.classList.toggle('c-slide-fullscreen-active',next);
+      fullBtn.querySelector('span').textContent=next?'Minimise':'Full screen';render();
+    };
     fullBtn.addEventListener('click',()=>setFullscreen(!card.classList.contains('is-slide-fullscreen')));
-    window.addEventListener('keydown',e=>{if(e.key==='Escape'&&card.classList.contains('is-slide-fullscreen'))setFullscreen(false);if(!card.isConnected||!editing)return;
-      if((e.metaKey||e.ctrlKey)&&e.key==='m'){e.preventDefault();add();}
-      if((e.metaKey||e.ctrlKey)&&e.key==='z'&&history.length){e.preventDefault();slides.splice(0,slides.length,...JSON.parse(history.pop()));current=Math.min(current,slides.length-1);updateCurrent();}
+    window.addEventListener('keydown',event=>{
+      if(event.key==='Escape'&&card.classList.contains('is-slide-fullscreen'))setFullscreen(false);
+      if(!card.isConnected||!editing)return;
+      if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='m'){event.preventDefault();addSlide();}
+      if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='z'&&!event.shiftKey){event.preventDefault();undo();}
+      if((event.metaKey||event.ctrlKey)&&((event.key.toLowerCase()==='y')||(event.key.toLowerCase()==='z'&&event.shiftKey))){event.preventDefault();redo();}
     });
-    updateCurrent();paint(()=>assistant.append(card));return {card,selectSlide:index=>{current=Math.max(0,Math.min(slides.length-1,index));updateCurrent();}};
+    render();paint(()=>assistant.append(card));
+    return {card,selectSlide:index=>{current=Math.max(0,Math.min(slides.length-1,index));render();}};
   }
   /** Light dynamic-island music presentation. A playback event, not a playlist.
    * Real integrations provide their own track metadata and playback state.
