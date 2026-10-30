@@ -188,3 +188,15 @@ These constraints apply **only to this demo repository** and must not change the
 
 **These are rules for the standalone demo repository only.** Do not migrate its mocked composer, menu harness, fake media tracks, sample server or testing workflow into the host Clyra app.
 
+
+## v18 — response and design acceptance checks (demo only)
+
+- Keep every new activity/control/formula/panel consistent with the current white/graphite, hairline, restrained-blue visual language, typography, spacing, icon weights and subtle motion. Reject off-theme UI, random colours, bulky rectangles and black tracking hover popups.
+- Browser fixture: neutral grey shimmer 3 seconds, then gently animated blue work glow and a small *simulated* Codex-like pointer moving inside its existing 16:9 viewport. Fade at about 10 seconds before collapsing. Reduce motion when requested; never automate the user's real cursor.
+- Welcome demo composer begins centred and narrower than the 760px chat lane, then moves to the 600px bottom dock on Enter/click and starts the scripted sample. Do not transplant into the host's composer.
+- Closed todo must show a **horizontal** pill with ring, readable To-dos label, counter and chevron. Expanded state opens vertically with aligned icons and satisfying tick/strikethrough progress.
+- The response-formatting showcase provides true native MathML expressions (fractions, radicals, integral/summation, matrices), a lazily loaded optional KaTeX editor, restrained tables, chart bars, quotes and lists. Browser offline must still render the native MathML examples; generic TeX on demand requires a network connection.
+- This is a representative catalogue of assistant UI patterns, not a claim to reproduce every private ChatGPT/Claude product component. For production reuse the host's Markdown/math renderer, source links, browser agent tools and artifact editors.
+- Before GitHub pushes, run the exact npm startup command, dependency-free test suite, and full browser UI tests with screenshots at desktop/mobile, including initial welcome, during browser, completed browser, todo states, rich maths and finished response. Do not claim the full browser was tested if only isolated source/component checks or mock screenshots were available.
+
+These constraints are for the standalone demo repository **only**, not the main Clyra project.
