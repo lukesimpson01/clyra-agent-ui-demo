@@ -24,6 +24,18 @@ assert(css.includes("checklist's width sideways"), 'Todo must collapse to a circ
 assert(css.includes('c-slide-top-toolbar'), 'Slides edit toolbar must live above the canvas');
 assert(css.includes('c-sources-inline-direction'), 'Source disclosure chevron must be styled');
 
+assert(js.includes('await delay(3000);browser.activate()'), 'Browser must start grey for 3 seconds before blue glow');
+assert(js.includes('await delay(1230);browser.finish()'), 'Browser should begin fade after ~10s');
+assert(js.includes('c-browser-agent-cursor') && css.includes('c-browser-cursor-journey'), 'Blue browser agent needs moving simulated cursor');
+assert(js.includes('addRichResponseShowcase()'), 'Demo should render rich response formatting');
+assert(js.includes('<math xmlns=') && js.includes('c-rich-math-display'), 'Native MathML fractions/equations must be present');
+assert(js.includes('loadKaTeX') && js.includes('trust:false'), 'Optional user-triggered TeX renderer must disable trust');
+assert(css.includes('/* V18 — Unified welcome/working states'), 'Centered-to-bottom composer geometry must be styled');
+assert(css.includes('Collapsed to-do pill') || css.includes('collapsed to-do pill') || css.includes('collapsed HORIZONTAL pill') || css.includes('horizontal, readable collapsed'), 'Todo must remain a readable horizontal pill when closed');
+assert(css.includes('Specificity fix: earlier circular-collapse'), 'Legacy CSS rules must not hide collapsed todo labels');
+assert.match(text('DEMO_PROJECT_RULES.md'), /visual design|design-language/i);
+
+
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 assert.equal(new Set(ids).size,ids.length,'HTML IDs must be unique');
 for(const id of ['demoComposer','demoComposerDock','demoInput','demoSend','planMount','assistantTurn','conversationViewport']){
