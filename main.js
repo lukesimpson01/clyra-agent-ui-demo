@@ -1461,6 +1461,179 @@
   }
   /** Demonstration code block. A host must mount its existing code-block renderer instead.
    * The Run control intentionally SIMULATES output; it does not evaluate untrusted code. */
+  /**
+   * Global weather + map mini-app. All data is fetched live, never hard-coded.
+   * Weather: Open-Meteo. City search: Open-Meteo geocoding. Map: OpenStreetMap
+   * official interactive embed, with visible attribution. No access tokens.
+   * These are DEMO workflows; production Clyra must honour providers' terms,
+   * geolocation consent, per-user rate limiting and configurable tile services.
+   */
+  function addWeatherAndMapCards(){
+    const weather=element('section','c-weather-card c-geo-card');
+    weather.setAttribute('aria-label','Live weather');
+    const header=element('div','c-geo-header');
+    const heading=element('div','c-geo-heading');heading.innerHTML=svg('globe')+'<span>Weather</span>';
+    const locate=element('button','c-geo-small-button');locate.type='button';locate.textContent='Use my location';
+    locate.setAttribute('aria-label','Request current location permission');
+    header.append(heading,locate);
+    const caption=element('div','c-geo-place','Choose a location to view current conditions');
+    const condition=element('div','c-weather-main');
+    const temperature=element('div','c-weather-temperature','—°');
+    const description=element('div','c-weather-description','Live data appears after a location is chosen');
+    condition.append(temperature,description);
+    const metrics=element('div','c-weather-metrics');
+    const days=element('div','c-weather-days');
+    const search=element('form','c-geo-search');search.setAttribute('aria-label','Search location');
+    const searchInput=element('input','c-geo-search-input');searchInput.type='search';searchInput.placeholder='Search a city worldwide';searchInput.setAttribute('aria-label','City or region');searchInput.autocomplete='off';
+    const searchButton=element('button','c-geo-small-button','Search');searchButton.type='submit';
+    search.append(searchInput,searchButton);
+    const choices=element('div','c-geo-choices');choices.hidden=true;
+    const info=element('div','c-geo-status');info.setAttribute('aria-live','polite');
+    const source=element('div','c-geo-credit');
+    source.innerHTML='Weather by <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · Place search by Open-Meteo/GeoNames';
+    weather.append(header,caption,condition,metrics,days,search,choices,info,source);
+
+    const map=element('section','c-location-card c-geo-card');
+    map.setAttribute('aria-label','Interactive location map');
+    const mapTop=element('div','c-geo-header');
+    const mapHeading=element('div','c-geo-heading');mapHeading.innerHTML=svg('map')+'<span>Map</span>';
+    const mapExpand=element('button','c-geo-small-button');mapExpand.type='button';mapExpand.innerHTML=svg('expand')+'<span>Expand map</span>';mapExpand.setAttribute('aria-label','Expand map');
+    mapTop.append(mapHeading,mapExpand);
+    const mapLabel=element('p','c-location-subtitle','Select a place above to load the interactive map.');
+    const mapFrameWrap=element('div','c-location-frame');
+    const mapEmpty=element('div','c-location-empty');mapEmpty.innerHTML=svg('map')+'<span>Map available after selecting a location</span>';
+    const frame=element('iframe','c-location-iframe');frame.title='Interactive OpenStreetMap';
+    frame.loading='lazy';frame.referrerPolicy='strict-origin-when-cross-origin';frame.hidden=true;
+    mapFrameWrap.append(frame,mapEmpty);
+    const mapControls=element('div','c-location-controls');
+    const zoomIn=element('button','c-geo-round-button');zoomIn.type='button';zoomIn.setAttribute('aria-label','Zoom in');zoomIn.textContent='+';
+    const zoomOut=element('button','c-geo-round-button');zoomOut.type='button';zoomOut.setAttribute('aria-label','Zoom out');zoomOut.textContent='−';
+    mapControls.append(zoomIn,zoomOut);mapFrameWrap.append(mapControls);
+    const mapFooter=element('div','c-location-footer');
+    const attribution=element('a','c-location-attribution','© OpenStreetMap contributors');
+    attribution.href='https://www.openstreetmap.org/copyright';attribution.target='_blank';attribution.rel='noopener noreferrer';
+    const openMap=element('a','c-geo-open-map','Open in OpenStreetMap');openMap.href='https://www.openstreetmap.org';openMap.target='_blank';openMap.rel='noopener noreferrer';
+    mapFooter.append(attribution,openMap);map.append(mapTop,mapLabel,mapFrameWrap,mapFooter);
+
+    // A responsive map search bar and details sheet appear only full screen.
+    const fullTools=element('div','c-location-full-tools');
+    const mapSearch=element('form','c-geo-search c-location-search');mapSearch.setAttribute('aria-label','Find city on map');
+    const mapInput=element('input','c-geo-search-input');mapInput.placeholder='Find a city or region';mapInput.setAttribute('aria-label','Map place search');
+    const mapSubmit=element('button','c-geo-small-button','Search');mapSubmit.type='submit';mapSearch.append(mapInput,mapSubmit);
+    const mapChoices=element('div','c-geo-choices c-map-choices');mapChoices.hidden=true;
+    const mapDetails=element('div','c-location-place-sheet');
+    const mapTitle=element('strong','c-location-place-title','No location selected');
+    const mapSub=element('span','c-location-place-caption','Search a city or use current location');
+    mapDetails.append(mapTitle,mapSub);
+    fullTools.append(mapSearch,mapChoices);map.append(fullTools,mapDetails);
+
+    const state={place:null,zoom:0.025,epoch:0,searchEpoch:0};
+    const weatherLabels=[
+      [0,'Clear sky','sun'],[1,'Mostly clear','sun'],[2,'Partly cloudy','cloud'],[3,'Overcast','cloud'],
+      [45,'Fog','cloud'],[48,'Freezing fog','cloud'],[51,'Drizzle','rain'],[53,'Drizzle','rain'],[55,'Drizzle','rain'],
+      [61,'Rain','rain'],[63,'Rain','rain'],[65,'Heavy rain','rain'],[71,'Snow','snow'],[73,'Snow','snow'],[75,'Snow','snow'],
+      [80,'Rain showers','rain'],[81,'Rain showers','rain'],[82,'Heavy showers','rain'],
+      [95,'Thunderstorm','storm'],[96,'Thunderstorm','storm'],[99,'Thunderstorm','storm']
+    ];
+    const conditionFor=code=>weatherLabels.find(([n])=>n===code)?.slice(1)||['Weather conditions','cloud'];
+    const requestJSON=async url=>{const response=await fetch(url,{headers:{Accept:'application/json'}});
+      if(!response.ok)throw Error('Service returned '+response.status);
+      return response.json();
+    };
+    const formatPlace=p=>[p.name,p.admin1,p.country].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(', ');
+    function mapURL(place){
+      const lat=place.latitude,lon=place.longitude,d=state.zoom;
+      const bbox=[lon-d,lat-d*.65,lon+d,lat+d*.65].map(v=>v.toFixed(5)).join('%2C');
+      return 'https://www.openstreetmap.org/export/embed.html?bbox='+bbox+'&layer=mapnik&marker='+lat.toFixed(5)+'%2C'+lon.toFixed(5);
+    }
+    function updateMap(){
+      if(!state.place)return;
+      const place=state.place,location=formatPlace(place);
+      mapLabel.textContent=location;
+      mapTitle.textContent=place.name;mapSub.textContent=[place.admin1,place.country].filter(Boolean).join(' · ');
+      mapEmpty.hidden=true;frame.hidden=false;
+      frame.src=mapURL(place);
+      openMap.href='https://www.openstreetmap.org/?mlat='+place.latitude.toFixed(5)+'&mlon='+place.longitude.toFixed(5)+'#map=12/'+place.latitude.toFixed(5)+'/'+place.longitude.toFixed(5);
+    }
+    async function setPlace(place){
+      if(!Number.isFinite(place.latitude)||!Number.isFinite(place.longitude))return;
+      state.place=place;state.zoom=0.025;state.epoch++;
+      const epoch=state.epoch;
+      caption.textContent=formatPlace(place);temperature.textContent='—°';description.textContent='Loading current forecast…';
+      metrics.replaceChildren();days.replaceChildren();info.textContent='Loading live weather…';
+      choices.hidden=true;mapChoices.hidden=true;updateMap();
+      const query=new URLSearchParams({
+        latitude:String(place.latitude),longitude:String(place.longitude),
+        current:'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day',
+        daily:'temperature_2m_max,temperature_2m_min,weather_code',
+        forecast_days:'3',timezone:'auto'
+      });
+      try{
+        const result=await requestJSON('https://api.open-meteo.com/v1/forecast?'+query);
+        if(epoch!==state.epoch||!weather.isConnected)return;
+        if(!result.current||!Number.isFinite(result.current.temperature_2m))throw Error('No current conditions');
+        const now=result.current;
+        temperature.textContent=Math.round(now.temperature_2m)+'°';
+        description.textContent=conditionFor(now.weather_code)[0];
+        const metric=(label,value)=>{const box=element('div','c-weather-metric');box.append(element('span','',label),element('strong','',value));metrics.append(box);};
+        metric('Feels like',Math.round(now.apparent_temperature)+'°');
+        metric('Humidity',Math.round(now.relative_humidity_2m)+'%');
+        metric('Wind',Math.round(now.wind_speed_10m)+' km/h');
+        (result.daily?.time||[]).slice(0,3).forEach((date,i)=>{
+          const row=element('div','c-weather-day');
+          const dateLabel=i===0?'Today':new Date(date+'T12:00:00').toLocaleDateString(undefined,{weekday:'short'});
+          row.append(element('span','',dateLabel),element('span','',conditionFor(result.daily.weather_code[i])[0]),
+            element('strong','',Math.round(result.daily.temperature_2m_max[i])+'° / '+Math.round(result.daily.temperature_2m_min[i])+'°'));
+          days.append(row);
+        });
+        info.textContent='Current forecast · '+(now.time?.replace('T',' ')||'updated recently')+' local';
+      }catch(error){if(epoch!==state.epoch)return;info.textContent='Weather unavailable: '+error.message+'. Try another place or retry.';description.textContent='No live conditions available';}
+    }
+    async function searchPlaces(text,target){
+      const query=text.trim();if(query.length<2){target.textContent='Enter at least two characters.';target.hidden=false;return;}
+      const epoch=++state.searchEpoch;
+      target.hidden=false;target.textContent='Searching…';
+      try{
+        const url='https://geocoding-api.open-meteo.com/v1/search?'+new URLSearchParams({name:query,count:'5',language:'en',format:'json'});
+        const result=await requestJSON(url);
+        if(epoch!==state.searchEpoch)return;
+        target.replaceChildren();
+        const places=(result.results||[]).filter(p=>Number.isFinite(p.latitude)&&Number.isFinite(p.longitude));
+        if(!places.length){target.textContent='No matching cities. Try a wider search.';return;}
+        places.forEach(p=>{const button=element('button','c-geo-choice',formatPlace(p));button.type='button';
+          button.addEventListener('click',()=>{setPlace(p);searchInput.value='';mapInput.value='';target.hidden=true;});
+          target.append(button);});
+      }catch(error){if(epoch!==state.searchEpoch)return;target.textContent='Search unavailable. Check your connection and retry.';}
+    }
+    search.addEventListener('submit',event=>{event.preventDefault();searchPlaces(searchInput.value,choices);});
+    mapSearch.addEventListener('submit',event=>{event.preventDefault();searchPlaces(mapInput.value,mapChoices);});
+    function locateMe(){
+      if(!navigator.geolocation){info.textContent='Current location is unavailable in this browser. Search a city instead.';return;}
+      locate.disabled=true;info.textContent='Requesting location permission…';
+      navigator.geolocation.getCurrentPosition(position=>{
+        locate.disabled=false;setPlace({name:'Current location',latitude:position.coords.latitude,longitude:position.coords.longitude});
+      },()=>{locate.disabled=false;info.textContent='Location permission unavailable or denied. Search a city instead.';},
+      {timeout:8500,enableHighAccuracy:false,maximumAge:600000});
+    }
+    locate.addEventListener('click',locateMe);
+    for(const [button,dir] of [[zoomIn,-1],[zoomOut,1]]){
+      button.addEventListener('click',()=>{if(!state.place)return;state.zoom=Math.max(.002,Math.min(2,state.zoom*Math.pow(1.8,dir)));updateMap();});
+    }
+    function fullscreen(open){
+      map.classList.toggle('is-map-fullscreen',open);
+      document.body.classList.toggle('c-map-fullscreen-active',open);
+      mapExpand.innerHTML=open?svg('x')+'<span>Close</span>':svg('expand')+'<span>Expand map</span>';
+      mapExpand.setAttribute('aria-label',open?'Close map':'Expand map');
+    }
+    mapExpand.addEventListener('click',()=>fullscreen(!map.classList.contains('is-map-fullscreen')));
+    window.addEventListener('keydown',e=>{if(e.key==='Escape'&&map.classList.contains('is-map-fullscreen'))fullscreen(false);});
+    paint(()=>{assistant.append(weather,map);});
+    // Request current position by default when permission is available.
+    // On denial or insecure context, no fabricated position is shown.
+    if(navigator.geolocation)setTimeout(()=>{if(weather.isConnected)locateMe();},250);
+    return {weather,map,setPlace,searchPlaces};
+  }
+
   function addCodeBlock(){
     const raw=`const status = { ready: true, files: 18 };\nif (status.ready) {\n  console.log("All checks passed");\n}`;
     const block=element('section','c-code-demo');block.setAttribute('aria-label','Code example');
@@ -1620,6 +1793,8 @@
       await actionPause();
       const music=createMusicCard();
       await delay(590);music.setPlaying(0,true);
+      await actionPause();
+      const geo=addWeatherAndMapCards();
       await actionPause();
       const playback=addActivity(musicGroup,{label:'Starting · Quiet Momentum',icon:'play'});
       completed(playback,'Started · Quiet Momentum');
