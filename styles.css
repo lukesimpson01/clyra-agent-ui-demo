@@ -2852,3 +2852,15 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
   flex:0 0 13px!important;max-width:13px!important;min-width:13px!important;
   padding:0!important;margin:0!important;overflow:visible!important;
 }
+
+/* Hold cursor at its last location while fading out, rather than snapping to
+   the top-left when is-agent-working is removed. */
+.c-workspace .c-browser-v18.is-agent-closing .c-browser-agent-cursor{
+ animation:c-browser-cursor-journey 6.9s cubic-bezier(.45,.05,.36,.96) both paused!important;
+ opacity:0!important;transition:opacity .3s ease!important;
+}
+@media(max-width:580px){
+ .c-workspace .c-browser-v18.is-agent-closing .c-browser-agent-cursor{
+  animation-name:c-browser-cursor-journey-mobile!important;
+ }
+}
