@@ -1327,36 +1327,115 @@
    * Real integrations provide their own track metadata and playback state.
    * The disclosure and controls are visual only in this demo. */
   function createMusicCard(){
-    const card=element('section','c-music-island c-island-v10');card.setAttribute('aria-label','Now playing');
-    const art=element('span','c-island-art');art.innerHTML=svg('music');
-    const info=element('div','c-island-info');const title=element('span','c-island-track','Quiet Momentum');const artist=element('span','c-island-artist','Studio North');info.append(title,artist);
-    const skipBack=element('button','c-island-control c-island-skip');skipBack.type='button';skipBack.setAttribute('aria-label','Previous track');skipBack.innerHTML=svg('skipBack');
+    // Demo transport: interaction is real inside this card, but no external
+    // provider/audio stream is invented. Production must bind to a provider's
+    // authenticated player and show actual cover art and queue metadata.
+    const card=element('section','c-music-island c-island-v10 c-music-v19');
+    card.setAttribute('aria-label','Music player demo');
+    const tracks=[
+      {title:'Quiet Momentum',artist:'Studio North',seconds:192,tone:['#5c7ca0','#b8d1d4','#d3e6e2']},
+      {title:'Afterglow',artist:'Studio North',seconds:205,tone:['#ad7f81','#f5beaa','#f7e7d4']},
+      {title:'Soft Focus',artist:'Studio North',seconds:178,tone:['#807eab','#d4c7ec','#e4deed']}
+    ];
+    const art=element('span','c-island-art c-music-art');art.setAttribute('aria-label','Album cover');
+    const info=element('div','c-island-info');
+    const title=element('span','c-island-track',tracks[0].title),artist=element('span','c-island-artist',tracks[0].artist);info.append(title,artist);
+    const queueToggle=element('button','c-music-queue-toggle');queueToggle.type='button';
+    queueToggle.setAttribute('aria-label','Show song queue');queueToggle.setAttribute('aria-expanded','false');
+    queueToggle.innerHTML=svg('chevron');
+    const previous=element('button','c-island-control c-island-skip c-music-skip-back');
+    previous.type='button';previous.setAttribute('aria-label','Previous track or restart; hold to rewind');previous.innerHTML=svg('skipBack');
     const play=element('button','c-island-control c-island-toggle');play.type='button';play.setAttribute('aria-label','Play music');play.innerHTML=svg('play');
-    const skipNext=element('button','c-island-control c-island-skip');skipNext.type='button';skipNext.setAttribute('aria-label','Next track');skipNext.innerHTML=svg('skipNext');
-    const playbackControls=element('div','c-island-playback-controls');playbackControls.append(skipBack,play,skipNext);
+    const next=element('button','c-island-control c-island-skip c-music-skip-next');
+    next.type='button';next.setAttribute('aria-label','Next track; hold to fast forward');next.innerHTML=svg('skipNext');
+    const transport=element('div','c-island-playback-controls');transport.append(previous,play,next);
     const scrub=element('input','c-island-scrubber');scrub.type='range';scrub.min='0';scrub.max='192';scrub.value='42';scrub.setAttribute('aria-label','Seek song playback');
-    const elapsed=element('span','c-island-elapsed','0:42');const duration=element('span','c-island-duration','3:12');
-    const time=element('div','c-island-time');time.append(elapsed,duration);
-    const body=element('div','c-island-body');body.append(art,info,playbackControls);
-    card.append(body,scrub,time);
-    const tracks=[['Quiet Momentum','Studio North',192],['Afterglow','Studio North',205],['Soft Focus','Studio North',178]];
-    let trackIndex=0,playing=false,seconds=42;
-    const formatTime=n=>Math.floor(n/60)+':'+String(n%60).padStart(2,'0');
-    const update=()=>{const [track,artist,length]=tracks[trackIndex];card.classList.toggle('is-playing',playing);
-      title.textContent=track;info.querySelector('.c-island-artist').textContent=artist;
-      play.innerHTML=svg(playing?'pause':'play');play.setAttribute('aria-label',playing?'Pause music':'Play music');
-      scrub.max=String(length);scrub.value=String(seconds);scrub.style.setProperty('--progress',(seconds/length*100)+'%');
-      elapsed.textContent=formatTime(seconds);duration.textContent=formatTime(length);
+    const elapsed=element('span','c-island-elapsed','0:42'),duration=element('span','c-island-duration','3:12');
+    const times=element('div','c-island-time');times.append(elapsed,duration);
+    const header=element('div','c-island-body');header.append(art,info,queueToggle,transport);
+    const queueClip=element('div','c-music-queue-clip');queueClip.setAttribute('aria-hidden','true');queueClip.inert=true;
+    const queueInner=element('div','c-music-queue-inner');queueInner.append(element('div','c-music-queue-label','Up next'));
+    const queueList=element('div','c-music-queue-list');queueInner.append(queueList);queueClip.append(queueInner);
+    const status=element('span','c-music-seek-status');status.setAttribute('aria-live','polite');
+    card.append(header,scrub,times,queueClip,status);
+    let index=0,seconds=42,playing=false,queueOpen=false;
+    const format=n=>Math.floor(n/60)+':'+String(n%60).padStart(2,'0');
+    const artwork=(i)=>{
+      const [a,b,c]=tracks[i].tone;
+      return '<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Abstract cover art for '+tracks[i].title+'">'
+        +'<defs><linearGradient id="music-art-'+i+'" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+a+'"/><stop offset=".6" stop-color="'+b+'"/><stop offset="1" stop-color="'+c+'"/></linearGradient></defs>'
+        +'<rect width="56" height="56" rx="12" fill="url(#music-art-'+i+')"/>'
+        +'<circle cx="39" cy="14" r="15" fill="#fff" opacity=".22"/><path d="M-8 42Q18 10 59 31" fill="none" stroke="#fff" stroke-width="7" stroke-opacity=".45"/>'
+        +'<path d="M-8 55Q20 22 60 45" fill="none" stroke="#fff" stroke-width="4" stroke-opacity=".33"/></svg>';
     };
-    function setPlaying(index,enabled){playing=enabled;update();}
-    function stepTrack(dir){trackIndex=(trackIndex+dir+tracks.length)%tracks.length;seconds=0;update();}
-    skipBack.addEventListener('click',()=>{if(seconds>3){seconds=0;update();}else stepTrack(-1);});
-    skipNext.addEventListener('click',()=>stepTrack(1));
-    play.addEventListener('click',()=>setPlaying(0,!playing));
+    const chooseTrack=i=>{index=(i+tracks.length)%tracks.length;seconds=0;update();};
+    function update(){
+      const track=tracks[index];title.textContent=track.title;artist.textContent=track.artist;
+      art.innerHTML=artwork(index);art.setAttribute('aria-label','Cover art for '+track.title);
+      play.innerHTML=svg(playing?'pause':'play');play.setAttribute('aria-label',playing?'Pause music':'Play music');
+      card.classList.toggle('is-playing',playing);
+      scrub.max=String(track.seconds);scrub.value=String(seconds);
+      scrub.style.setProperty('--progress',(seconds/track.seconds*100)+'%');
+      elapsed.textContent=format(seconds);duration.textContent=format(track.seconds);
+      renderQueue();
+    }
+    function renderQueue(){
+      queueList.replaceChildren();
+      tracks.forEach((track,i)=>{
+        const option=element('button','c-music-queue-item'+(i===index?' is-current':''));option.type='button';
+        option.setAttribute('aria-label','Play '+track.title+' by '+track.artist);
+        const cover=element('span','c-music-queue-art');cover.innerHTML=artwork(i);
+        const name=element('span','c-music-queue-copy');name.append(element('span','c-music-queue-title',track.title),
+          element('span','c-music-queue-artist',track.artist));
+        option.append(cover,name,element('span','c-music-queue-duration',format(track.seconds)));
+        option.addEventListener('click',()=>{chooseTrack(i);playing=true;update();});
+        queueList.append(option);
+      });
+    }
+    function setQueue(open){
+      queueOpen=open;card.classList.toggle('is-queue-open',open);queueToggle.setAttribute('aria-expanded',String(open));
+      queueToggle.setAttribute('aria-label',open?'Hide song queue':'Show song queue');
+      queueClip.setAttribute('aria-hidden',String(!open));queueClip.inert=!open;
+    }
+    queueToggle.addEventListener('click',()=>setQueue(!queueOpen));
+    play.addEventListener('click',()=>{playing=!playing;update();});
     scrub.addEventListener('input',()=>{seconds=Number(scrub.value);update();});
-    const ticker=setInterval(()=>{if(!card.isConnected){clearInterval(ticker);return;}
-      if(playing){seconds++;if(seconds>=tracks[trackIndex][2]){stepTrack(1);}else update();}},1000);
-    update();paint(()=>assistant.append(card));return {card,setPlaying};
+    function wireSeek(button,direction){
+      let arm=null,interval=null,held=false;
+      const stop=()=>{clearTimeout(arm);clearInterval(interval);arm=null;interval=null;status.textContent='';};
+      button.addEventListener('pointerdown',event=>{
+        if(event.button!==0)return;stop();held=false;
+        arm=setTimeout(()=>{
+          held=true;status.textContent=direction<0?'Rewinding':'Fast-forwarding';
+          // Deliberately modest incremental scanning rather than jumping tracks.
+          interval=setInterval(()=>{
+            const max=tracks[index].seconds;
+            seconds=Math.max(0,Math.min(max,seconds+1));
+            if(direction<0)seconds=Math.max(0,seconds-2);
+            if(direction>0&&seconds>=max){chooseTrack(index+1);}
+            update();
+          },180);
+        },380);
+      });
+      button.addEventListener('pointerup',stop);
+      button.addEventListener('pointercancel',()=>{stop();held=false;});
+      button.addEventListener('pointerleave',()=>{if(arm||interval)stop();});
+      button.addEventListener('click',()=>{
+        if(held){held=false;return;}
+        if(direction<0){if(seconds>3){seconds=0;update();}else chooseTrack(index-1);}
+        else chooseTrack(index+1);
+      });
+      // Press-and-hold is only implemented in this local UI; real providers
+      // should commit a seek when released, avoiding tight external API loops.
+    }
+    wireSeek(previous,-1);wireSeek(next,1);
+    const timer=setInterval(()=>{
+      if(!card.isConnected){clearInterval(timer);return;}
+      if(!playing)return;seconds++;
+      if(seconds>=tracks[index].seconds){chooseTrack(index+1);}else update();
+    },1000);
+    function setPlaying(i,on){if(Number.isInteger(i)&&i>=0&&i<tracks.length)index=i;playing=Boolean(on);update();}
+    update();paint(()=>assistant.append(card));return {card,setPlaying,chooseTrack,setQueue};
   }
   function createCommandView(command){
     const unit=element('div','c-command-unit c-command-v11');
