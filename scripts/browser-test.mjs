@@ -115,7 +115,10 @@ try {
   assert(await slides.evaluate(el=>el.classList.contains('is-slide-fullscreen')),'Edit should enter fullscreen automatically');
   assert.equal(await slides.locator('.c-slide-menu-trigger').count(),9,'Nine Slides-like menus should be available');
   await slides.locator('[aria-label="File menu"]').click();
-  assert(await slides.locator('.c-slide-menu-item.is-open [role="menuitem"]').filter({hasText:'Download JSON'}).isVisible(),'File menu should offer download');
+  // Wait for the menu's CSS visibility transition before checking the interactive item.
+  const downloadJSON=slides.locator('.c-slide-menu-item.is-open [role="menuitem"]').filter({hasText:'Download JSON'});
+  await downloadJSON.waitFor({state:'visible',timeout:6500});
+  assert(await downloadJSON.isVisible(),'File menu should offer download');
   await slides.locator('[aria-label="File menu"]').click();
   await slides.locator('[aria-label="New slide"]').click();
   assert((await slides.locator('.c-slide-mini').count())>=4,'New slide inserted');
