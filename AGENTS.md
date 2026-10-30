@@ -135,3 +135,18 @@ The three scripted phases and sample text exist solely for demonstration. They a
 - Tooltips are white, anchored to each control, and appear on hover/focus without dark cursor-tracking overlays. On icon buttons, expose an accessible name and do not rely exclusively on a tooltip.
 - Source URL links open only after deliberate click; never trigger navigation on hover. Preserve real source domain, title and URL from the host. The fixture uses demonstrative citation data.
 - Respect `prefers-reduced-motion` for Wi-Fi, todo expansion, favicon glide and all slide/editor transitions.
+
+## Updated demo UI behaviors (October 2026)
+
+This repository contains a **standalone preview**, not the production chat UI. Changes here include a spacious rounded demo composer, a circular SVG task progress indicator unfolding to the checklist, stationary layered curved Wi-Fi paths that brighten as connection strength improves, anchored white hover/focus labels, compact real slide thumbnails and expanded slide editing controls.
+
+For **production integration**:
+- The demo composer MUST NOT replace the actual Clyra composer or its keyboard shortcuts, attachments, layout or input animations.
+- The plan is a source-driven task component; animate its SVG progress from real task events rather than using fixture timing.
+- Wi-Fi strength is a visual simulation; bind it to real connectivity/retry state. Avoid arbitrary three-second delays in the host.
+- The slide editor offers a functional **local subset**: live text, basic styling, text boxes/shapes/images, resize/drag, layer ordering, thumbnail reorder, notes, undo/redo, full-screen and JSON export. It does **not** implement complete Google Slides or PowerPoint parity, collaboration, PPTX fidelity, advanced timelines, professional master slides or cloud storage. Connect the host project's actual slide editor/renderer for those.
+- Browser tooltips must have accessible labels and be anchored white disclosures; do not use native `title` on toolbar buttons where it creates a dark browser popup.
+- Clicking a source icon opens its source URL; the strip itself expands sideways and hover/focus gently reveals a website-name pill. Supply actual source URLs and favicons from host tool results.
+
+The repository-specific requirements in `DEMO_PROJECT_RULES.md` apply here only. After edits, push to the connected GitHub repository and verify that `git pull` then `npm run dev` still works on a correctly cloned checkout.
+
