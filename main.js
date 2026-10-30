@@ -101,6 +101,8 @@
     browser:'<rect x="2.5" y="4" width="19" height="16" rx="2.5"/><path d="M2.5 9h19M7 6.7h.1M10 6.7h.1"/>',
     pointer:'<path d="M5 3v17l4.7-4.7 3 6.4 3-1.5-3.1-6.2 6.8-.7L5 3z"/>',
     music:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    skipBack:'<path d="M5 5v14M19 5 8 12l11 7V5z"/>',
+    skipNext:'<path d="M19 5v14M5 5l11 7-11 7V5z"/>',
     play:'<path d="m8 5 12 7-12 7z"/>',
     pause:'<path d="M8 5v14M16 5v14"/>',
     slides:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 9h8M8 13h5"/>',
@@ -1024,17 +1026,32 @@
     const card=element('section','c-music-island c-island-v10');card.setAttribute('aria-label','Now playing');
     const art=element('span','c-island-art');art.innerHTML=svg('music');
     const info=element('div','c-island-info');const title=element('span','c-island-track','Quiet Momentum');const artist=element('span','c-island-artist','Studio North');info.append(title,artist);
-    const play=element('button','c-island-control c-island-toggle');play.type='button';play.dataset.tooltip='Play or pause';play.setAttribute('aria-label','Play music');play.innerHTML=svg('play');
+    const skipBack=element('button','c-island-control c-island-skip');skipBack.type='button';skipBack.setAttribute('aria-label','Previous track');skipBack.innerHTML=svg('skipBack');
+    const play=element('button','c-island-control c-island-toggle');play.type='button';play.setAttribute('aria-label','Play music');play.innerHTML=svg('play');
+    const skipNext=element('button','c-island-control c-island-skip');skipNext.type='button';skipNext.setAttribute('aria-label','Next track');skipNext.innerHTML=svg('skipNext');
+    const playbackControls=element('div','c-island-playback-controls');playbackControls.append(skipBack,play,skipNext);
     const scrub=element('input','c-island-scrubber');scrub.type='range';scrub.min='0';scrub.max='192';scrub.value='42';scrub.setAttribute('aria-label','Seek song playback');
     const elapsed=element('span','c-island-elapsed','0:42');const duration=element('span','c-island-duration','3:12');
     const time=element('div','c-island-time');time.append(elapsed,duration);
-    const body=element('div','c-island-body');body.append(art,info,play);
-    card.append(body,scrub,time);const tracks=[['Quiet Momentum','Studio North']];let playing=false,seconds=42;
-    const update=()=>{card.classList.toggle('is-playing',playing);play.innerHTML=svg(playing?'pause':'play');play.setAttribute('aria-label',playing?'Pause music':'Play music');scrub.style.setProperty('--progress',(seconds/192*100)+'%');elapsed.textContent=Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');};
+    const body=element('div','c-island-body');body.append(art,info,playbackControls);
+    card.append(body,scrub,time);
+    const tracks=[['Quiet Momentum','Studio North',192],['Afterglow','Studio North',205],['Soft Focus','Studio North',178]];
+    let trackIndex=0,playing=false,seconds=42;
+    const formatTime=n=>Math.floor(n/60)+':'+String(n%60).padStart(2,'0');
+    const update=()=>{const [track,artist,length]=tracks[trackIndex];card.classList.toggle('is-playing',playing);
+      title.textContent=track;info.querySelector('.c-island-artist').textContent=artist;
+      play.innerHTML=svg(playing?'pause':'play');play.setAttribute('aria-label',playing?'Pause music':'Play music');
+      scrub.max=String(length);scrub.value=String(seconds);scrub.style.setProperty('--progress',(seconds/length*100)+'%');
+      elapsed.textContent=formatTime(seconds);duration.textContent=formatTime(length);
+    };
     function setPlaying(index,enabled){playing=enabled;update();}
+    function stepTrack(dir){trackIndex=(trackIndex+dir+tracks.length)%tracks.length;seconds=0;update();}
+    skipBack.addEventListener('click',()=>{if(seconds>3){seconds=0;update();}else stepTrack(-1);});
+    skipNext.addEventListener('click',()=>stepTrack(1));
     play.addEventListener('click',()=>setPlaying(0,!playing));
     scrub.addEventListener('input',()=>{seconds=Number(scrub.value);update();});
-    const ticker=setInterval(()=>{if(!card.isConnected){clearInterval(ticker);return;}if(playing){seconds=Math.min(192,seconds+1);scrub.value=String(seconds);if(seconds===192)playing=false;update();}},1000);
+    const ticker=setInterval(()=>{if(!card.isConnected){clearInterval(ticker);return;}
+      if(playing){seconds++;if(seconds>=tracks[trackIndex][2]){stepTrack(1);}else update();}},1000);
     update();paint(()=>assistant.append(card));return {card,setPlaying};
   }
   function createCommandView(command){
