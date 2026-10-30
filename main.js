@@ -1023,8 +1023,129 @@
     backgroundColour.addEventListener('input',()=>{canvas.style.background=backgroundColour.value;});
     theme.addEventListener('change',()=>{snapshot();slides[current].theme=theme.value;render();});
     notes.addEventListener('input',()=>{slides[current].notes=notes.value;});
+    // Google Slides-inspired command row. Every available command is backed by
+    // the fixture's actual slide model; absent enterprise features are not faked.
+    const safeFilename=()=>filename.value.trim().replace(/[^a-z0-9_\- ]/gi,'').replace(/\s+/g,'-').slice(0,60)||'Clyra-presentation';
+    const doExportJSON=()=>toolbar.querySelector('[aria-label="Export slides as JSON"]')?.click();
+    const downloadBlob=(blob,extension)=>{
+      const url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url;a.download=safeFilename()+extension;a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1200);
+    };
+    const doExportPNG=async()=>{
+      const slide=slides[current],out=document.createElement('canvas');out.width=1280;out.height=720;
+      const g=out.getContext('2d');g.fillStyle=slide.bg|| (slide.theme==='dark'?'#282b33':'#ffffff');g.fillRect(0,0,1280,720);
+      if((slide.layout||'title-body')!=='blank'){
+        g.fillStyle=slide.theme==='dark'?'#e7e7eb':'#777981';g.font='24px system-ui';g.fillText(slide.eyebrow||'',90,145);
+        g.fillStyle=slide.titleColor|| (slide.theme==='dark'?'#ffffff':'#17171b');
+        g.font='600 '+(slide.titleSize||55)+'px system-ui';g.fillText(slide.title||'',90,292,1100);
+        if((slide.layout||'title-body')!=='title'){
+          g.fillStyle=slide.bodyColor|| (slide.theme==='dark'?'#d5d5de':'#555660');
+          g.font='30px system-ui';g.fillText(slide.body||'',94,360,1090);
+        }
+      }
+      for(const obj of slide.objects){
+        const x=obj.x*12.8,y=obj.y*7.2,w=obj.w*12.8,h=obj.h*7.2;
+        if(obj.type==='image'&&obj.src){
+          try{const pic=new Image();pic.src=obj.src;await pic.decode();g.drawImage(pic,x,y,w,h);}catch{}
+        } else if(obj.type==='rect'){g.fillStyle=obj.color||'#d5dbe8';g.fillRect(x,y,w,h);}
+        else if(obj.type==='ellipse'){g.fillStyle=obj.color||'#d5dbe8';g.beginPath();g.ellipse(x+w/2,y+h/2,w/2,h/2,0,0,Math.PI*2);g.fill();}
+        else if(obj.type==='line'){g.strokeStyle=obj.color||'#555';g.lineWidth=4;g.beginPath();g.moveTo(x,y+h);g.lineTo(x+w,y);g.stroke();}
+        else if(obj.type==='text'){g.fillStyle=obj.color||'#222';g.font='28px system-ui';g.fillText(obj.text||'',x,y+30,w);}
+        else if(obj.type==='table'){const cells=obj.cells||[];g.strokeStyle='#9296a2';g.font='16px system-ui';
+          for(let i=0;i<3;i++)for(let j=0;j<3;j++){const xx=x+j*w/3,yy=y+i*h/3;g.strokeRect(xx,yy,w/3,h/3);g.fillStyle='#30333b';g.fillText(cells[i*3+j]||'',xx+8,yy+24,w/3-12);}
+        }
+      }
+      out.toBlob(blob=>{if(blob)downloadBlob(blob,'.png');},'image/png');
+    };
+    importInput.addEventListener('change',()=>{
+      const file=importInput.files?.[0];importInput.value='';
+      if(!file)return;if(file.size>2*1024*1024){window.alert('Choose a JSON presentation below 2 MB.');return;}
+      const reader=new FileReader();reader.addEventListener('load',()=>{
+        try{const parsed=JSON.parse(String(reader.result));
+          if(!Array.isArray(parsed)||parsed.length<1||parsed.length>80||parsed.some(sl=>!sl||typeof sl.title!=='string'||!Array.isArray(sl.objects)))throw Error('Invalid slides');
+          snapshot();slides.splice(0,slides.length,...parsed.map(sl=>({
+            title:sl.title.slice(0,300),body:String(sl.body||'').slice(0,3000),
+            eyebrow:String(sl.eyebrow||'').slice(0,80),theme:['warm','cool','dark','minimal'].includes(sl.theme)?sl.theme:'minimal',
+            bg:sl.bg||'',layout:sl.layout||'title-body',transition:sl.transition||'none',
+            objects:sl.objects.slice(0,90).filter(o=>o&&typeof o.type==='string').map(o=>({...o,id:nextObjectId++})),
+            notes:String(sl.notes||'').slice(0,5000)
+          })));current=0;selected={field:'title',id:null};render();
+        }catch{window.alert('Could not import this presentation JSON.');}
+      });reader.readAsText(file);
+    });
+    const setLayout=name=>{snapshot();slides[current].layout=name;render();};
+    const setTransition=name=>{snapshot();slides[current].transition=name;render();};
+    const adjustZoom=n=>{zoom=n;canvas.style.setProperty('--slide-preview-zoom',String(n/100));zoomSelect.value=String(n);};
+    const alignObject=axis=>{
+      if(selected.field!=='object')return;const obj=slides[current].objects.find(o=>o.id===selected.id);if(!obj)return;
+      snapshot();if(axis==='horizontal')obj.x=(100-obj.w)/2;else obj.y=(100-obj.h)/2;render();
+    };
+    const toggleNotes=()=>{showNotes=!showNotes;notes.classList.toggle('is-visible',showNotes);};
+    const toggleGrid=()=>{showGrid=!showGrid;canvas.classList.toggle('c-slide-grid-visible',showGrid);};
+    const help=element('div','c-slide-help-panel');help.hidden=true;
+    help.innerHTML='<strong>Keyboard shortcuts</strong><p>⌘/Ctrl+M New slide · ⌘/Ctrl+Z Undo · ⌘/Ctrl+D Duplicate object · Delete Remove selected · Esc Exit full screen</p>';
+    const toggleHelp=()=>{help.hidden=!help.hidden;};
+    const menuDefinitions=[
+      ['File',[
+        ['New presentation',()=>{snapshot();slides.splice(0,slides.length,{title:'Untitled slide',body:'',eyebrow:'',theme:'minimal',objects:[],notes:''});current=0;render();}],
+        ['Open JSON…',()=>importInput.click()],['Download JSON',doExportJSON],['Download current slide PNG',doExportPNG]
+      ]],
+      ['Edit',[
+        ['Undo',undo],['Redo',redo],['Duplicate slide',duplicateSlide],['Duplicate selected object',duplicateObject],
+        ['Delete selected object',removeObject],['Delete slide',removeSlide]
+      ]],
+      ['View',[
+        ['Zoom 75%',()=>adjustZoom(75)],['Zoom 100%',()=>adjustZoom(100)],['Zoom 125%',()=>adjustZoom(125)],
+        ['Show grid',toggleGrid],['Speaker notes',toggleNotes],['Full screen',()=>setFullscreen(true)]
+      ]],
+      ['Insert',[
+        ['Text box',()=>addObject('text')],['Image…',()=>imageInput.click()],['Rectangle',()=>addObject('rect')],
+        ['Ellipse',()=>addObject('ellipse')],['Line',()=>addObject('line')],['3 × 3 table',()=>addObject('table')]
+      ]],
+      ['Slide',[
+        ['New slide',addSlide],['Duplicate slide',duplicateSlide],['Delete slide',removeSlide],
+        ['Move slide up',()=>moveSlide(-1)],['Move slide down',()=>moveSlide(1)],
+        ['Title and body layout',()=>setLayout('title-body')],['Title only layout',()=>setLayout('title')],
+        ['Blank layout',()=>setLayout('blank')],['Fade transition',()=>setTransition('fade')],
+        ['Slide transition',()=>setTransition('slide')],['No transition',()=>setTransition('none')]
+      ]],
+      ['Format',[
+        ['Bold',()=>document.execCommand('bold')],['Italic',()=>document.execCommand('italic')],
+        ['Align left',()=>applySelected('align','left')],['Align centre',()=>applySelected('align','center')],
+        ['Align right',()=>applySelected('align','right')],['Text colour…',()=>textColour.click()],
+        ['Slide background…',()=>backgroundColour.click()]
+      ]],
+      ['Arrange',[
+        ['Bring forward',()=>moveObjectLayer(1)],['Send backward',()=>moveObjectLayer(-1)],
+        ['Duplicate object',duplicateObject],['Delete object',removeObject],
+        ['Centre object horizontally',()=>alignObject('horizontal')],['Centre object vertically',()=>alignObject('vertical')]
+      ]],
+      ['Tools',[['Toggle guides',toggleGrid],['Speaker notes',toggleNotes],['Keyboard shortcuts',toggleHelp]]],
+      ['Help',[['Keyboard shortcuts',toggleHelp]]]
+    ];
+    function closeMenu(){activeMenu=null;menuBar.querySelectorAll('.c-slide-menu-item').forEach(item=>{
+      item.classList.remove('is-open');item.querySelector('button')?.setAttribute('aria-expanded','false');});
+    }
+    for(const [menuLabel,entries] of menuDefinitions){
+      const wrap=element('div','c-slide-menu-item');
+      const button=element('button','c-slide-menu-trigger',menuLabel);button.type='button';
+      button.setAttribute('aria-haspopup','menu');button.setAttribute('aria-expanded','false');
+      button.setAttribute('aria-label',menuLabel+' menu');
+      const panel=element('div','c-slide-menu-options');panel.setAttribute('role','menu');panel.setAttribute('aria-label',menuLabel+' commands');
+      for(const [text,action] of entries){
+        const item=element('button','c-slide-menu-option',text);item.type='button';item.setAttribute('role','menuitem');
+        item.addEventListener('click',()=>{closeMenu();action();});panel.append(item);
+      }
+      button.addEventListener('click',event=>{event.stopPropagation();const open=activeMenu===menuLabel;closeMenu();if(!open){activeMenu=menuLabel;wrap.classList.add('is-open');button.setAttribute('aria-expanded','true');}});
+      wrap.append(button,panel);menuBar.append(wrap);
+    }
+    document.addEventListener('pointerdown',event=>{if(card.isConnected&&!menuBar.contains(event.target))closeMenu();});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&card.isConnected){closeMenu();help.hidden=true;}});
+    filename.addEventListener('input',()=>{saved.textContent='Local draft';});
+
     inspector.append(element('p','c-slide-instructions','Select a slide, edit text, insert shapes or add speaker notes.'));
-    inspector.append(imageInput,importInput,layerPanel,notes);
+    inspector.append(imageInput,importInput,layerPanel,notes,help);
     topToolbar.append(toolbar);
     editor.append(filmstrip,stageWrap);stageWrap.append(inspector);card.append(top,menuBar,topToolbar,editor);
     function setEditing(next){editing=next;closeMenu();card.classList.toggle('is-slide-editing',editing);
