@@ -51,7 +51,7 @@ try {
   assert(await page.locator('#demoComposerDock').evaluate(el=>el.classList.contains('is-active')),'Dock should enter active state after submission');
   await page.locator('.c-todo-v8-trigger').waitFor({timeout:15000});
   await page.waitForTimeout(700);
-  assert(await page.locator('.c-todo-v8-trigger').getAttribute('aria-expanded')==='true','Todo should unfold when task starts');
+  assert(await page.locator('.c-todo-v8-trigger').getAttribute('aria-expanded')==='false','Todo starts collapsed and opens on hover or click');
   assert.equal(await page.locator('.c-todo-progress-svg .c-todo-progress-value').count(),1,'Circular SVG progress must be present');
   const geometry=await page.evaluate(()=>{
     const box=selector=>{const el=document.querySelector(selector);const r=el.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom};};
