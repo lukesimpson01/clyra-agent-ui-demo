@@ -200,3 +200,15 @@ These constraints apply **only to this demo repository** and must not change the
 - Before GitHub pushes, run the exact npm startup command, dependency-free test suite, and full browser UI tests with screenshots at desktop/mobile, including initial welcome, during browser, completed browser, todo states, rich maths and finished response. Do not claim the full browser was tested if only isolated source/component checks or mock screenshots were available.
 
 These constraints are for the standalone demo repository **only**, not the main Clyra project.
+
+## v19 component boundaries and QA
+
+- Keep slides editing grouped under **Slides, Insert, Text, Arrange**; don't put 20 unrelated tools in one horizontal strip. Clicking Edit enters a full-screen editor; close with X/Esc and return to the original inline card.
+- Music: artwork thumbnail instead of a music glyph, user-selectable compact queue, working local Previous/Next restart/hold seeking. **The demo remains simulated; don't describe playback as real**. Production music state and queue must come from connected, authenticated providers and successful actions. See `INTEGRATION_GUIDE.md`.
+- Todo: use an **active spinner**, not a static fraction ring (fraction appears as N/M). Hover to preview, click to pin open, click outside or again to dismiss. Horizontal header icon/text must be aligned.
+- Weather/map are conditional response types. The standalone showcase fetches real current conditions through Open-Meteo and displays OSM interactive embed only after permission/granted coordinates or explicit city selection. On failure, display a truthful unavailable state; never fabricate weather or location. Production commercial usage requires appropriate provider rights, caching and quotas.
+- In the real agent, derive any plan and divider labels from **actual step names**, not generic “Research/Create/Verify”; more than three steps are allowed. Only show plan/dividers when genuinely multi-step and keep tools within their corresponding step.
+- Do not insert irrelevant capabilities into every task. Real responses render only supported tool results; use consistent design language and existing UI primitives.
+- Validate the real app at desktop/mobile, hover/click/touch and keyboard states. Check `npm run dev`, `npm test`, `npm run test:browser` before saying “fully tested”. If unavailable, disclose clearly.
+
+Applies to **this demo only**. The production Clyra application keeps its existing composer, message layout, agent harness and apps.
