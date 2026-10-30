@@ -2116,3 +2116,8 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
 /* Visible only while editing and the object is selected. */
 .c-workspace .c-slides-v14 .c-slide-object-resize{position:absolute;right:-5px;bottom:-5px;width:10px;height:10px;border:1.5px solid #fff;border-radius:3px;background:#6482ac;cursor:nwse-resize;touch-action:none;opacity:0;pointer-events:none;transition:opacity .18s ease;z-index:9}
 .c-workspace .c-slides-v14 .c-slide-object.is-element-selected .c-slide-object-resize{opacity:1;pointer-events:auto}
+
+/* Prevent the slide editor's expandable inspector from clipping hover labels. */
+.c-workspace .c-slides-v14.is-slide-editing .c-slide-inspector{max-height:480px!important;overflow:visible!important}
+.c-workspace .c-slides-v14:not(.is-slide-editing) .c-slide-inspector{overflow:hidden!important}
+@media(max-width:600px){.c-workspace .c-slides-v14.is-slide-editing .c-slide-inspector{max-height:680px!important}}
