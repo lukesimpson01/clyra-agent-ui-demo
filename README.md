@@ -189,3 +189,15 @@ The currently committed demo includes:
 
 The menu structure, themes/layout and shortcuts were informed by Google Workspace's official Slides documentation. The [Reverse Engineer Anything](https://github.com/teonett/Reverse-Engineer-Anything) skill was reviewed, but it advises normal source analysis for regular source repositories and the REA runtime-analysis pathway only for a supplied target/binary or captured runtime evidence. No invasive Google application inspection or REA installation was used.
 
+
+## v18 — Browser work state, math and richer responses
+
+The demo browser now uses its existing neutral grey loading shimmer for **3 seconds**, then a softly animated blue gradient and a simulated Codex-like white pointer within the 16:9 rectangle. At about **10 seconds** it fades the working state and closes the preview. The cursor is decorative only; no browser or desktop actions are performed.
+
+The demo composer begins centred at up to **565px wide**, then animates to a **600px max-width bottom dock** when Enter/Send starts the flow. The main chat remains a separate **760px reading lane**. Todo is a compact **horizontal collapsed pill** with progress ring, text, count and chevron; expanded checklist uses animated checks and left-to-right strikethrough.
+
+A response-formatting showcase now demonstrates genuine offline native MathML fractions, integrals, matrices and summations, plus a compact table, mini chart, quote and list. The optional **Try LaTeX** editor loads KaTeX from jsDelivr on user request, so arbitrary TeX rendering requires internet. Offline MathML examples work without any npm installation. Existing code, terminal, source, document, slide and file-diff components are preserved.
+
+This is a curated, stylistically consistent demonstration of common assistant response patterns — **not an exhaustive copy of ChatGPT or Claude**. The real Clyra application should reuse its own Markdown/LaTeX renderer and tool events, not this fixture's simulated content or timers.
+
+Before accepting any future UI change, follow [DEMO_PROJECT_RULES.md](./DEMO_PROJECT_RULES.md): test the actual dev server, inspect live desktop/mobile screenshots, verify interactions and visually reject any component that looks off-theme.
