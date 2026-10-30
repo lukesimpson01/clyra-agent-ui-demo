@@ -161,3 +161,15 @@ For **production integration**:
 
 The repository-specific requirements in `DEMO_PROJECT_RULES.md` apply here only. After edits, push to the connected GitHub repository and verify that `git pull` then `npm run dev` still works on a correctly cloned checkout.
 
+
+
+## Current demo-only UI contract — attached dock, inline artifacts, no reconnect
+
+- `#demoComposerDock` is the **single shared bottom container** for `#planRail` and `#demoComposer`. Keep the todo aligned and directly above the rounded composer. The hint/send row stays inside the composer border. Do not copy this fixture dock into the production Clyra chat: reuse its host composer.
+- The demo intentionally **does not show reconnecting/Wi-Fi activity**. If genuine reconnect events exist in the host, preserve that host's native status rendering instead of copying a fake retry loop.
+- The browser actions section keeps a three-row scroll area and follows incoming actions within that area without growing the preview.
+- Writing documents render open inline without a collapsed/expanded card; clicking in the document enters edit mode. Slides also stay visible inline, while their editing controls can be activated independently. Do not add artifact dropdowns.
+- The collapsed Sources control opens a *short horizontal fixed-width icon rail*. Each icon stays at a stable coordinate; hovering/focusing reveals a small floating site-name pill without pushing other icons away. Clicking opens the real source URL.
+- Inspect full-size and mobile screenshots plus functional interactions before claiming a UI change is complete. If only a representative `page.set_content()` layout can be inspected, disclose that the full live browser was not visually tested; retain Chromium CI checks.
+
+These constraints apply **only to this demo repository** and must not change the host app's composer, editor, routing, networking or agent loop.
