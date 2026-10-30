@@ -101,11 +101,13 @@ try {
   assert.equal(await writing.locator('[aria-label="Expand writing"]').count(),0,'No document expand dropdown');
   assert(!(await writing.evaluate(el=>el.classList.contains('is-document-folded'))),'Document is never folded');
   await writing.locator('[aria-label="Edit writing"]').click();
+  assert(await writing.evaluate(el=>el.classList.contains('is-expanded')),'Editing enters fullscreen document');
   await page.screenshot({path:join(shots,'02-document-editor.png')});
   assert.equal(await writing.locator('[aria-label="Document content"]').getAttribute('contenteditable'),'true');
   await writing.locator('[aria-label="Document content"]').click();
   assert((await writing.locator('[aria-label="Document content"]').count())===1);
   await writing.locator('[aria-label="Edit writing"]').click();
+  assert(!(await writing.evaluate(el=>el.classList.contains('is-expanded'))),'Done closes fullscreen document');
   await page.locator('.c-slides-v14').waitFor({state:'visible',timeout:170000});
   const slides=page.locator('.c-slides-v14');
   assert((await slides.locator('.c-slide-mini').count())>=3,'Miniature slide thumbnails exist');
@@ -215,6 +217,45 @@ try {
   await page.screenshot({path:join(shots,'05-mobile-composer-todo.png')});
   const sizes=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,inner:window.innerWidth}));
   assert(sizes.scroll<=sizes.inner+2,'Mobile document must not overflow horizontally: '+JSON.stringify(sizes));
+
+  // v20: verify genuine resized document and presentation, not an isolated mock.
+  const viewports=[[280,700],[320,568],[360,740],[390,844],[430,900],[600,800],
+    [768,1024],[1024,768],[1440,900],[1920,1080],[800,360]];
+  const fits=async(selector,label)=>{
+    const b=await page.evaluate(s=>{
+      const r=document.querySelector(s)?.getBoundingClientRect();
+      return {w:innerWidth,scroll:document.documentElement.scrollWidth,
+        x:r?.x,right:r?.right,width:r?.width};
+    },selector);
+    assert(b.scroll<=b.w+2,label+' horizontally scrolls: '+JSON.stringify(b));
+    assert(b.width>0&&b.x>=-3&&b.right<=b.w+3,label+' outside screen: '+JSON.stringify(b));
+  };
+  await slides.locator('[aria-label="Full screen"]').click();
+  for(const [width,height] of viewports){
+    await page.setViewportSize({width,height});
+    await page.waitForTimeout(80);
+    await fits('.c-slides-v14.is-slide-fullscreen','Slides '+width+'x'+height);
+    if([280,390,768,1440].includes(width))
+      await page.screenshot({path:join(shots,'v20-slides-'+width+'.png')});
+  }
+  await slides.locator('[aria-label="Close full screen"]').click();
+  await writing.locator('[aria-label="Full screen writing"]').click();
+  for(const [width,height] of [[280,700],[320,568],[390,844],[800,360],[1440,900]]){
+    await page.setViewportSize({width,height});
+    await page.waitForTimeout(80);
+    await fits('.c-writing-card.is-expanded','Document '+width+'x'+height);
+    if([280,390,1440].includes(width))
+      await page.screenshot({path:join(shots,'v20-doc-'+width+'.png')});
+  }
+  await page.keyboard.press('Escape');
+  assert(!(await writing.evaluate(el=>el.classList.contains('is-expanded'))),
+    'Escape closes fullscreen document');
+  await page.setViewportSize({width:390,height:844});
+  await fits('.c-weather-card','Mobile weather');
+  await fits('.c-location-card','Mobile map');
+  await page.locator('.c-location-card [aria-label="Expand map"]').click();
+  await fits('.c-location-card.is-map-fullscreen','Fullscreen map');
+  await page.keyboard.press('Escape');
   assert.equal(errors.length,0,'Uncaught browser errors: '+errors.join('\n'));
   console.log('PASS: desktop/mobile UI, task disclosure, composer, document, slide tools, source links, response actions, no runtime errors');
 } finally {
