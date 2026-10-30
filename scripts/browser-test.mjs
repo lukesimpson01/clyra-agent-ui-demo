@@ -116,6 +116,7 @@ try {
   assert.equal(await sources.getAttribute('aria-expanded'),'true');
   assert.equal(await sources.getAttribute('aria-label'),'Hide sources','Chevron control should announce collapse');
   assert((await page.locator('.c-sources-inline-link').count())>=3,'Sources render website links');
+  await page.waitForTimeout(750); // Compare stable icon positions after the intentional reveal transition finishes.
   const beforeSlots=await page.locator('.c-sources-inline-slot').evaluateAll(els=>els.map(el=>Math.round(el.getBoundingClientRect().x)));
   await page.locator('.c-sources-inline-link').first().hover();
   await page.waitForTimeout(450);
