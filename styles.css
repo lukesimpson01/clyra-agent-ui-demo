@@ -3103,3 +3103,40 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
  .c-workspace .c-weather-day{grid-template-columns:48px minmax(0,1fr) auto;gap:5px}
 }
 @media(prefers-reduced-motion:reduce){.c-workspace .c-geo-card,.c-workspace .c-location-card.is-map-fullscreen,.c-workspace .c-slides-v14.is-slide-fullscreen{animation:none!important}}
+
+/* V19.1 — keep compact tool zones predictable on narrower editor widths.
+   Fullscreen must never stack floating menus over the canvas. */
+@media(max-width:820px){
+ .c-workspace .c-slides-v14.is-slide-fullscreen .c-slide-menu-bar{
+  position:relative!important;top:auto!important;z-index:44!important;
+ }
+ .c-workspace .c-slides-v14.is-slide-fullscreen .c-slide-top-toolbar{
+  position:relative!important;top:auto!important;z-index:43!important;
+ }
+ .c-workspace .c-slides-v14.is-slide-fullscreen .c-slide-filmstrip{
+  position:relative!important;top:auto!important;
+ }
+ .c-workspace .c-slides-v14 .c-slide-toolbar-zone{
+  flex:1 1 135px!important;min-width:max-content!important;
+ }
+}
+@media(max-width:440px){
+ .c-workspace .c-slides-v14.is-slide-fullscreen .c-slide-toolbar-zone{
+  min-width:0!important;flex-basis:140px!important;overflow:visible!important;
+ }
+ .c-workspace .c-slides-v14 .c-slide-toolbar-zone .c-slide-v14-group{
+  flex-wrap:wrap!important;
+ }
+ .c-workspace .c-slides-v14 .c-slide-toolbar-zone .c-slide-v10-select{
+  max-width:96px!important;
+ }
+}
+.c-workspace .c-composer-dock .c-todo-v8-headicon .c-todo-progress-value{
+ stroke-dasharray:20 49!important;
+}
+.c-workspace .c-geo-small-button:focus-visible,
+.c-workspace .c-geo-round-button:focus-visible,
+.c-workspace .c-music-v19 button:focus-visible,
+.c-workspace .c-slide-toolbar-popover-trigger:focus-visible{
+ outline:2px solid #abc0dd!important;outline-offset:2px!important;
+}
