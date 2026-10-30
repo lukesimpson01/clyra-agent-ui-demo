@@ -2777,3 +2777,60 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
  .c-workspace .c-browser-v18 .c-browser-blue-field{transition:none!important}
  .c-workspace .c-composer-dock .c-todo-v8-item.is-done{animation:none!important}
 }
+
+/* V18 rich response primitives: Maths, tables, small charts, editorial text.
+   Same neutral text, white surfaces and hairline strokes as the activity UI. */
+.c-workspace .c-rich-response{width:min(100%,690px);max-width:100%;min-width:0;margin:15px 0 20px;color:#383b43;font:400 14px/1.55 var(--c-font)}
+.c-workspace .c-rich-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 10px}
+.c-workspace .c-rich-heading h3{font:600 16px/22px var(--c-font);margin:0;letter-spacing:-.025em;color:#2d2f35}
+.c-workspace .c-rich-subtitle{font:400 11px/18px var(--c-font);color:#989aa2}
+.c-workspace .c-rich-math-card,.c-workspace .c-rich-data,.c-workspace .c-rich-editorial{
+ background:white;border:1px solid #e8e9ed;border-radius:19px;
+ padding:16px 18px;margin:10px 0;overflow:hidden;
+ animation:c-rich-surface-in .46s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes c-rich-surface-in{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.c-workspace .c-rich-response h4{font:550 13px/19px var(--c-font);color:#4d5058;margin:0 0 10px}
+.c-workspace .c-rich-inline-math{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:3px 0 12px;font:400 13px/20px var(--c-font)}
+.c-workspace .c-rich-inline-math math{font-size:1.18em}
+.c-workspace .c-rich-math-display{display:grid;place-items:center;min-height:70px;padding:8px 4px;border-radius:12px;background:#fafafb;overflow-x:auto}
+.c-workspace .c-rich-math-display math{font-size:1.36em}
+.c-workspace .c-rich-math-secondary{display:flex;align-items:center;justify-content:space-around;gap:18px;padding:15px 0 10px;flex-wrap:wrap}
+.c-workspace .c-rich-math-secondary math{font-size:1.16em}
+.c-workspace .c-rich-math-actions{display:flex;gap:8px;margin-top:4px;align-items:center}
+.c-workspace .c-rich-minibutton{border:1px solid #e8e9ed;background:white;color:#62646c;border-radius:10px;padding:6px 10px;font:400 11px/17px var(--c-font);cursor:pointer;transition:background .17s ease,border-color .17s ease}
+.c-workspace .c-rich-minibutton:hover{background:#f8f8fa;border-color:#d9dce3}
+.c-workspace .c-rich-minibutton:focus-visible{outline:2px solid #a9bedc;outline-offset:2px}
+.c-workspace .c-rich-minibutton:disabled{opacity:.55;cursor:default}
+.c-workspace .c-rich-tex-editor{margin-top:12px;border-top:1px solid #eeeef0;padding-top:12px;display:grid;justify-items:start;gap:8px}
+.c-workspace .c-rich-tex-editor[hidden]{display:none!important}
+.c-workspace .c-rich-tex-input{width:100%;box-sizing:border-box;min-height:54px;resize:vertical;border:1px solid #e3e5e9;border-radius:10px;padding:8px 10px;font:400 12px/18px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#fafafb;color:#3b3f48}
+.c-workspace .c-rich-tex-input:focus{outline:2px solid #a9bedc;outline-offset:1px}
+.c-workspace .c-rich-tex-result{width:100%;max-width:100%;min-width:0;overflow-x:auto;text-align:center;padding:5px 2px;font-size:18px;color:#30333c;box-sizing:border-box}
+.c-workspace .c-rich-math-status{font:400 10px/16px var(--c-font);color:#989aa2}
+.c-workspace .c-rich-table{width:100%;border-collapse:collapse;font:400 12px/18px var(--c-font);font-variant-numeric:tabular-nums}
+.c-workspace .c-rich-table caption{text-align:left;font:400 10px/17px var(--c-font);color:#9a9ba2;padding-bottom:7px}
+.c-workspace .c-rich-table th,.c-workspace .c-rich-table td{text-align:left;padding:8px 9px;border-bottom:1px solid #edeef0;color:#676973}
+.c-workspace .c-rich-table thead th{font-size:10px;color:#8b8e96;font-weight:500;background:#fafafb}
+.c-workspace .c-rich-table tbody th{font-weight:500;color:#4b4e57}
+.c-workspace .c-rich-table tr:last-child th,.c-workspace .c-rich-table tr:last-child td{border-bottom:0}
+.c-workspace .c-rich-mini-chart{display:grid;gap:8px;margin:13px 0 0}
+.c-workspace .c-rich-chart-row{display:flex;align-items:center;gap:10px}
+.c-workspace .c-rich-chart-label{font:400 11px/16px var(--c-font);color:#7d8089;width:46px;flex:0 0 46px}
+.c-workspace .c-rich-chart-track{flex:1 1 auto;height:7px;background:#f1f2f5;border-radius:99px;overflow:hidden}
+.c-workspace .c-rich-chart-bar{display:block;height:100%;border-radius:99px;background:#babfc8;transform-origin:left;animation:c-rich-bar .8s cubic-bezier(.22,1,.36,1) both}
+.c-workspace .c-rich-chart-bar.updated{background:#7e9cc7}
+.c-workspace .c-rich-chart-value{font:400 11px/16px var(--c-font);color:#555963;width:31px;text-align:right}
+@keyframes c-rich-bar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.c-workspace .c-rich-quote{margin:0 0 10px;padding:6px 0 6px 14px;border-left:2px solid #d7dce6;font:400 italic 13px/21px var(--c-font);color:#717680}
+.c-workspace .c-rich-list{margin:0;padding:0 0 0 19px;display:grid;gap:5px}
+.c-workspace .c-rich-list li{color:#686b74;font:400 12px/19px var(--c-font)}
+@media(max-width:520px){
+ .c-workspace .c-rich-math-card,.c-workspace .c-rich-data,.c-workspace .c-rich-editorial{padding:13px 12px;border-radius:16px}
+ .c-workspace .c-rich-inline-math{font-size:11px}
+ .c-workspace .c-rich-math-display math{font-size:1.14em}
+ .c-workspace .c-rich-math-secondary{gap:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ .c-workspace .c-rich-response > *, .c-workspace .c-rich-chart-bar{animation:none!important}
+}
