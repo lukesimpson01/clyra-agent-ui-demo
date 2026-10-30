@@ -1,0 +1,9 @@
+{
+  "name": "clyra-agent-ui-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone light-theme Clyra agent conversation simulation",
+  "scripts": {
+    "dev": "node server.js"
+  }
+}
