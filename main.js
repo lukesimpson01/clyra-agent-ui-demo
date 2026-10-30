@@ -1482,9 +1482,15 @@
   composerInput.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();if(composerInput.value.trim())composerForm.requestSubmit();}});
   composerForm.addEventListener('submit',event=>{
     event.preventDefault();const content=composerInput.value.trim();if(!content)return;
-    composerInput.value='';composerInput.style.height='auto';const bubble=element('div','c-demo-user-prompt',content);
+    composerInput.value='';composerInput.style.height='auto';composerSend.disabled=true;
+    const dock=document.getElementById('demoComposerDock');
+    const wasWelcome=!dock.classList.contains('is-active');
+    dock.classList.add('is-active');
+    dock.classList.remove('is-welcome');
+    const bubble=element('div','c-demo-user-prompt',content);
     document.getElementById('demoUserMessage').replaceChildren(bubble);
-    runDemo();
+    if(wasWelcome&&!reducedMotion)setTimeout(()=>{if(dock.isConnected)runDemo();},660);
+    else runDemo();
   });
   const resizeDemoInput=()=>{composerInput.style.height='auto';composerInput.style.height=Math.min(composerInput.scrollHeight,130)+'px';};
   composerInput.addEventListener('input',()=>{composerSend.disabled=!composerInput.value.trim();resizeDemoInput();});
