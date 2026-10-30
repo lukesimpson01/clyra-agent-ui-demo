@@ -906,7 +906,7 @@
       render();
     }
     function selectElement(field,id=null){
-      selected={field,id};layerPanel.querySelectorAll('.c-slide-layer-item').forEach(b=>b.classList.toggle('is-selected',b.getAttribute('aria-label')==='Select '+(slides[current].objects.find(o=>o.id===id)?.type||'')+' object'&&field==='object'));
+      selected={field,id};layerPanel.querySelectorAll('.c-slide-layer-item').forEach(b=>b.classList.toggle('is-selected',field==='object'&&b.dataset.objectId===String(id)));
       canvas.querySelectorAll('.c-slide-selectable,.c-slide-object').forEach(el=>{
         el.classList.toggle('is-element-selected',(el.dataset.field===field)&&(field!=='object'||Number(el.dataset.objectId)===id)&&editing);
       });updateSelections();
@@ -1001,7 +1001,7 @@
       if(slide.objects.length){
         layerPanel.append(element('span','c-slide-layer-title','Objects'));
         [...slide.objects].reverse().forEach(obj=>{
-          const row=element('button','c-slide-layer-item'+(selected.field==='object'&&selected.id===obj.id?' is-selected':''));row.type='button';
+          const row=element('button','c-slide-layer-item'+(selected.field==='object'&&selected.id===obj.id?' is-selected':''));row.type='button';row.dataset.objectId=String(obj.id);
           row.setAttribute('aria-label','Select '+obj.type+' object');row.dataset.tooltip='Select '+obj.type;
           row.append(element('span','c-slide-layer-dot'),element('span','c-slide-layer-name',obj.type==='text'?(obj.text||'Text box').slice(0,25):obj.type[0].toUpperCase()+obj.type.slice(1)));
           row.addEventListener('click',()=>selectElement('object',obj.id));layerPanel.append(row);
