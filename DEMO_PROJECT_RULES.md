@@ -16,8 +16,27 @@ This contract covers development, verification and publishing of this standalone
    ```
 
    No `npm install`, build, environment secrets, or extra setup should be necessary to view this standalone demonstration **once the Git checkout is correctly configured**. **Node.js and npm must already be installed.** Git remote configuration is stored in each user's private `.git/config` and cannot be changed by committing files to GitHub.
-4. Keep the entry point `npm run dev` working, serving `http://localhost:5173/` unless the user expressly changes it. Do not silently change ports, startup behaviour, or requirements.
+4. Keep `npm run dev` working with **port 5173 as the preferred default**. If 5173 is occupied (`EADDRINUSE`), the server must automatically try the next free port (5174, 5175, etc., up to 20 alternatives), **print the actual working URL** and remain running instead of throwing an unhandled error. Never silently change ports: always explain the fallback. If all attempts fail, show a readable error with recovery advice. An explicit `PORT` environment override must also handle collisions. Do not terminate the other process to free its port.
 5. Do not introduce runtime dependencies without explicitly updating this contract and warning the user before making the change.
+
+## Busy-port behaviour (macOS and other platforms)
+
+When another process already listens on `localhost:5173`, do **not** crash with `EADDRINUSE`. A new `npm run dev` should report something like:
+
+```text
+Port 5173 is already in use. Trying another available port…
+Clyra UI Demo → http://localhost:5174/
+(Port 5173 was busy; using 5174 instead.)
+```
+
+The displayed URL is authoritative: open the new URL rather than assuming the demo is always on 5173. Stop an old server with **Ctrl+C** in its own terminal only if you specifically want to reuse 5173. Never automatically kill a listening process; it may be another application. The server may try up to 20 fallback ports. The normal two-command flow remains unchanged:
+
+```bash
+git pull
+npm run dev
+```
+
+No dependency installation is needed. The occupied-port regression must remain covered by `npm test` and the repository's GitHub Actions workflow. These rules belong **only to the standalone demo repository**; do not copy its server, port policy, workflow or test harness into the user's main Clyra project.
 
 ## Critical: fix `git pull` when the local main branch has no upstream
 
@@ -58,7 +77,10 @@ This entire workflow and its repair script belong to **this demo repository only
 
 - Run `node --check main.js`, `node --check scripts/setup-git.mjs`, and validate package JSON.
 - Validate the one-time Git repair helper's help mode and guard against changing an unrelated repository.
-- Run `node scripts/smoke-test.mjs` to start the actual dev server and request HTML, CSS and JavaScript. All checks must pass.
+- **Before pushing any change, actually execute `npm run dev` in the working project folder** and confirm it starts and serves the demo over HTTP. A syntax check or GitHub source inspection alone does not count as a startup test.
+- **Before pushing, run `npm test`**, which includes both the existing smoke test and `node scripts/port-test.mjs`: a real occupied-port regression which must prove automatic port fallback, real HTTP 200 responses for HTML/CSS/JS, and correct 404 behaviour.
+- For changes to the server or startup settings, explicitly reproduce the user's reported case: **make 5173 unavailable, execute the exact `npm run dev` command, and verify it starts on an available fallback port without an uncaught `EADDRINUSE` exception**. Confirm the URL shown is the URL actually serving content.
+- Run these checks in a local checkout or equivalent complete local project BEFORE GitHub changes are committed/pushed. If test execution is unavailable, don't claim that the change was tested, and don't silently bypass the contract.
 - Run `node scripts/browser-test.mjs` in an environment with Playwright/Chromium. Verify the composer submission, response states, plan disclosure, sources interaction, writing editor, slide editor, mobile sizing and absence of uncaught browser exceptions. This is a **development/CI-only dependency**, never necessary for `npm run dev`.
 - Inspect relevant browser screenshots when any visual layout or motion is changed.
 - Confirm all expected files were pushed and check the CI result. If browser/CI tests are unavailable, **state the limitation accurately**, do not claim every interaction was tested.
