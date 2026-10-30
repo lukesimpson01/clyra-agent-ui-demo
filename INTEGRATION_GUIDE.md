@@ -167,3 +167,12 @@ The **demo alone** uses synthetic artwork, track names and a local time counter 
 - **Calendar/reminders/maps/weather/music:** use real authorized data/actions from connected providers; on denied access, report the unavailable capability. Do not show generic, fake success cards.
 
 Maintain this project's restrained white/graphite design language (fine hairlines, consistent spacing, unobtrusive blue active state), but apply these styles through **host tokens and existing components**. The mock editor, demo composer, simulated media queue, weather fallback, fixed 10-second browser sequence, timers, and demo-only npm/GitHub rules must not migrate into production Clyra.
+
+
+## V20 — All capabilities and adaptive layouts (preserved requirements)
+
+**MANDATORY READING:** [CAPABILITY_AND_RESPONSIVE_CONTRACT.md](./CAPABILITY_AND_RESPONSIVE_CONTRACT.md). It contains the full non-duplicative inventory of chat, thinking, sources, deep research, real browser/computer control, coding, Git, terminal, file and image workflows, voice, memory, connected apps, multi-agent tasks, approvals, automation, documents, slides, spreadsheets, artifacts, diagrams, dashboards, design, apps, video, music, weather, maps and deliverable UI. All capabilities need real adapters, actual data and tool events, permissions and idle/loading/running/waiting/paused/success/error/history states. Never replace host components or fake success, commands, browser action or provider playback.
+
+**Responsive acceptance:** test the actual available component width in fullscreen, narrow desktop windows, split panes and phones. Prefer scoped named container queries, fluid grids and independent scrolling, not a single mobile media query. Include no-overlap/no-horizontal-overflow assertions, screenshots, safe areas, short landscape, keyboard, reduced motion and 200%/400% zoom where feasible. Every overlay and popup must remain reachable. Production owns the chat shell and network/tool orchestrator.
+
+**Demo source-control closure:** the verified upstream is [lukesimpson01/clyra-agent-ui-demo](https://github.com/lukesimpson01/clyra-agent-ui-demo). All completed changes must be committed, pushed and checked against remote CI, with no loss of newer features. A ZIP is not a GitHub push. Preserve existing `git pull` followed by `npm run dev` for a correctly tracked clone. Demo-only workflow instructions never replace production Clyra's own rules.
