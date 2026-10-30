@@ -807,11 +807,23 @@
       row.append(icon,txt);list.append(row);return row;
     });
     inner.append(list);disclosure.append(inner);card.append(trigger,disclosure);planMount.replaceChildren(card);
-    let done=0,open=false;setOpen(false);
-    // Begin as a single progress circle, then unfold the plan when work starts.
-    setTimeout(()=>{if(card.isConnected&&done<items.length)setOpen(true);},480);
-    function setOpen(next){open=next;trigger.setAttribute('aria-expanded',String(open));card.classList.toggle('is-open',open);disclosure.classList.toggle('is-open',open);}
-    trigger.addEventListener('click',()=>setOpen(!open));
+    let done=0,open=false,pinned=false,hovered=false;setOpen(false);
+    // Hover offers a temporary peek; click pins open until click outside or again.
+    // Touch/keyboard users use click, and hover never changes their explicit choice.
+    function setOpen(next){open=next;trigger.setAttribute('aria-expanded',String(open));
+      card.classList.toggle('is-open',open);disclosure.classList.toggle('is-open',open);
+      disclosure.setAttribute('aria-hidden',String(!open));disclosure.inert=!open;
+    }
+    trigger.addEventListener('click',event=>{
+      event.stopPropagation();
+      if(pinned){pinned=false;setOpen(false);}
+      else{pinned=true;setOpen(true);}
+    });
+    card.addEventListener('pointerenter',event=>{if(event.pointerType==='mouse'||event.pointerType==='pen'){hovered=true;if(!pinned)setOpen(true);}});
+    card.addEventListener('pointerleave',()=>{hovered=false;if(!pinned)setOpen(false);});
+    document.addEventListener('pointerdown',event=>{
+      if(card.isConnected&&pinned&&!card.contains(event.target)){pinned=false;setOpen(false);}
+    });
     function render(){
       const all=done===items.length;
       rows.forEach((row,index)=>{
@@ -826,11 +838,10 @@
           {opacity:.35,filter:'blur(1.5px)'},{opacity:1,filter:'blur(0)'}
         ],{duration:440,easing:'cubic-bezier(.22,1,.36,1)'});
       }
-      const fraction=items.length?done/items.length:0;
-      mark.style.setProperty('--todo-percentage',Math.round(fraction*100)+'%');
-      mark.querySelector('.c-todo-progress-value')?.style.setProperty('stroke-dashoffset',String(69.115*(1-fraction)));
+      // The 1/N text represents progress; the icon is a *spinning activity indicator*.
+      // It intentionally does not represent the fraction completed.
       mark.classList.toggle('is-all-done',all);mark.classList.toggle('is-working',!all&&done<items.length);
-      if(all){setTimeout(()=>{if(done===items.length&&card.isConnected)setOpen(false);},600);}
+      if(all){setTimeout(()=>{if(done===items.length&&card.isConnected&&!pinned)setOpen(false);},880);}
       // Keep the compact collapsed plan stable unless the user opens it.
     }
     render();
