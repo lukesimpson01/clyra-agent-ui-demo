@@ -546,17 +546,35 @@
     p.appendChild(a);block.appendChild(p);paint(()=>assistant.appendChild(block));
   }
   function addSourcesFooter(){
-    const strip=element('nav','c-source-strip');strip.setAttribute('aria-label','Referenced websites');
-    const caption=element('span','c-source-strip-caption','Sources');strip.append(caption);
-    SOURCES.forEach((source,index)=>{
-      const link=element('a','c-source-chip');link.href=source.href;link.target='_blank';link.rel='noopener noreferrer';
-      link.style.setProperty('--source-index',index);
-      link.setAttribute('aria-label','Open '+source.name);link.title=source.name;
-      const name=element('span','c-source-chip-name',source.name);
-      link.append(sourceLogo(source,'c-source-chip-icon'),name);
-      strip.append(link);
+    // Website citations remain collapsed until a user opens them.
+    const root=element('section','c-sources-disclosure');
+    root.setAttribute('aria-label','Sources referenced in this response');
+    const trigger=element('button','c-sources-disclosure-trigger');
+    trigger.type='button';trigger.setAttribute('aria-expanded','false');
+    const panelId='c-sources-detail-'+session;
+    trigger.setAttribute('aria-controls',panelId);
+    const logos=element('span','c-sources-logos');
+    SOURCES.forEach(source=>logos.appendChild(sourceLogo(source,'c-sources-logo')));
+    const title=element('span','c-sources-disclosure-label','Sources');
+    const count=element('span','c-sources-disclosure-count',String(SOURCES.length));
+    const arrow=element('span','c-sources-disclosure-arrow');arrow.innerHTML=svg('caret');
+    trigger.append(logos,title,count,arrow);
+    const panel=element('div','c-sources-disclosure-panel');panel.id=panelId;
+    panel.setAttribute('role','region');panel.setAttribute('aria-label','Referenced websites');
+    panel.setAttribute('aria-hidden','true');panel.inert=true;
+    const clip=element('div','c-sources-disclosure-clip');
+    const links=element('div','c-sources-disclosure-links');
+    SOURCES.forEach(source=>links.appendChild(sourceLink(source)));
+    clip.append(links);panel.append(clip);root.append(trigger,panel);
+    trigger.addEventListener('click',()=>{
+      const open=trigger.getAttribute('aria-expanded')!=='true';
+      trigger.setAttribute('aria-expanded',String(open));
+      panel.setAttribute('aria-hidden',String(!open));
+      panel.inert=!open;
+      paint(()=>root.classList.toggle('is-open',open));
     });
-    paint(()=>assistant.append(strip));
+    paint(()=>assistant.append(root));
+    return root;
   }
   function addResults(){
     const block=element('div','c-stream-block');
@@ -938,6 +956,13 @@
     composerSend.disabled=true;composerSend.setAttribute('aria-label','Running demonstration');
     document.body.classList.remove('c-document-expanded','c-plan-open');planToggle.setAttribute('aria-expanded','false');
     const delay=ms=>sleep(reducedMotion?Math.round(ms*.55):ms,token);
+    // Demo-only pacing; do not insert scripted pauses into a real agent loop.
+    const actionPause=()=>sleep(1000,token);
+    const completeEditThenPause=async review=>{
+      review.complete();
+      if(!reducedMotion)await delay(2250); // allow digit roll to finish
+      await actionPause();
+    };
     try {
       await delay(320);
       const todo=createTodo([
@@ -948,12 +973,12 @@
 
       // SECTION 1 / 3 — group web, browser and recovery activity under one phase.
       let think=addThinking();await delay(1820);finishThinking(think);
-      await delay(220);
+      await actionPause();
       await streamParagraph([
         'I’ll first review the relevant sources and inspect the current working environment, then use that information to shape the documents, presentation and connected actions. ',
         'I’ll keep the activity visible without splitting every small tool call into another section, and only surface expanded details where they add useful context.'
       ],token);
-      await delay(270);
+      await actionPause();
       const searchGroup=addActivityGroup();
       const search=addActivity(searchGroup,{label:'Searching the web',icon:'search'});
       await delay(450);
@@ -964,99 +989,114 @@
         const logo=sourceLogo(source,'c-web-favicon');logo.title=source.name;
         faviconStack.appendChild(logo);
       }
-      await delay(270);
+      await actionPause();
       const reading=addActivity(searchGroup,{label:'Reading 3 pages',icon:'book'});
       await delay(690);completed(reading,'Read 3 pages');completed(search,'Searched the web');
-      await delay(260);
+      await actionPause();
       addCitations();
       await streamParagraph([
         'The initial research confirms the direction: the interface should prioritise readable text, clear editing controls, and subtle motion that communicates progress without drawing attention to itself. ',
         'I’m also retaining a visible recovery state for interrupted connections, so an in-progress operation remains understandable rather than suddenly disappearing.'
       ],token);
-      await delay(220);
+      await actionPause();
       await playReconnecting(token);
-      await delay(310);
+      await actionPause();
       await playBrowserAgent(token,delay);
       todo.advance();
 
       // SECTION 2 / 3 — artifacts are not interspersed with decorative dividers.
-      await delay(340);
+      await actionPause();
       addStepDivider('Create & refine');
       think=addThinking();await delay(1370);finishThinking(think);
+      await actionPause();
       await streamParagraph([
         'With the supporting information collected, I can turn the brief into a document and a small presentation. ',
         'The document uses a comfortable reading width and a rounded, open canvas. Its editing toolbar stays compact and stable, so choosing formatting options does not cause buttons or text to jump around.'
       ],token);
+      await actionPause();
       await playSkill('Document Design',[
         'Arranged the information into a readable editorial hierarchy',
         'Applied restrained headings, generous paragraph spacing and neutral typography',
         'Prepared a document that can be copied, expanded or edited in place'
       ],token,delay,'edit');
+      await actionPause();
       const writing=addWritingCard();
       await writing.revealAndType(token,delay);
-      await delay(340);
+      await actionPause();
       await streamParagraph([
         'The accompanying presentation follows the same visual logic, but adapts the information to a sequence of simple slides rather than trying to squeeze a document into a slide template. ',
         'You can inspect each slide and switch the preview style; those visual controls are independent of the surrounding conversation.'
       ],token);
+      await actionPause();
       await playSkill('Presentation Builder',[
         'Mapped the brief into a concise opening, product story and closing',
         'Selected consistent margins, type sizes and slide transitions',
         'Prepared a navigable preview with style options'
       ],token,delay,'slides');
+      await actionPause();
       const slides=createPresentationCard();
       await delay(480);slides.selectSlide(1);
       await delay(440);slides.selectSlide(2);
+      await actionPause();
       await streamParagraph([
         'I can also play a track through a connected music service. ',
         'The playback state is displayed as a compact, light music capsule. It stays out of the way, with the extra playback controls available only when expanded.'
       ],token);
+      await actionPause();
       const musicGroup=addActivityGroup();
       const createMusic=addActivity(musicGroup,{label:'Opening music',icon:'music'});
       await delay(800);completed(createMusic,'Opened music');
+      await actionPause();
       const music=createMusicCard();
       await delay(590);music.setPlaying(0,true);
+      await actionPause();
       const playback=addActivity(musicGroup,{label:'Starting · Quiet Momentum',icon:'play'});
       completed(playback,'Started · Quiet Momentum');
+      await actionPause();
       todo.advance();
 
       // SECTION 3 / 3 — file diffs, commands and connectors stay in one broad phase.
-      await delay(350);
+      await actionPause();
       addStepDivider('Execute & verify');
       await streamParagraph([
         'Next I’ll review the implementation changes and make the result inspectable. ',
         'File edits appear as lightweight rows while running; once complete they offer a rounded diff disclosure with line numbers, additions and removals. ',
         'Commands keep their exact text visible, and verification output collapses when the action ends so the response remains easy to scan.'
       ],token);
+      await actionPause();
       const editGroup=addActivityGroup();
       const edit=createEditReview(editGroup,'src/components/LaunchPanel.tsx',DEMO_DIFF_COMPONENT);
-      await delay(850);edit.complete();
+      await delay(850);await completeEditThenPause(edit);
       const styles=createEditReview(editGroup,'src/styles/launch.css',DEMO_DIFF_STYLES);
-      await delay(810);styles.complete();
+      await delay(810);await completeEditThenPause(styles);
       const command=createCommandView('npm run typecheck');
       await delay(520);command.line('Checking 18 files');
       await delay(430);command.line('0 errors found');
       await delay(370);command.finish();
+      await actionPause();
       const build=createCommandView('npm run build');
       await delay(510);build.line('Bundling client assets');
       await delay(490);build.line('Build completed');
       await delay(300);build.finish();
-      await delay(230);
+      await actionPause();
       await streamParagraph([
         'The revised implementation keeps related tool events together instead of adding status cards for every possible integration. ',
         'The result is easier to scan: file changes stay inspectable, executed commands retain their real output, and longer explanations connect the work without dividing the conversation into tiny fragments. ',
         'Additional integrations can use the same component patterns when genuine results are available.'
       ],token);
+      await actionPause();
       think=addThinking();await delay(1230);finishThinking(think);
+      await actionPause();
       await streamParagraph([
         'The demonstration is complete. The document, slide deck, compact music controls, browser activity, code edits and command checks are all represented above, with previews only where those previews are useful. ',
         'The compact task list stays separate from the response, while small activity rows show what happened inside the work. ',
         'In a real application, these components should react to genuine agent events and preserve the application’s existing chat bubbles, composer, scrolling and message lifecycle.'
       ],token);
+      await actionPause();
       addCodeBlock();
       todo.advance();
-      await delay(300);addSourcesFooter();
-      await delay(210);addFooter();
+      await actionPause();addSourcesFooter();
+      await actionPause();addFooter();
       assistant.setAttribute('aria-busy','false');composerSend.disabled=false;
     }catch(e){if(token===session){assistant.setAttribute('aria-busy','false');composerSend.disabled=false;console.error(e);}}
   }
