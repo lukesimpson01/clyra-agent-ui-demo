@@ -153,3 +153,20 @@ Before EVERY push involving UI:
 - Any new control must have an accessible name and a real demo handler; production integrations use the host's existing Markdown/math, browser, agent and editor components.
 
 **Scope:** These release/design requirements belong ONLY to `lukesimpson01/clyra-agent-ui-demo`, not to the main Clyra app or other projects.
+
+## v19 — contextual tool UI acceptance criteria
+
+This **standalone demo** must remain runnable after only `git pull` and `npm run dev`. New styles/components must match existing white/graphite typography, hairline strokes, small labels, muted blue accents, consistent icon size and measured easing. Never leave disconnected controls or too many floating menus.
+
+**Before pushing**, open the actual running app and visually inspect full desktop/mobile states and interactions, run `npm test` and `npm run test:browser` where browser tooling is available. Run UI regression tests for any affected control. Never claim completed browser validation if you only ran source inspection, representative layout fixtures or isolated mock components; explicitly report gaps.
+
+New required states:
+- **Slides Edit** enters full screen automatically, smoothly. Closing uses a clearly labelled **X / Close**, not “Minimise”; Esc also exits. The formatting toolbar is organised by **Slides / Insert / Text / Arrange** into tight groups with shape/arrange popovers. Test menus, object insertion, formatting and closing.
+- **Music notch** has a real cover-thumbnail slot, Previous/Play-Pause/Next, seek slider, queue chevron and small expandable song list. Short Previous restarts after 3 seconds or chooses prior track; long-press Previous/Next gradually seeks. Queue selection updates demo state. The demo is synthetic by design; production must use *real provider metadata and acknowledged actions*.
+- **Todo** closed is a centred horizontal pill with rotating activity spinner aligned left, step count, label and chevron. Hover previews checklist; leaving closes only an unpinned panel. Click pins it; clicking outside or again dismisses. No permanent circular-progress display; count alone shows completion fraction.
+- **Weather and location** show real values only when API fetches succeed. Default to current location with browser permission; on denial provide global city search. Weather uses Open-Meteo live data; map is a real attributed OSM embed. Map full screen shows controls and place sheet. No invented coordinates, measurements, route times or provider responses.
+- **Conditional integration:** the production agent (not the demo) chooses which widgets are pertinent. Use dynamic step/divider names and counts from actual planner events; show plan/dividers only for multi-step tasks. Keep actual actions grouped under their matching step. A single response must not become a “showcase of every widget” unless the user explicitly asks for a UI showcase.
+- Source/API policies: Open-Meteo free hosted tier is **non-commercial only**, OSM public raster tiles are not unlimited free commercial infrastructure, and Nominatim public search has **1 request/s app-wide** and no heavy client autocomplete. Production needs compliant paid/self-hosted services at scale. Browser geolocation must be permission-aware. See `INTEGRATION_GUIDE.md`.
+- Preserve the production host's own composer, scroll, tool orchestrator, document/slide editor, music backend, auth state, maps and weather provider configuration.
+
+**Scope:** none of these demo-specific npm or scripted animation rules transfer into the real Clyra host.
