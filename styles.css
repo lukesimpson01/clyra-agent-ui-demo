@@ -2585,3 +2585,195 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
  .c-workspace .c-slide-menu-item:nth-child(n+5) .c-slide-menu-options{left:auto;right:0}
  .c-workspace .c-slides-v14 .c-slide-menu-options{min-width:min(205px,calc(100vw - 55px));max-width:calc(100vw - 55px)}
 }
+
+/* V18 — Unified welcome/working states, active browser and polished task progress.
+   Demo only: production host owns its composer and its animation timing. */
+.c-workspace .c-composer-dock{
+  width:min(600px,calc(100vw - 28px))!important;
+  max-width:calc(100vw - 20px)!important;
+  left:50%!important;right:auto!important;bottom:auto!important;
+  top:calc(100dvh - 14px)!important;transform:translate(-50%,-100%)!important;
+  transition:top .72s cubic-bezier(.22,1,.36,1),transform .72s cubic-bezier(.22,1,.36,1),
+    width .52s cubic-bezier(.22,1,.36,1)!important;
+  will-change:top,transform!important;
+}
+.c-workspace .c-composer-dock:not(.is-active){
+  top:50dvh!important;transform:translate(-50%,-50%)!important;
+  width:min(565px,calc(100vw - 28px))!important;
+}
+.c-workspace .c-composer-dock:not(.is-active) .c-plan-rail{opacity:0!important;visibility:hidden!important;height:0!important;overflow:hidden!important}
+.c-workspace .c-composer-dock.is-active .c-plan-rail{
+  opacity:1!important;visibility:visible!important;
+  transition:opacity .38s ease .28s!important;
+}
+.c-workspace .c-composer-dock .c-demo-composer{min-height:105px!important;border-radius:27px!important}
+.c-workspace .c-lane{max-width:760px!important}
+@media(max-width:540px){
+ .c-workspace .c-composer-dock{top:calc(100dvh - 8px)!important;width:calc(100vw - 22px)!important}
+ .c-workspace .c-composer-dock:not(.is-active){top:43dvh!important;width:calc(100vw - 30px)!important}
+}
+@media(prefers-reduced-motion:reduce){.c-workspace .c-composer-dock{transition:none!important;will-change:auto!important}}
+
+/* A horizontal, readable collapsed to-do pill with progress circle at the LEFT.
+   Expanded checklist grows vertically; icon, label and counter never jump. */
+.c-workspace .c-composer-dock .c-todo.c-todo-v8,
+.c-workspace .c-composer-dock .c-todo.c-todo-v8.is-open{
+  width:min(282px,calc(100vw - 35px))!important;
+  max-width:min(282px,calc(100vw - 35px))!important;
+  border:1px solid #e7e7eb!important;background:#fff!important;
+  box-shadow:0 6px 19px rgba(13,15,20,.055)!important;
+  border-radius:20px!important;
+  transition:border-radius .3s cubic-bezier(.22,1,.36,1),background .24s ease,box-shadow .24s ease!important;
+}
+.c-workspace .c-composer-dock .c-todo.c-todo-v8:not(.is-open){border-radius:999px!important}
+.c-workspace .c-composer-dock .c-todo.c-todo-v8:not(.is-open) .c-todo-v8-trigger,
+.c-workspace .c-composer-dock .c-todo.c-todo-v8.is-open .c-todo-v8-trigger{
+  display:flex!important;justify-content:flex-start!important;align-items:center!important;
+  gap:9px!important;width:100%!important;min-width:0!important;max-width:100%!important;
+  height:43px!important;min-height:43px!important;box-sizing:border-box!important;
+  padding:0 12px!important;margin:0!important;border:0!important;box-shadow:none!important;
+  background:transparent!important;border-radius:inherit!important;white-space:nowrap!important;
+}
+.c-workspace .c-composer-dock .c-todo-v8-headicon{
+  width:24px!important;height:24px!important;min-width:24px!important;flex:0 0 24px!important;
+  display:grid!important;place-items:center!important;position:relative!important;margin:0!important;
+}
+.c-workspace .c-composer-dock .c-todo-v8-headicon .c-todo-progress-svg{
+  width:24px!important;height:24px!important;inset:0!important;
+}
+.c-workspace .c-composer-dock .c-todo-v8-headicon .c-todo-progress-ring{display:none!important}
+.c-workspace .c-composer-dock .c-todo-v8-title{
+  display:block!important;flex:1 1 auto!important;min-width:0!important;
+  max-width:160px!important;opacity:1!important;overflow:visible!important;
+  font:500 12px/18px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif!important;
+  color:#4a4c55!important;margin:0!important;white-space:nowrap!important;
+}
+.c-workspace .c-composer-dock .c-todo-v8-counter{
+  display:block!important;flex:0 0 auto!important;max-width:60px!important;
+  min-width:24px!important;opacity:1!important;overflow:visible!important;
+  text-align:right!important;font:400 11px/18px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif!important;
+  color:#92949d!important;margin:0!important;padding:0!important;
+}
+.c-workspace .c-composer-dock .c-todo-v8-chevron{
+  display:grid!important;place-items:center!important;flex:0 0 13px!important;
+  max-width:13px!important;width:13px!important;min-width:13px!important;opacity:.7!important;
+  overflow:visible!important;margin-left:2px!important;transition:transform .3s cubic-bezier(.22,1,.36,1)!important;
+}
+.c-workspace .c-composer-dock .c-todo.c-todo-v8.is-open .c-todo-v8-chevron{transform:rotate(180deg)!important}
+.c-workspace .c-composer-dock .c-todo-v8-list{padding:2px 10px 11px!important;margin:0!important;list-style:none!important}
+.c-workspace .c-composer-dock .c-todo-v8-item{
+  display:flex!important;align-items:center!important;gap:9px!important;
+  min-height:32px!important;padding:5px 3px!important;border-radius:10px!important;
+  font:400 12px/18px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif!important;
+  transition:background .24s ease,opacity .3s ease!important;
+}
+.c-workspace .c-composer-dock .c-todo-v8-itemtext{
+  position:relative!important;flex:1!important;min-width:0!important;
+  white-space:normal!important;text-overflow:clip!important;overflow:visible!important;
+  line-height:18px!important;color:#62656d!important;
+}
+.c-workspace .c-composer-dock .c-todo-v8-itemtext::after{
+  content:""!important;position:absolute!important;left:0!important;right:0!important;
+  top:51%!important;height:1px!important;background:#92969e!important;pointer-events:none!important;
+  transform:scaleX(0)!important;transform-origin:left!important;
+  transition:transform .48s cubic-bezier(.19,1,.22,1)!important;
+}
+.c-workspace .c-composer-dock .c-todo-v8-item.is-done .c-todo-v8-itemtext::after{
+  transform:scaleX(1)!important;
+}
+.c-workspace .c-composer-dock .c-todo-v8-status{
+  flex:0 0 19px!important;width:19px!important;height:19px!important;
+  display:grid!important;place-items:center!important;border-radius:50%!important;
+  transition:background .36s ease,border-color .36s ease,transform .42s cubic-bezier(.18,1.7,.36,1)!important;
+}
+.c-workspace .c-composer-dock .c-todo-v8-item.is-done .c-todo-v8-status{
+  background:#363c48!important;border-color:#363c48!important;transform:scale(1.06)!important;
+  animation:c-task-confirm .5s cubic-bezier(.22,1,.36,1) both!important;
+}
+.c-workspace .c-composer-dock .c-todo-v8-item.is-done{animation:c-task-softlight .65s ease both}
+@keyframes c-task-confirm{0%{transform:scale(.64)}42%{transform:scale(1.27)}100%{transform:scale(1.06)}}
+@keyframes c-task-softlight{0%,100%{background:transparent}40%{background:rgba(58,75,106,.055)}}
+
+/* Browser: stage transitions only after 3 seconds. The overlay remains inside
+   the existing 16:9 rounded viewport and never repaints a giant blurry layer. */
+.c-workspace .c-browser-placeholder.c-browser-v18{
+  position:relative!important;isolation:isolate!important;
+  overflow:hidden!important;aspect-ratio:16/9!important;border-radius:19px!important;
+  background:#e9eaed!important;contain:paint!important;
+  transition:background-color .55s ease!important;
+}
+.c-workspace .c-browser-v18 .c-browser-placeholder-shimmer{
+  z-index:1!important;position:absolute!important;inset:0!important;
+  opacity:1!important;transition:opacity .65s cubic-bezier(.22,1,.36,1)!important;
+}
+.c-workspace .c-browser-v18 .c-browser-blue-field{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  opacity:0;transform:scale(.98);border-radius:inherit;overflow:hidden;
+  background:
+   radial-gradient(ellipse 65% 70% at 22% 76%,rgba(25,109,231,.4),transparent 78%),
+   radial-gradient(ellipse 58% 65% at 83% 32%,rgba(84,164,253,.45),transparent 78%),
+   linear-gradient(125deg,#e7edf7,#dce9f9 55%,#e9f0fb);
+  transition:opacity .7s cubic-bezier(.22,1,.36,1),transform 1s cubic-bezier(.22,1,.36,1);
+}
+.c-workspace .c-browser-v18 .c-browser-blue-field::after{
+  content:"";position:absolute;inset:-24%;opacity:.8;filter:blur(15px);
+  background:radial-gradient(ellipse 42% 35% at 45% 50%,rgba(54,128,246,.44),transparent 80%);
+  animation:c-browser-soft-glow 5.4s ease-in-out infinite alternate;
+}
+.c-workspace .c-browser-v18.is-agent-working .c-browser-placeholder-shimmer{opacity:0!important;animation-play-state:paused!important}
+.c-workspace .c-browser-v18.is-agent-working .c-browser-blue-field{opacity:1;transform:scale(1)}
+.c-workspace .c-browser-v18.is-agent-closing .c-browser-blue-field{opacity:0;transform:scale(1.016)}
+.c-workspace .c-browser-v18.is-agent-closing .c-browser-placeholder-shimmer{opacity:0!important;animation-play-state:paused!important}
+@keyframes c-browser-soft-glow{
+  0%{transform:translate3d(-10%,8%,0) rotate(-7deg)}
+  50%{transform:translate3d(10%,-9%,0) rotate(7deg)}
+  100%{transform:translate3d(-4%,2%,0) rotate(0)}
+}
+.c-workspace .c-browser-v18 .c-browser-agent-cursor{
+  position:absolute;z-index:5;top:0;left:0;width:22px;height:25px;
+  opacity:0;pointer-events:none;transform:translate3d(30px,36px,0);
+  filter:drop-shadow(0 1px 2px rgba(27,39,73,.18));
+  transition:opacity .32s ease!important;will-change:transform;
+}
+.c-workspace .c-browser-v18 .c-browser-agent-cursor svg{
+  position:relative;z-index:2;width:20px;height:23px;
+  fill:#fff;stroke:#3b475d;stroke-width:1.5;
+}
+.c-workspace .c-browser-v18 .c-browser-agent-halo{
+  position:absolute;left:-10px;top:-9px;width:33px;height:33px;
+  border-radius:50%;background:radial-gradient(circle,rgba(41,122,242,.28),rgba(80,155,247,.055) 62%,transparent 75%);
+  transform:scale(.9);pointer-events:none;
+  animation:c-browser-cursor-breathe 1.75s ease-in-out infinite alternate;
+}
+.c-workspace .c-browser-v18.is-agent-working .c-browser-agent-cursor{
+ opacity:1;animation:c-browser-cursor-journey 6.9s cubic-bezier(.45,.05,.36,.96) both;
+}
+.c-workspace .c-browser-v18.is-agent-closing .c-browser-agent-cursor{opacity:0!important;animation-play-state:paused}
+@keyframes c-browser-cursor-journey{
+  0%{transform:translate3d(30px,42px,0)}
+  16%{transform:translate3d(110px,65px,0)}
+  30%{transform:translate3d(220px,95px,0)}
+  46%{transform:translate3d(245px,123px,0)}
+  60%{transform:translate3d(170px,168px,0)}
+  77%{transform:translate3d(285px,153px,0)}
+  100%{transform:translate3d(325px,85px,0)}
+}
+@keyframes c-browser-cursor-breathe{from{transform:scale(.82);opacity:.65}to{transform:scale(1.1);opacity:1}}
+@media(max-width:580px){
+ .c-workspace .c-browser-v18.is-agent-working .c-browser-agent-cursor{
+  animation-name:c-browser-cursor-journey-mobile!important;
+ }
+}
+@keyframes c-browser-cursor-journey-mobile{
+  0%{transform:translate3d(22px,24px,0)}25%{transform:translate3d(90px,45px,0)}
+  50%{transform:translate3d(135px,80px,0)}75%{transform:translate3d(110px,130px,0)}
+  100%{transform:translate3d(190px,66px,0)}
+}
+@media(prefers-reduced-motion:reduce){
+ .c-workspace .c-browser-v18 .c-browser-blue-field::after,
+ .c-workspace .c-browser-v18 .c-browser-agent-cursor,
+ .c-workspace .c-browser-v18 .c-browser-agent-halo{animation:none!important}
+ .c-workspace .c-browser-v18 .c-browser-agent-cursor{opacity:0!important}
+ .c-workspace .c-browser-v18 .c-browser-blue-field{transition:none!important}
+ .c-workspace .c-composer-dock .c-todo-v8-item.is-done{animation:none!important}
+}
