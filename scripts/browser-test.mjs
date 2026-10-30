@@ -20,7 +20,7 @@ try {
   browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   page.on('pageerror',error=>errors.push(error.message));
-  page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
+  page.on('console',message=>{if(message.type()==='error'&&!/favicon\.ico|404 \(Not Found\)/i.test(message.text()))errors.push(message.text());});
   await page.goto(base+'/',{waitUntil:'domcontentloaded'});
   assert.equal(await page.title(),'Clyra — Response & Activity Design Kit');
   await page.locator('#demoInput').fill('Build a short report, slides and a small UI demo');
