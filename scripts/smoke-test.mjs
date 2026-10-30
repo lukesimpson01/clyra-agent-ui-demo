@@ -17,10 +17,11 @@ new Function(js);
 assert(!js.includes('await playReconnecting(token)'), 'Demo must not play reconnecting sequence');
 assert(!js.includes('is-document-folded'), 'Document must render without a folded state');
 assert(js.includes("isPresentationBuilder=label==='Presentation Builder'"), 'Presentation Builder stays a status row without a disclosure');
-for (const name of ['c-slide-menu-bar','const menuDefinitions=[','doExportPNG','c-slide-native-table','skipBack.addEventListener','skipNext.addEventListener','c-sources-inline-direction']){
+for (const name of ['c-slide-menu-bar','const menuDefinitions=[','doExportPNG','c-slide-native-table','wireSeek(previous,-1)','wireSeek(next,1)','c-sources-inline-direction']){
   assert(js.includes(name),'Missing Slides/music/sources interaction: '+name);
 }
-assert(css.includes("checklist's width sideways"), 'Todo must collapse to a circle without horizontal width animation');
+assert(js.includes("pinned=false,hovered=false") && js.includes("card.addEventListener('pointerenter'"), 'Todo must support hover preview, click pin and outside dismissal');
+assert(css.includes('c-plan-spin 1.35s'), 'Active todo must use a spinner, not fractional progress ring');
 assert(css.includes('c-slide-top-toolbar'), 'Slides edit toolbar must live above the canvas');
 assert(css.includes('c-sources-inline-direction'), 'Source disclosure chevron must be styled');
 
@@ -33,6 +34,15 @@ assert(js.includes('loadKaTeX') && js.includes('trust:false'), 'Optional user-tr
 assert(css.includes('/* V18 — Unified welcome/working states'), 'Centered-to-bottom composer geometry must be styled');
 assert(css.includes('Collapsed to-do pill') || css.includes('collapsed to-do pill') || css.includes('collapsed HORIZONTAL pill') || css.includes('horizontal, readable collapsed'), 'Todo must remain a readable horizontal pill when closed');
 assert(css.includes('Specificity fix: earlier circular-collapse'), 'Legacy CSS rules must not hide collapsed todo labels');
+assert(js.includes("if(next)setFullscreen(true)"), 'Slide Edit must auto-enter fullscreen');
+assert(js.includes("svg('x')+'<span>Close</span>'"), 'Slide full-screen close must use X');
+assert(js.includes("makeToolLabel('SLIDES')")&&js.includes("makeToolLabel('INSERT')")&&js.includes("makeToolLabel('TEXT')")&&js.includes("makeToolLabel('ARRANGE')"), 'Slide controls must be grouped');
+assert(js.includes('c-music-queue-item')&&js.includes('wireSeek(previous,-1)'), 'Music must have queue and hold seek');
+assert(js.includes('addWeatherAndMapCards();'), 'Demo should show weather and location cards');
+assert(js.includes('https://api.open-meteo.com/v1/forecast?'), 'Live Open-Meteo source required');
+assert(js.includes('https://www.openstreetmap.org/export/embed.html?'), 'Real OSM map embed required');
+assert.match(text('INTEGRATION_GUIDE.md'), /dynamic multi-step plan/i);
+
 assert.match(text('DEMO_PROJECT_RULES.md'), /visual design|design-language/i);
 
 
