@@ -927,6 +927,20 @@
         if(obj.type==='text'){el.textContent=obj.text;el.contentEditable=String(editing);el.spellcheck=false;el.addEventListener('input',()=>{obj.text=el.innerText;});}
         el.classList.toggle('is-element-selected',editing&&selected.field==='object'&&selected.id===obj.id);
         el.addEventListener('click',()=>selectElement('object',obj.id));
+        if(editing){
+          const resize=element('span','c-slide-object-resize');
+          resize.contentEditable='false';resize.setAttribute('aria-label','Resize slide object');
+          resize.addEventListener('pointerdown',event=>{
+            event.preventDefault();event.stopPropagation();resize.setPointerCapture(event.pointerId);
+            const rect=canvas.getBoundingClientRect(),startX=event.clientX,startY=event.clientY,w=obj.w,h=obj.h;let moved=false;
+            const move=e=>{if(!moved){snapshot();moved=true;}
+              obj.w=Math.max(8,Math.min(100-obj.x,w+(e.clientX-startX)/rect.width*100));
+              obj.h=Math.max(6,Math.min(100-obj.y,h+(e.clientY-startY)/rect.height*100));
+              el.style.width=obj.w+'%';el.style.height=obj.h+'%';};
+            const finish=()=>{resize.removeEventListener('pointermove',move);resize.removeEventListener('pointerup',finish);resize.removeEventListener('pointercancel',finish);};
+            resize.addEventListener('pointermove',move);resize.addEventListener('pointerup',finish);resize.addEventListener('pointercancel',finish);
+          });el.append(resize);
+        }
         el.addEventListener('pointerdown',event=>{
           if(!editing||event.button!==0||event.target.isContentEditable)return;
           event.preventDefault();selectElement('object',obj.id);el.setPointerCapture(event.pointerId);
@@ -977,6 +991,8 @@
     window.addEventListener('keydown',event=>{
       if(event.key==='Escape'&&card.classList.contains('is-slide-fullscreen'))setFullscreen(false);
       if(!card.isConnected||!editing)return;
+      // Let the native contenteditable engine undo/redo the user's text edits.
+      if(event.target?.isContentEditable&&(event.metaKey||event.ctrlKey)&&['z','y'].includes(event.key.toLowerCase()))return;
       if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='m'){event.preventDefault();addSlide();}
       if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='z'&&!event.shiftKey){event.preventDefault();undo();}
       if((event.metaKey||event.ctrlKey)&&((event.key.toLowerCase()==='y')||(event.key.toLowerCase()==='z'&&event.shiftKey))){event.preventDefault();redo();}
