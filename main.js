@@ -662,7 +662,8 @@
     }
     const copy=headButton('copy','Copy writing');
     const edit=headButton('edit','Edit writing','Edit');edit.setAttribute('aria-pressed','false');
-    actions.append(copy,edit);header.append(title,actions);
+    const expand=headButton('expand','Full screen writing','Full screen');
+    actions.append(copy,edit,expand);header.append(title,actions);
     const toolbarShell=element('div','c-writing-toolbar-shell');toolbarShell.setAttribute('aria-hidden','true');
     const toolbarClip=element('div','c-writing-toolbar-clip');
     const toolbar=element('div','c-writing-toolbar');toolbar.setAttribute('role','toolbar');toolbar.setAttribute('aria-label','Document formatting');
@@ -744,8 +745,24 @@
     buttons.link.addEventListener('click',()=>{restoreSelection();const selection=window.getSelection();if(!selection||selection.isCollapsed){notify('Select text to add a link');return;}const url=window.prompt('Link URL','https://');if(url){if(/^https?:\/\//i.test(url))command('createLink',url);else notify('Use an http(s) URL');}});
     [['alignLeft','justifyLeft'],['alignCenter','justifyCenter'],['alignRight','justifyRight']].forEach(([key,cmd])=>buttons[key].addEventListener('click',()=>{command(cmd);['alignLeft','alignCenter','alignRight'].forEach(k=>setPressed(k,k===key));}));
     setPressed('alignLeft',true);
-    function setEditing(next){editing=next;card.classList.toggle('is-editing',editing);toolbarShell.classList.toggle('is-open',editing);toolbarShell.setAttribute('aria-hidden',String(!editing));edit.innerHTML=editing?svg('check')+'<span>Done</span>':svg('edit')+'<span>Edit</span>';edit.setAttribute('aria-label',editing?'Finish editing writing':'Edit writing');edit.setAttribute('aria-pressed',String(editing));content.contentEditable=String(editing);if(editing)content.focus({preventScroll:true});else{closePopup();content.blur();}}
+    function setExpanded(next){
+      card.classList.toggle('is-expanded',next);
+      document.body.classList.toggle('c-document-fullscreen-active',next);
+      expand.innerHTML=svg(next?'x':'expand')+'<span>'+(next?'Close':'Full screen')+'</span>';
+      expand.setAttribute('aria-label',next?'Close writing full screen':'Full screen writing');
+      expand.setAttribute('aria-expanded',String(next));
+    }
+    function setEditing(next){editing=next;if(editing)setExpanded(true);else if(card.classList.contains('is-expanded'))setExpanded(false);card.classList.toggle('is-editing',editing);toolbarShell.classList.toggle('is-open',editing);toolbarShell.setAttribute('aria-hidden',String(!editing));edit.innerHTML=editing?svg('check')+'<span>Done</span>':svg('edit')+'<span>Edit</span>';edit.setAttribute('aria-label',editing?'Finish editing writing':'Edit writing');edit.setAttribute('aria-pressed',String(editing));content.contentEditable=String(editing);if(editing)content.focus({preventScroll:true});else{closePopup();content.blur();}}
     edit.addEventListener('click',()=>setEditing(!editing));
+    expand.addEventListener('click',()=>{
+      if(card.classList.contains('is-expanded')){if(editing)setEditing(false);else setExpanded(false);}
+      else setExpanded(true);
+    });
+    window.addEventListener('keydown',event=>{
+      if(event.key==='Escape'&&card.isConnected&&card.classList.contains('is-expanded')){
+        if(editing)setEditing(false);else setExpanded(false);
+      }
+    });
     content.addEventListener('click',()=>{if(!editing&&card.classList.contains('is-document-ready'))setEditing(true);});
     copy.addEventListener('click',async()=>{const ok=await writeClipboard(content.innerText.trim());if(ok){copy.innerHTML=svg('check');setTimeout(()=>{if(copy.isConnected)copy.innerHTML=svg('copy');},1150);}else notify('Copy unavailable');});
     size.addEventListener('change',()=>{content.style.fontSize=size.value+'px';});
@@ -1700,7 +1717,7 @@
     if(followFrame){cancelAnimationFrame(followFrame);followFrame=0;}
     assistant.replaceChildren();assistant.setAttribute('aria-busy','true');viewport.scrollTop=0;
     composerSend.disabled=true;composerSend.setAttribute('aria-label','Running demonstration');
-    document.body.classList.remove('c-document-expanded','c-plan-open');planToggle.setAttribute('aria-expanded','false');
+    document.body.classList.remove('c-document-expanded','c-document-fullscreen-active','c-plan-open');planToggle.setAttribute('aria-expanded','false');
     const delay=ms=>sleep(reducedMotion?Math.round(ms*.55):ms,token);
     // Demo-only pacing; do not insert scripted pauses into a real agent loop.
     const actionPause=()=>sleep(1000,token);
