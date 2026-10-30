@@ -777,7 +777,13 @@
     const name=element('div','c-preview-name');name.innerHTML=svg('slides')+'<span>Presentation</span>';
     const editBtn=element('button','c-slide-action');editBtn.type='button';editBtn.dataset.tooltip='Edit slides';editBtn.setAttribute('aria-label','Edit slides');editBtn.innerHTML=svg('edit')+'<span>Edit</span>';
     const fullBtn=element('button','c-slide-action');fullBtn.type='button';fullBtn.dataset.tooltip='Full screen';fullBtn.setAttribute('aria-label','Full screen');fullBtn.innerHTML=svg('expand')+'<span>Full screen</span>';
-    const actions=element('div','c-slide-top-actions');actions.append(editBtn,fullBtn);top.append(name,actions);
+    const filename=element('input','c-slide-filename');filename.type='text';filename.value='Clyra presentation';filename.maxLength=90;filename.setAttribute('aria-label','Presentation file name');
+    name.replaceChildren(element('span','c-slide-brand-icon'));name.firstChild.innerHTML=svg('slides');name.append(filename);
+    const saved=element('span','c-slide-saved-status','Local demo');
+    const actions=element('div','c-slide-top-actions');actions.append(saved,editBtn,fullBtn);top.append(name,actions);
+    const menuBar=element('nav','c-slide-menu-bar');menuBar.setAttribute('aria-label','Presentation menus');
+    const menuPopup=element('div','c-slide-menu-popup');menuPopup.setAttribute('role','menu');
+    const topToolbar=element('div','c-slide-top-toolbar');
     const editor=element('div','c-slide-workspace');
     const filmstrip=element('div','c-slide-filmstrip');filmstrip.setAttribute('aria-label','Slide thumbnails');
     const stage=element('div','c-presentation-stage');
@@ -785,6 +791,8 @@
     const inspector=element('div','c-slide-inspector');const toolbar=element('div','c-slide-v10-toolbar c-slide-v14-toolbar');
     const controls=element('div','c-slide-v14-controls');
     const notes=element('textarea','c-slide-v14-notes');notes.placeholder='Add speaker notes…';notes.setAttribute('aria-label','Speaker notes');notes.rows=2;
+    const importInput=element('input','c-slide-import-picker');importInput.type='file';importInput.accept='.json,application/json';importInput.hidden=true;
+    importInput.setAttribute('aria-label','Import JSON presentation');
     const imageInput=element('input','c-slide-image-picker');imageInput.type='file';imageInput.accept='image/png,image/jpeg,image/webp';imageInput.hidden=true;imageInput.setAttribute('aria-label','Choose image for slide');
     const layerPanel=element('div','c-slide-layer-panel');layerPanel.setAttribute('aria-label','Slide object layers');
     const stageWrap=element('div','c-slide-stage-wrap');stageWrap.append(stage,inspector);
@@ -793,7 +801,7 @@
       {title:'Less friction.',body:'A quieter workflow for meaningful work.',eyebrow:'DIRECTION',theme:'minimal',objects:[],notes:''},
       {title:'Made to move.',body:'Bring documents and actions into focus.',eyebrow:'OUTCOME',theme:'minimal',objects:[],notes:''}
     ];
-    let current=0,editing=false,selected={field:'title',id:null},showNotes=false;
+    let current=0,editing=false,selected={field:'title',id:null},showNotes=false,zoom=100,showGrid=false,activeMenu=null;
     let draggedSlideIndex=null;
     let history=[],future=[],nextObjectId=1;
     const clone=()=>JSON.parse(JSON.stringify({slides,current}));
@@ -812,7 +820,10 @@
       options.forEach(([value,display])=>{const o=element('option','',display);o.value=value;sel.append(o);});
       return sel;
     };
-    const fontSize=select('Font size',[[14,'14'],[16,'16'],[18,'18'],[24,'24'],[28,'28'],[32,'32'],[40,'40'],[48,'48'],[56,'56']]);
+    const fontSize=select('Font size',[[12,'12'],[14,'14'],[16,'16'],[18,'18'],[20,'20'],[24,'24'],[28,'28'],[32,'32'],[40,'40'],[48,'48'],[56,'56'],[64,'64']]);
+    const zoomSelect=select('Zoom',[['75','75%'],['90','90%'],['100','100%'],['110','110%'],['125','125%']],'c-slide-v10-select c-slide-v16-zoom');zoomSelect.value='100';
+    const layoutSelect=select('Slide layout',[['title-body','Title and body'],['title','Title only'],['blank','Blank']],'c-slide-v10-select c-slide-v16-layout');
+    const transitionSelect=select('Slide transition',[['none','None'],['fade','Fade'],['slide','Slide']],'c-slide-v10-select c-slide-v16-transition');
     const fontFamily=select('Font',[
       ['system-ui','System'],['Arial, sans-serif','Arial'],['Georgia, serif','Georgia'],['Verdana, sans-serif','Verdana'],
       ['Trebuchet MS, sans-serif','Trebuchet'],['Times New Roman, serif','Times New Roman']
@@ -882,6 +893,8 @@
       align.value=targetValue('align',slide.align||'left');
       textColour.value=targetValue('color','#17171b');
       theme.value=slide.theme||'minimal';backgroundColour.value=slide.bg||'#ffffff';
+      layoutSelect.value=slide.layout||'title-body';transitionSelect.value=slide.transition||'none';
+      zoomSelect.value=String(zoom);
     }
     function renderThumbnail(slide,index){
       const btn=element('button','c-slide-film-item c-slide-mini'+(index===current?' is-selected':''));btn.type='button';
@@ -907,6 +920,8 @@
     function render(){
       const slide=slides[current];canvas.replaceChildren();
       canvas.dataset.theme=slide.theme||'minimal';canvas.style.background=slide.bg||'';
+      canvas.dataset.layout=slide.layout||'title-body';
+      canvas.dataset.transition=slide.transition||'none';canvas.classList.toggle('c-slide-grid-visible',showGrid);
       const eyebrow=element('div','c-slide-eyebrow',slide.eyebrow||'');
       const title=element('div','c-slide-heading c-slide-selectable',slide.title||'');
       const body=element('div','c-slide-body c-slide-selectable',slide.body||'');
@@ -999,9 +1014,11 @@
     theme.addEventListener('change',()=>{snapshot();slides[current].theme=theme.value;render();});
     notes.addEventListener('input',()=>{slides[current].notes=notes.value;});
     inspector.append(element('p','c-slide-instructions','Select a slide, edit text, insert shapes or add speaker notes.'));
-    inspector.append(toolbar,imageInput,layerPanel,notes);
-    editor.append(filmstrip,stageWrap);stageWrap.append(inspector);card.append(top,editor);
-    function setEditing(next){editing=next;card.classList.toggle('is-slide-editing',editing);editBtn.setAttribute('aria-pressed',String(editing));editBtn.querySelector('span').textContent=editing?'Done':'Edit';render();}
+    inspector.append(imageInput,importInput,layerPanel,notes);
+    topToolbar.append(toolbar);
+    editor.append(filmstrip,stageWrap);stageWrap.append(inspector);card.append(top,menuBar,topToolbar,editor);
+    function setEditing(next){editing=next;closeMenu();card.classList.toggle('is-slide-editing',editing);
+      editBtn.setAttribute('aria-pressed',String(editing));editBtn.querySelector('span').textContent=editing?'Done':'Edit';render();}
     editBtn.addEventListener('click',()=>setEditing(!editing));
     const setFullscreen=next=>{
       card.classList.toggle('is-slide-fullscreen',next);document.body.classList.toggle('c-slide-fullscreen-active',next);
