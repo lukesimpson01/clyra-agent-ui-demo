@@ -106,7 +106,7 @@ try {
   assert.equal(await writing.locator('[aria-label="Document content"]').getAttribute('contenteditable'),'true');
   await writing.locator('[aria-label="Document content"]').click();
   assert((await writing.locator('[aria-label="Document content"]').count())===1);
-  await writing.locator('[aria-label="Edit writing"]').click();
+  await writing.locator('[aria-label="Finish editing writing"]').click();
   assert(!(await writing.evaluate(el=>el.classList.contains('is-expanded'))),'Done closes fullscreen document');
   await page.locator('.c-slides-v14').waitFor({state:'visible',timeout:170000});
   const slides=page.locator('.c-slides-v14');
