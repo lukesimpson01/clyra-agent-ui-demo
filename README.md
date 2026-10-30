@@ -201,3 +201,16 @@ A response-formatting showcase now demonstrates genuine offline native MathML fr
 This is a curated, stylistically consistent demonstration of common assistant response patterns — **not an exhaustive copy of ChatGPT or Claude**. The real Clyra application should reuse its own Markdown/LaTeX renderer and tool events, not this fixture's simulated content or timers.
 
 Before accepting any future UI change, follow [DEMO_PROJECT_RULES.md](./DEMO_PROJECT_RULES.md): test the actual dev server, inspect live desktop/mobile screenshots, verify interactions and visually reject any component that looks off-theme.
+
+## v19 — grouped slides, transport, weather and maps
+
+- **Slide editor:** Edit opens a full-screen workspace with a Close X (and Esc), a tidy **Slides / Insert / Text / Arrange** toolbar, and compact shape/object popovers. Real local editing controls remain in this demo; professional PPTX/cloud parity is not implied.
+- **Music:** the notch now has custom cover thumbnails, a smooth Up next queue, Previous/Next, restart after a few seconds, gradual press-and-hold seeking, Play/Pause and position scrubber. Track labels, artwork and timing are **simulated in the demo** and are *not a real streaming service*. The integration guide requires actual authenticated provider actions and album metadata.
+- **Todo:** active spinning activity icon beside the count, hover preview, click-to-pin and outside-click dismissal. The count reflects completed steps separately from the spinner.
+- **Weather:** prompts for current-location permission, then requests live weather and a three-day forecast via Open-Meteo. If permission is denied, use worldwide city search. Displays actual returned values and error/loading states; no hardcoded temperatures.
+- **Map:** interactive OpenStreetMap embed based on the authorised/searched location, small in the response and expandable to a full-screen, Apple-Maps-inspired light layout with zoom, city search, place sheet and proper OpenStreetMap attribution.
+- **Context:** the actual Clyra agent should render widgets only when appropriate. Dynamic todo step names/divider titles and real authenticated tool actions are specified in `INTEGRATION_GUIDE.md`.
+
+**Public API limits matter:** Open-Meteo's free hosted API is restricted to non-commercial usage, and public OSM tile services have usage policies. Production Clyra should use a compliant commercial or self-hosted provider; the standalone demo makes no availability guarantees.
+
+As usual, after an already-correctly-cloned setup: `git pull` followed by `npm run dev`.
