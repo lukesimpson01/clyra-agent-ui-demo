@@ -165,3 +165,14 @@ The currently committed demo includes:
 
 **Not included:** complete Google Slides/PowerPoint compatibility, PPTX import/export, shared editing, full animation timelines or production storage. Reuse the host's presentation subsystem for those features. The fixture uses simulated tools and does not change external accounts.
 
+
+
+## Current UI behaviour
+
+- **Composer and todo:** both live in one attached bottom dock. The compact task circle expands into a checklist directly above the composer; the hint and send control remain inside its rounded frame.
+- **Reconnecting:** intentionally removed from this visual demonstration.
+- **Browser actions:** after the third action, additional rows scroll inside a fixed three-row viewport.
+- **Writing and slides:** both appear as full inline artifacts, without a collapsed document/slide dropdown. Editing happens inside the cards.
+- **Sources:** clicking reveals a short, steady horizontal icon strip. Hovering/focusing a website shows a floating name pill while the other icons stay put; clicking opens the actual website.
+- **Verification:** desktop/mobile rendering and behavior should be reviewed alongside `npm test` and the full browser CI suite. A layout-only visual preview is not a substitute for testing the full live app.
+
