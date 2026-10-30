@@ -8,7 +8,7 @@
    * scroll container and user-message placement are NOT intended for transfer.
    *
    * REUSE the presentation of response content and activity states ONLY:
-   *   - addThinking / finishThinking: thought icon, dots, elapsed-time label
+   *   - addThinking / finishThinking: thought icon, animated thinking, elapsed-time label
    *   - addActivity / completed: tool/status rows, icons, shimmer and transition
    *   - createEditReview: inline diff disclosures and review motion
    *   - createBrowserPreview: short, neutral viewport shimmer and action list
@@ -17,6 +17,8 @@
    *   - createCommandView / createUniversalToolCard: execution statuses
    *   - addSourcesFooter / addFooter: citation strip and response actions
    *
+   * Standalone fixture shows a TEMPORARY composer to exercise the visual sequence.
+   * The production host MUST NOT copy that composer or user message styling.
    * Your application REMAINS OWNER of its own composer, user bubbles, assistant
    * message container, chat width/placement, auto-scroll rules, message entrance
    * animations, routing, stores, tool runtime, stream timing, and agent loop.
@@ -38,6 +40,9 @@
   const assistant = document.getElementById('assistantTurn');
   const planMount = document.getElementById('planMount');
   const planRail = document.getElementById('planRail');
+  const composerForm = document.getElementById('demoComposer');
+  const composerInput = document.getElementById('demoInput');
+  const composerSend = document.getElementById('demoSend');
   const planToggle = document.getElementById('planToggle');
   const planClose = document.getElementById('planClose');
   const planScrim = document.getElementById('planScrim');
@@ -107,7 +112,17 @@
     palette:'<circle cx="12" cy="12" r="9"/><circle cx="7.5" cy="10" r="1"/><circle cx="11" cy="6.5" r="1"/><circle cx="16" cy="8" r="1"/><path d="M17 15c-3.5-1-5.5 2-3 5"/>',
     alignRight:'<path d="M4 6h16M10 10h10M4 14h16M10 18h10"/>',
     expand:'<path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/><path d="m3 3 6 6M21 3l-6 6M3 21l6-6M21 21l-6-6"/>',
-    link:'<path d="M10 13a5 5 0 0 0 7 .5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>'
+    link:'<path d="M10 13a5 5 0 0 0 7 .5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+    textColor:'<path d="M4 20h16M6 16l6-12 6 12M8 12h8"/>',
+    highlightColor:'<path d="m8 15 7-7 4 4-7 7-4-4Zm8-8 2-2 4 4-2 2M4 21h16"/>',
+    bullets:'<circle cx="4.5" cy="6" r=".8" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r=".8" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r=".8" fill="currentColor" stroke="none"/><path d="M9 6h11M9 12h11M9 18h11"/>',
+    numbered:'<path d="M3 6h2V3.5M3.5 12h2l-2 2.8h2.3M3.5 18h2.5l-1.4 2H6M9 6h11M9 12h11M9 18h11"/>',
+    table:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M10 4v16M16 4v16M3 15h18"/>',
+    caret:'<path d="m7 10 5 5 5-5"/>',
+    run:'<path d="m8 5 11 7-11 7V5Z"/>',
+    font:'<path d="M4 19 10 5h4l6 14M6 14h12"/>',
+    codeBrackets:'<path d="m9 6-6 6 6 6m6-12 6 6-6 6M14 4l-4 16"/>'
+
   };
   const svg = (name, cls='c-icon') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
   const SOURCES = [
@@ -212,13 +227,12 @@
       '<path class="c-wifi-arc" d="M3.5 10.8a14 14 0 0 1 19 0"/>'+
       '<path class="c-wifi-arc" d="M1.8 7.8a18 18 0 0 1 22.4 0"/>'+'</svg>';
     const label=element('span','c-reconnect-label c-active-shimmer','Reconnecting · 1/5');
-    const dots=element('span','c-dots');dots.setAttribute('aria-hidden','true');dots.innerHTML='<i></i><i></i><i></i>';
-    row.append(bars,label,dots);paint(()=>assistant.appendChild(row));
+    row.append(bars,label);paint(()=>assistant.appendChild(row));
     return {row,bars,label};
   }
   async function playReconnecting(token){
     const status=addReconnecting();
-    // Every 3 seconds, one more Wi-Fi bar is restored. No accelerated or fake ticks.
+    // Every 3 seconds, the next curved Wi-Fi arc smoothly fills. No dots.
     for(let n=2;n<=5;n++){
       await sleep(3000,token);
       paint(()=>{
@@ -460,7 +474,7 @@
     const panel=element('div','c-edit-review-expansion');
     const panelId='edit-diff-'+(++editReviewSequence);panel.id=panelId;
     trigger.setAttribute('aria-controls',panelId);
-    const icon=element('span','c-action-icon');icon.innerHTML=svg('filePen');
+    const icon=element('span','c-action-icon');icon.innerHTML=svg('edit');
     const title=element('span','c-edit-review-label c-active-shimmer','Editing '+path);
     const stats=element('span','c-edit-review-stats');stats.hidden=true;
     const chevron=element('span','c-edit-review-arrow');chevron.innerHTML=svg('chevron');
@@ -532,41 +546,17 @@
     p.appendChild(a);block.appendChild(p);paint(()=>assistant.appendChild(block));
   }
   function addSourcesFooter(){
-    const outer=element('div','c-sources-footer');
-    const button=element('button','c-sources-trigger');button.type='button';button.setAttribute('aria-expanded','false');
-    const panel=element('div','c-sources-panel');panel.hidden=true;
-    panel.id='sources-panel';button.setAttribute('aria-controls',panel.id);
-    const label=element('span','c-sources-title','Sources');
-    const count=element('span','c-sources-count',String(SOURCES.length));
-    const arrow=element('span','c-sources-arrow');arrow.innerHTML=svg('chevron','c-sources-arrow');
-    button.append(websiteStack(SOURCES,false),label,count,arrow);
-    panel.appendChild(element('div','c-sources-panel-heading','Sources'));
-    SOURCES.forEach(source=>panel.appendChild(sourceLink(source)));
-    let animation=null;
-    button.addEventListener('click',()=>{
-      if(animation){animation.cancel();animation=null;}
-      const expand=panel.hidden;
-      button.setAttribute('aria-expanded',String(expand));
-      if(expand){
-        paint(()=>{panel.hidden=false;});
-        if(!reducedMotion){
-          animation=panel.animate([
-            {height:'0px',paddingTop:'0px',paddingBottom:'0px',opacity:0,transform:'translate3d(0,-4px,0)'},
-            {height:panel.scrollHeight+'px',paddingTop:'12px',paddingBottom:'10px',opacity:1,transform:'translate3d(0,0,0)'}
-          ],{duration:380,easing:'cubic-bezier(.22,1,.36,1)'});
-          animation.onfinish=()=>{animation=null;};
-        }
-      }else if(reducedMotion){paint(()=>{panel.hidden=true;});}
-      else{
-        animation=panel.animate([
-          {height:panel.getBoundingClientRect().height+'px',opacity:1,transform:'translate3d(0,0,0)'},
-          {height:'0px',opacity:0,transform:'translate3d(0,-4px,0)'}
-        ],{duration:300,easing:'cubic-bezier(.22,1,.36,1)'});
-        animation.onfinish=()=>{animation=null;paint(()=>{panel.hidden=true;});};
-      }
+    const strip=element('nav','c-source-strip');strip.setAttribute('aria-label','Referenced websites');
+    const caption=element('span','c-source-strip-caption','Sources');strip.append(caption);
+    SOURCES.forEach((source,index)=>{
+      const link=element('a','c-source-chip');link.href=source.href;link.target='_blank';link.rel='noopener noreferrer';
+      link.style.setProperty('--source-index',index);
+      link.setAttribute('aria-label','Open '+source.name);link.title=source.name;
+      const name=element('span','c-source-chip-name',source.name);
+      link.append(sourceLogo(source,'c-source-chip-icon'),name);
+      strip.append(link);
     });
-    outer.append(button,panel);
-    paint(()=>assistant.appendChild(outer));
+    paint(()=>assistant.append(strip));
   }
   function addResults(){
     const block=element('div','c-stream-block');
@@ -595,99 +585,106 @@
     const header=element('div','c-writing-header');
     const title=element('span','c-writing-header-title','Writing');
     const actions=element('div','c-writing-header-actions');
-    const headButton=(icon,label,text='')=>{
+    function headButton(icon,label,text=''){
       const b=element('button','c-writing-head-btn');b.type='button';b.setAttribute('aria-label',label);b.title=label;
       b.innerHTML=svg(icon)+(text?'<span>'+text+'</span>':'');return b;
-    };
+    }
     const copy=headButton('copy','Copy writing');
     const expand=headButton('expand','Expand writing');
     const edit=headButton('edit','Edit writing','Edit');edit.setAttribute('aria-pressed','false');
     actions.append(copy,expand,edit);header.append(title,actions);
-
     const toolbarShell=element('div','c-writing-toolbar-shell');toolbarShell.setAttribute('aria-hidden','true');
     const toolbarClip=element('div','c-writing-toolbar-clip');
     const toolbar=element('div','c-writing-toolbar');toolbar.setAttribute('role','toolbar');toolbar.setAttribute('aria-label','Document formatting');
-    const font=element('select','c-writing-select');font.setAttribute('aria-label','Font family');
-    [['system','System'],['serif','Serif'],['mono','Mono']].forEach(([val,txt])=>{const opt=element('option','',txt);opt.value=val;font.appendChild(opt);});
-    const size=element('select','c-writing-select c-writing-size');size.setAttribute('aria-label','Font size');
-    [13,14,15,16,18,20,22,24,28,32].forEach(n=>{const opt=element('option','',String(n));opt.value=String(n);if(n===16)opt.selected=true;size.appendChild(opt);});
-    const sep=()=>element('span','c-writing-tool-divider');
-    const makeFormat=(name,label)=>{const b=element('button','c-writing-format-btn');b.type='button';b.title=label;b.dataset.tooltip=label;b.setAttribute('aria-label',label);b.setAttribute('aria-pressed','false');b.innerHTML=svg(name);return b;};
-    const buttons={};
-    ['bold','italic','underline','strike','link','heading','quote','highlighter','palette','alignLeft','alignCenter','alignRight'].forEach(n=>{
-      const labels={bold:'Bold',italic:'Italic',underline:'Underline',strike:'Strikethrough',link:'Insert link',heading:'Heading',quote:'Quote',highlighter:'Highlight',palette:'Text colour',alignLeft:'Align left',alignCenter:'Align centre',alignRight:'Align right'};
-      buttons[n]=makeFormat(n,labels[n]);
-    });
-    toolbar.append(font,size,sep(),buttons.bold,buttons.italic,buttons.underline,buttons.strike,buttons.link,buttons.heading,buttons.quote,sep(),buttons.highlighter,buttons.palette,sep(),buttons.alignLeft,buttons.alignCenter,buttons.alignRight);
-    toolbarClip.appendChild(toolbar);toolbarShell.appendChild(toolbarClip);
     const content=element('div','c-writing-content');content.style.fontSize='16px';
-    content.innerHTML=''; // Reveal and type the mock artifact after its collapsed header arrives.
-    content.setAttribute('contenteditable','false');content.setAttribute('role','textbox');content.setAttribute('aria-label','Document content');content.setAttribute('aria-multiline','true');
-    const feedback=element('span','c-writing-feedback');feedback.hidden=true;
-    card.classList.add('is-document-folded');card.append(header,toolbarShell,content,feedback);
-    let editing=false;let feedbackTimeout;
-    const notify=text=>{feedback.textContent=text;feedback.hidden=false;clearTimeout(feedbackTimeout);feedbackTimeout=setTimeout(()=>{feedback.hidden=true;},1350);};
-    const exec=(cmd,val=null)=>{content.focus({preventScroll:true});try{document.execCommand(cmd,false,val);}catch(e){notify('Format unavailable');}};
-    const setPressed=(button,next)=>button.setAttribute('aria-pressed',String(next));
-    edit.addEventListener('click',()=>{
-      editing=!editing;card.classList.toggle('is-editing',editing);
-      toolbarShell.classList.toggle('is-open',editing);toolbarShell.setAttribute('aria-hidden',String(!editing));
-      edit.innerHTML=editing?svg('check')+'<span>Done</span>':svg('edit')+'<span>Edit</span>';
-      edit.setAttribute('aria-label',editing?'Finish editing writing':'Edit writing');
-      edit.setAttribute('aria-pressed',String(editing));content.contentEditable=String(editing);
-      if(editing)content.focus({preventScroll:true});else content.blur();
-    });
-    copy.addEventListener('click',async()=>{
-      const ok=await writeClipboard(content.innerText.trim());
-      if(ok){copy.innerHTML=svg('check');setTimeout(()=>{if(copy.isConnected)copy.innerHTML=svg('copy');},1250);}
-      else notify('Copy unavailable');
-    });
-    expand.addEventListener('click',()=>{
-      const expanded=card.classList.toggle('is-expanded');document.body.classList.toggle('c-document-expanded',expanded);
-      expand.setAttribute('aria-label',expanded?'Minimise writing':'Expand writing');expand.title=expanded?'Minimise writing':'Expand writing';
-    });
-    window.addEventListener('keydown',e=>{if(e.key==='Escape'&&card.classList.contains('is-expanded')){
-      card.classList.remove('is-expanded');document.body.classList.remove('c-document-expanded');
-    }});
-    font.addEventListener('change',()=>{content.style.fontFamily=font.value==='serif'?'Georgia,Times New Roman,serif':font.value==='mono'?'ui-monospace,SFMono-Regular,Menlo,monospace':'system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif';});
-    size.addEventListener('change',()=>{content.style.fontSize=size.value+'px';});
-    Object.values(buttons).forEach(b=>b.addEventListener('mousedown',e=>e.preventDefault()));
-    const bind=(key,cmd,val=null)=>buttons[key].addEventListener('click',()=>{
-      exec(cmd,val);setPressed(buttons[key],buttons[key].getAttribute('aria-pressed')!=='true');
-    });
-    bind('bold','bold');bind('italic','italic');bind('underline','underline');bind('strike','strikeThrough');
-    bind('heading','formatBlock','h2');bind('quote','formatBlock','blockquote');
-    bind('highlighter','hiliteColor','#fff3a1');bind('palette','foreColor','#245fc7');
-    buttons.link.addEventListener('click',()=>{const selection=window.getSelection();if(!selection||selection.isCollapsed){notify('Select text to add a link');return;}
-      const link=window.prompt('Link URL','https://');if(link){if(/^https?:\/\//i.test(link))exec('createLink',link);else notify('Enter an http(s) URL');}});
-    for(const [key,command] of [['alignLeft','justifyLeft'],['alignCenter','justifyCenter'],['alignRight','justifyRight']]){
-      buttons[key].addEventListener('click',()=>{
-        exec(command);['alignLeft','alignCenter','alignRight'].forEach(k=>setPressed(buttons[k],k===key));
-      });
-    }
-    setPressed(buttons.alignLeft,true);
-    paint(()=>assistant.appendChild(card));
-    // Only for demonstration: genuine writing artifacts must render real streamed document events.
-    async function revealAndType(token,delay){
-      await delay(380);
-      card.classList.remove('is-document-folded');card.classList.add('is-document-opening');
-      await delay(360);
-      const sections=[
-        ['h4','Product launch brief'],
-        ['h5','One thoughtful workspace ✨'],
-        ['p','Bring research, documents and connected tools together in a focused environment.'],
-        ['p','Objective. Make complex workflows feel simple, clear and dependable.'],
-        ['p','Approach. Plan, act and verify — with each step visible when you need it.']
-      ];
-      for(const [tag,text] of sections){
-        const line=element(tag,'c-document-typed');content.append(line);
-        const words=text.match(/\S+\s*/g)||[];
-        for(const word of words){
-          const span=element('span','c-document-word',word);line.append(span);
-          await delay(28);
+    content.setAttribute('contenteditable','false');content.setAttribute('role','textbox');
+    content.setAttribute('aria-label','Document content');content.setAttribute('aria-multiline','true');
+    const notice=element('span','c-writing-feedback');notice.hidden=true;
+    let noticeTimer,editing=false,rememberedRange=null,popup=null;
+    const notify=txt=>{notice.textContent=txt;notice.hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{notice.hidden=true;},1250);};
+    const fonts=[['System UI','system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'],['Arial','Arial,sans-serif'],['Helvetica','Helvetica,Arial,sans-serif'],['Georgia','Georgia,serif'],['Times New Roman','"Times New Roman",serif'],['Verdana','Verdana,sans-serif'],['Tahoma','Tahoma,sans-serif'],['Trebuchet MS','"Trebuchet MS",sans-serif'],['Palatino','Palatino,serif'],['Garamond','Garamond,serif'],['Courier New','"Courier New",monospace'],['Menlo','Menlo,monospace'],['Monaco','Monaco,monospace'],['Gill Sans','"Gill Sans",sans-serif'],['Impact','Impact,sans-serif']];
+    const esc=txt=>txt.replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    function preserveSelection(){const sel=window.getSelection();if(sel&&sel.rangeCount&&!sel.isCollapsed&&content.contains(sel.anchorNode))rememberedRange=sel.getRangeAt(0).cloneRange();}
+    function restoreSelection(){if(rememberedRange&&rememberedRange.startContainer.isConnected){const sel=window.getSelection();sel.removeAllRanges();sel.addRange(rememberedRange);}}
+    function command(cmd,val=null){restoreSelection();content.focus({preventScroll:true});try{document.execCommand(cmd,false,val);}catch(e){notify('Formatting unavailable');}preserveSelection();}
+    const makeButton=(name,label)=>{const b=element('button','c-writing-format-btn');b.type='button';b.dataset.tooltip=label;b.setAttribute('aria-label',label);b.setAttribute('aria-pressed','false');b.innerHTML=svg(name);return b;};
+    const buttons={};
+    [['bold','Bold'],['italic','Italic'],['underline','Underline'],['strike','Strikethrough'],['link','Insert link'],['heading','Heading'],['quote','Quote'],['textColor','Text colour'],['highlightColor','Highlight colour'],['bullets','Bulleted list'],['numbered','Numbered list'],['table','Insert table'],['alignLeft','Align left'],['alignCenter','Align centre'],['alignRight','Align right']].forEach(([name,label])=>buttons[name]=makeButton(name,label));
+    const fontBtn=element('button','c-editor-font-button');fontBtn.type='button';fontBtn.setAttribute('aria-label','Choose font');fontBtn.dataset.tooltip='Font family';fontBtn.innerHTML='<span class="c-editor-font-name">System UI</span>'+svg('caret');
+    const size=element('select','c-writing-select c-writing-size');size.setAttribute('aria-label','Font size');
+    [11,12,13,14,15,16,18,20,22,24,28,32,36,40,48].forEach(v=>{const o=element('option','',String(v));o.value=String(v);if(v===16)o.selected=true;size.appendChild(o);});
+    const sep=()=>element('span','c-writing-tool-divider');
+    function tooltipWrap(button){return button;}
+    const listGroup=element('div','c-editor-split');
+    const listArrow=makeButton('caret','List styles');listArrow.classList.add('c-editor-chevron-button');
+    listGroup.append(buttons.bullets,listArrow);
+    const textColorGroup=element('div','c-editor-color-group');buttons.textColor.classList.add('is-ink-control');textColorGroup.append(buttons.textColor);
+    const highlightGroup=element('div','c-editor-color-group');buttons.highlightColor.classList.add('is-highlight-control');highlightGroup.append(buttons.highlightColor);
+    toolbar.append(fontBtn,size,sep(),buttons.bold,buttons.italic,buttons.underline,buttons.strike,buttons.link,buttons.heading,buttons.quote,sep(),textColorGroup,highlightGroup,sep(),listGroup,buttons.numbered,buttons.table,sep(),buttons.alignLeft,buttons.alignCenter,buttons.alignRight);
+    toolbar.addEventListener('mousedown',e=>{if(e.target.closest('button')&& !e.target.closest('input'))e.preventDefault();});
+    toolbarClip.append(toolbar);toolbarShell.append(toolbarClip);
+    const aiSelection=element('button','c-ai-selection-action');aiSelection.type='button';aiSelection.innerHTML=svg('sparkles')+'<span>Ask AI about selection</span>';aiSelection.hidden=true;
+    aiSelection.title='Use selected text in the existing host AI composer';
+    const syncSelection=()=>{const sel=window.getSelection();const active=sel&&!sel.isCollapsed&&content.contains(sel.anchorNode)&&content.contains(sel.focusNode);aiSelection.hidden=!active;if(active)preserveSelection();};
+    document.addEventListener('selectionchange',syncSelection);
+    aiSelection.addEventListener('click',()=>{const txt=window.getSelection()?.toString()?.trim();if(!txt)return;composerInput.value='Improve this text: '+txt;composerSend.disabled=false;composerInput.focus();aiSelection.hidden=true;});
+    card.classList.add('is-document-folded');card.append(header,toolbarShell,content,aiSelection,notice);
+    function closePopup(){if(popup){popup.remove();popup=null;}document.removeEventListener('pointerdown',onOutside,true);document.removeEventListener('keydown',onEscape,true);}
+    function onOutside(e){if(popup&&!popup.contains(e.target)&&!toolbar.contains(e.target))closePopup();}
+    function onEscape(e){if(e.key==='Escape')closePopup();}
+    function openPopup(trigger,kind){
+      if(popup&&popup.dataset.kind===kind){closePopup();return;}
+      closePopup();const surface=element('div','c-editor-popup');surface.dataset.kind=kind;surface.setAttribute('role','dialog');surface.setAttribute('aria-label',kind+' options');
+      const rect=trigger.getBoundingClientRect();
+      surface.style.left=Math.max(8,Math.min(rect.left,window.innerWidth-(kind==='fonts'?250:226)))+'px';
+      surface.style.top=Math.min(rect.bottom+7,window.innerHeight-280)+'px';
+      surface.style.width=(kind==='fonts'?240:210)+'px';
+      const label=element('div','c-editor-popup-label',kind==='fonts'?'Choose font':kind==='text'?'Text colour':kind==='highlight'?'Highlight colour':kind==='lists'?'List style':'Insert table');surface.append(label);
+      if(kind==='fonts'){
+        const search=element('input','c-editor-font-search');search.type='search';search.placeholder='Search fonts';search.setAttribute('aria-label','Search fonts');surface.append(search);
+        const items=element('div','c-editor-font-options');surface.append(items);
+        const render=q=>{items.replaceChildren();fonts.filter(([name])=>name.toLowerCase().includes(q.toLowerCase())).forEach(([name,family])=>{const o=element('button','c-editor-menu-item',name);o.type='button';o.style.fontFamily=family;o.addEventListener('click',()=>{fontBtn.querySelector('.c-editor-font-name').textContent=name;restoreSelection();if(rememberedRange)command('fontName',name);else content.style.fontFamily=family;closePopup();});items.append(o);});if(!items.children.length)items.append(element('p','c-editor-empty','No matching fonts'));};
+        render('');search.addEventListener('input',()=>render(search.value));setTimeout(()=>search.focus({preventScroll:true}),0);
+      } else if(kind==='text'||kind==='highlight'){
+        const colors=[['Black','#202124'],['Grey','#77777b'],['Red','#d93025'],['Orange','#e37400'],['Yellow','#f9c846'],['Green','#188038'],['Teal','#008577'],['Blue','#1a73e8'],['Purple','#8e24aa'],['Pink','#d81b60'],['White','#ffffff'],['None',kind==='highlight'?'transparent':'#202124']];
+        const grid=element('div','c-editor-swatches');surface.append(grid);
+        colors.forEach(([name,hex])=>{const b=element('button','c-editor-swatch');b.type='button';b.style.setProperty('--swatch',hex);b.setAttribute('aria-label',name);b.title=name;b.addEventListener('click',()=>{command(kind==='text'?'foreColor':'hiliteColor',hex);closePopup();});grid.append(b);});
+      } else if(kind==='lists'){
+        [['disc','• Bullets','insertUnorderedList'],['circle','◦ Circles','insertUnorderedList'],['square','▪ Squares','insertUnorderedList'],['decimal','1. Numbers','insertOrderedList'],['lower-alpha','a. Letters','insertOrderedList']].forEach(([style,text,cmd])=>{const o=element('button','c-editor-menu-item',text);o.type='button';o.addEventListener('click',()=>{command(cmd);let node=window.getSelection()?.anchorNode;const root=(node?.nodeType===1?node:node?.parentElement)?.closest('ul,ol');if(root)root.style.listStyleType=style;buttons.bullets.setAttribute('aria-pressed',String(cmd==='insertUnorderedList'));buttons.numbered.setAttribute('aria-pressed',String(cmd==='insertOrderedList'));closePopup();});surface.append(o);});
+      } else if(kind==='table'){
+        const desc=element('div','c-editor-table-size','2 × 2');surface.append(desc);
+        const grid=element('div','c-editor-table-grid');surface.append(grid);
+        for(let row=1;row<=4;row++)for(let col=1;col<=4;col++){
+          const b=element('button','c-editor-table-cell');b.type='button';b.dataset.row=String(row);b.dataset.col=String(col);b.setAttribute('aria-label',`Insert ${row} by ${col} table`);
+          b.addEventListener('pointerenter',()=>{desc.textContent=row+' × '+col;grid.querySelectorAll('button').forEach(x=>x.classList.toggle('is-highlighted',Number(x.dataset.row)<=row&&Number(x.dataset.col)<=col));});
+          b.addEventListener('click',()=>{let html='<table class="c-writing-table"><tbody>';for(let r=0;r<row;r++){html+='<tr>';for(let c=0;c<col;c++)html+='<td>Cell</td>';html+='</tr>';}html+='</tbody></table><p><br></p>';command('insertHTML',html);closePopup();});grid.append(b);
         }
-        await delay(130);
       }
+      document.body.append(surface);popup=surface;
+      document.addEventListener('pointerdown',onOutside,true);document.addEventListener('keydown',onEscape,true);
+    }
+    fontBtn.addEventListener('click',()=>openPopup(fontBtn,'fonts'));
+    buttons.textColor.addEventListener('click',()=>openPopup(buttons.textColor,'text'));
+    buttons.highlightColor.addEventListener('click',()=>openPopup(buttons.highlightColor,'highlight'));
+    listArrow.addEventListener('click',()=>openPopup(listArrow,'lists'));
+    buttons.table.addEventListener('click',()=>openPopup(buttons.table,'table'));
+    const setPressed=(key,pressed)=>buttons[key].setAttribute('aria-pressed',String(pressed));
+    for(const [key,cmd,val] of [['bold','bold'],['italic','italic'],['underline','underline'],['strike','strikeThrough'],['heading','formatBlock','h2'],['quote','formatBlock','blockquote'],['bullets','insertUnorderedList'],['numbered','insertOrderedList']])buttons[key].addEventListener('click',()=>{command(cmd,val||null);setPressed(key,buttons[key].getAttribute('aria-pressed')!=='true');if(key==='bullets')setPressed('numbered',false);if(key==='numbered')setPressed('bullets',false);});
+    buttons.link.addEventListener('click',()=>{restoreSelection();const selection=window.getSelection();if(!selection||selection.isCollapsed){notify('Select text to add a link');return;}const url=window.prompt('Link URL','https://');if(url){if(/^https?:\/\//i.test(url))command('createLink',url);else notify('Use an http(s) URL');}});
+    [['alignLeft','justifyLeft'],['alignCenter','justifyCenter'],['alignRight','justifyRight']].forEach(([key,cmd])=>buttons[key].addEventListener('click',()=>{command(cmd);['alignLeft','alignCenter','alignRight'].forEach(k=>setPressed(k,k===key));}));
+    setPressed('alignLeft',true);
+    function setEditing(next){editing=next;card.classList.toggle('is-editing',editing);toolbarShell.classList.toggle('is-open',editing);toolbarShell.setAttribute('aria-hidden',String(!editing));edit.innerHTML=editing?svg('check')+'<span>Done</span>':svg('edit')+'<span>Edit</span>';edit.setAttribute('aria-label',editing?'Finish editing writing':'Edit writing');edit.setAttribute('aria-pressed',String(editing));content.contentEditable=String(editing);if(editing)content.focus({preventScroll:true});else{closePopup();content.blur();}}
+    edit.addEventListener('click',()=>setEditing(!editing));
+    content.addEventListener('click',()=>{if(!editing&&card.classList.contains('is-document-ready'))setEditing(true);});
+    copy.addEventListener('click',async()=>{const ok=await writeClipboard(content.innerText.trim());if(ok){copy.innerHTML=svg('check');setTimeout(()=>{if(copy.isConnected)copy.innerHTML=svg('copy');},1150);}else notify('Copy unavailable');});
+    expand.addEventListener('click',()=>{const on=card.classList.toggle('is-expanded');document.body.classList.toggle('c-document-expanded',on);expand.setAttribute('aria-label',on?'Minimise writing':'Expand writing');});
+    window.addEventListener('keydown',e=>{if(e.key==='Escape'&&card.classList.contains('is-expanded')){card.classList.remove('is-expanded');document.body.classList.remove('c-document-expanded');closePopup();}});
+    size.addEventListener('change',()=>{content.style.fontSize=size.value+'px';});
+    paint(()=>assistant.append(card));
+    async function revealAndType(token,delay){
+      await delay(320);card.classList.remove('is-document-folded');card.classList.add('is-document-opening');await delay(250);
+      const sections=[['h4','Product launch brief'],['h5','One thoughtful workspace ✨'],['p','Bring research, documents and connected tools together in a focused environment.'],['p','Objective. Make complex workflows feel simple, clear and dependable.'],['p','Approach. Plan, act and verify — with each step visible when you need it.']];
+      for(const [tag,text] of sections){const line=element(tag,'c-document-typed');content.append(line);for(const word of text.match(/\S+\s*/g)||[]){line.append(element('span','c-document-word',word));await delay(25);}await delay(110);}
       card.classList.remove('is-document-opening');card.classList.add('is-document-ready');
     }
     return {card,revealAndType};
@@ -699,8 +696,6 @@
       return b;
     }
     const copy=action('copy','Copy response');
-    const like=action('thumbUp','Good response');
-    const dislike=action('thumbDown','Bad response');
     const replay=action('replay','Regenerate response');
     const note=element('span','c-copy-note');
     copy.addEventListener('click',async()=>{
@@ -709,15 +704,8 @@
       if(ok){note.textContent='Copied';copy.innerHTML=svg('check');clearTimeout(copyResetTimer);copyResetTimer=setTimeout(()=>{note.textContent='';if(copy.isConnected)copy.innerHTML=svg('copy');},1400);}
       else{note.textContent='Copy unavailable';}
     });
-    function feedback(which,other){
-      const enabled=which.getAttribute('aria-pressed')!=='true';
-      which.setAttribute('aria-pressed',String(enabled));other.setAttribute('aria-pressed','false');
-    }
-    like.setAttribute('aria-pressed','false');dislike.setAttribute('aria-pressed','false');
-    like.addEventListener('click',()=>feedback(like,dislike));
-    dislike.addEventListener('click',()=>feedback(dislike,like));
     replay.addEventListener('click',()=>runDemo());
-    footer.append(copy,like,dislike,replay,note);
+    footer.append(copy,replay,note);
     paint(()=>assistant.appendChild(footer));
   }
 
@@ -735,7 +723,7 @@
     const trigger=element('button','c-todo-v8-trigger');trigger.type='button';trigger.id=titleId;
     trigger.setAttribute('aria-expanded','true');trigger.setAttribute('aria-controls',contentId);
     const mark=element('span','c-todo-v8-headicon');
-    mark.innerHTML='<span class="c-todo-glyph c-todo-glyph-list">'+svg('listTodo')+'</span><span class="c-todo-glyph c-todo-glyph-complete">'+svg('check')+'</span>';
+    mark.innerHTML='<span class="c-todo-glyph c-todo-glyph-list">'+svg('listTodo')+'</span><span class="c-todo-progress-ring" aria-hidden="true"></span><span class="c-todo-glyph c-todo-glyph-complete">'+svg('check')+'</span>';
     const label=element('span','c-todo-v8-title','To-dos');
     const counter=element('span','c-todo-v8-counter');counter.textContent='0/'+items.length;
     const chevron=element('span','c-todo-v8-chevron');chevron.innerHTML=svg('chevron');
@@ -750,7 +738,7 @@
       row.append(icon,txt);list.append(row);return row;
     });
     inner.append(list);disclosure.append(inner);card.append(trigger,disclosure);planMount.replaceChildren(card);
-    let done=0,open=true;
+    let done=0,open=false;setOpen(false);
     function setOpen(next){open=next;trigger.setAttribute('aria-expanded',String(open));disclosure.classList.toggle('is-open',open);}
     trigger.addEventListener('click',()=>setOpen(!open));
     function render(){
@@ -767,9 +755,9 @@
           {opacity:.35,filter:'blur(1.5px)'},{opacity:1,filter:'blur(0)'}
         ],{duration:440,easing:'cubic-bezier(.22,1,.36,1)'});
       }
-      mark.classList.toggle('is-all-done',all);
+      mark.classList.toggle('is-all-done',all);mark.classList.toggle('is-working',!all&&done<items.length);
       if(all){setTimeout(()=>{if(done===items.length&&card.isConnected)setOpen(false);},600);}
-      else if(!open)setOpen(true);
+      // Keep the compact collapsed plan stable unless the user opens it.
     }
     render();
     return {card,advance:()=>paint(()=>{done=Math.min(items.length,done+1);render();})};
@@ -785,150 +773,120 @@
     return activity;
   }
   function createPresentationCard(){
-    const card=element('section','c-presentation');card.setAttribute('aria-label','Presentation preview and style controls');
-    const top=element('div','c-preview-top');const name=element('div','c-preview-name');name.innerHTML=svg('slides')+'<span>Launch presentation</span>';
-    const editSlides=element('button','c-slide-action');editSlides.type='button';editSlides.innerHTML=svg('edit')+'<span>Edit</span>';editSlides.setAttribute('aria-pressed','false');
-    const fullscreen=element('button','c-slide-action');fullscreen.type='button';fullscreen.innerHTML=svg('expand')+'<span>Full screen</span>';
-    const closeFull=element('button','c-slide-close');closeFull.type='button';closeFull.innerHTML=svg('check')+'<span>Done</span>';closeFull.setAttribute('aria-label','Close full screen');
-    const topActions=element('div','c-slide-top-actions');topActions.append(editSlides,fullscreen,closeFull);
-    top.append(name,topActions);
-    const stage=element('div','c-presentation-stage');
+    const card=element('section','c-presentation c-slides-v10');card.setAttribute('aria-label','Editable presentation');
+    const top=element('div','c-preview-top');const name=element('div','c-preview-name');name.innerHTML=svg('slides')+'<span>Presentation</span>';
+    const editBtn=element('button','c-slide-action');editBtn.type='button';editBtn.title='Edit slides';editBtn.innerHTML=svg('edit')+'<span>Edit</span>';
+    const fullBtn=element('button','c-slide-action');fullBtn.type='button';fullBtn.title='Full screen';fullBtn.innerHTML=svg('expand')+'<span>Full screen</span>';
+    const actions=element('div','c-slide-top-actions');actions.append(editBtn,fullBtn);top.append(name,actions);
+    const editor=element('div','c-slide-workspace');const filmstrip=element('div','c-slide-filmstrip');
+    const stage=element('div','c-presentation-stage');const canvas=element('div','c-slide-canvas');stage.append(canvas);
+    const inspector=element('div','c-slide-inspector');const toolbar=element('div','c-slide-v10-toolbar');
+    const button=(label,icon,action)=>{const b=element('button','c-slide-tool');b.type='button';b.title=label;b.setAttribute('aria-label',label);b.innerHTML=svg(icon);b.addEventListener('click',action);return b;};
+    const picker=(label,options)=>{const sel=element('select','c-slide-v10-select');sel.title=label;sel.setAttribute('aria-label',label);options.forEach(([val,txt])=>{const option=element('option','',txt);option.value=val;sel.append(option);});return sel;};
+    const fontSize=picker('Selected element font size',[[18,'18'],[24,'24'],[32,'32'],[40,'40'],[48,'48'],[56,'56']]);fontSize.value='40';
+    const theme=picker('Slide theme',[['minimal','Minimal'],['warm','Warm'],['cool','Cool']]);
+    const align=picker('Text alignment',[['left','Left'],['center','Centre'],['right','Right']]);
     const slides=[
-      ['01 / INTRODUCTION','One workspace.','Research, create and act from one place.'],
-      ['02 / PRODUCT','Focused by design.','Thoughtful tools, fast workflows and visible progress.'],
-      ['03 / LAUNCH','Make ideas real.','From the first question to a finished deliverable.']
+      {title:'One workspace.',body:'Research, create and act from one place.',eyebrow:'INTRODUCTION',theme:'minimal'},
+      {title:'Less friction.',body:'A quieter workflow for meaningful work.',eyebrow:'DIRECTION',theme:'minimal'},
+      {title:'Made to move.',body:'Bring documents and actions into focus.',eyebrow:'OUTCOME',theme:'minimal'}
     ];
-    let currentSlide=0;
-    const slideNodes=slides.map((slide,i)=>{
-      const s=element('div','c-presentation-slide'+(i===0?' is-selected':''));
-      s.append(element('div','c-slide-eyebrow',slide[0]),element('div','c-slide-heading',slide[1]),element('div','c-slide-body',slide[2]),element('span','c-slide-rule'),element('span','c-slide-num',String(i+1).padStart(2,'0')));
-      stage.append(s);return s;
-    });
-    const strip=element('div','c-slide-strip');
-    slides.forEach((slide,i)=>{
-      const btn=element('button','c-slide-thumb'+(i===0?' is-selected':''));btn.type='button';btn.title='Show slide '+(i+1);btn.setAttribute('aria-label','Show slide '+(i+1));
-      btn.innerHTML='<span class="tiny-line"></span><span class="tiny-line"></span><span class="tiny-line"></span>';
-      btn.addEventListener('click',()=>selectSlide(i));strip.append(element('span','c-slide-index',String(i+1)),btn);
-    });
-    function selectSlide(index){
-      currentSlide=index;
-      slideNodes.forEach((s,i)=>s.classList.toggle('is-selected',i===index));
-      [...strip.querySelectorAll('button')].forEach((b,i)=>{b.classList.toggle('is-selected',i===index);b.setAttribute('aria-pressed',String(i===index));});
+    let current=0,editing=false,selected='title';const history=[];
+    function saveSnapshot(){history.push(JSON.stringify(slides));if(history.length>50)history.shift();}
+    function updateCurrent(){const s=slides[current];canvas.replaceChildren();canvas.dataset.theme=s.theme||'minimal';
+      const eyebrow=element('div','c-slide-eyebrow',s.eyebrow);const title=element('div','c-slide-heading c-slide-selectable',s.title);
+      const body=element('div','c-slide-body c-slide-selectable',s.body);
+      title.dataset.field='title';body.dataset.field='body';
+      for(const item of [title,body]){item.contentEditable=String(editing);item.spellcheck=false;item.addEventListener('focus',()=>selectElement(item.dataset.field));item.addEventListener('click',()=>selectElement(item.dataset.field));item.addEventListener('input',()=>{slides[current][item.dataset.field]=item.innerText;refreshThumb();});}
+      title.style.fontSize=(s.titleSize||40)+'px';body.style.fontSize=(s.bodySize||16)+'px';
+      title.style.textAlign=body.style.textAlign=s.align||'left';
+      canvas.append(eyebrow,title,body,element('span','c-slide-rule'),element('span','c-slide-num',String(current+1).padStart(2,'0')));
+      fontSize.value=String(selected==='title'?(s.titleSize||40):(s.bodySize||16));align.value=s.align||'left';theme.value=s.theme||'minimal';
+      filmstrip.replaceChildren();slides.forEach((slide,index)=>{const b=element('button','c-slide-film-item'+(index===current?' is-selected':''));b.type='button';b.innerHTML='<span>'+(index+1)+'</span><strong></strong>';b.querySelector('strong').textContent=slide.title||'Untitled';b.setAttribute('aria-label','Open slide '+(index+1));b.addEventListener('click',()=>{current=index;updateCurrent();});filmstrip.append(b);});
+      canvas.querySelector('[data-field="'+selected+'"]').classList.toggle('is-element-selected',editing);
     }
-    selectSlide(0);
-    const controls=element('div','c-presentation-controls');
-    controls.append(element('span','c-small-label','Style'));
-    const style=element('select','c-style-picker');style.setAttribute('aria-label','Presentation visual style');
-    [['minimal','Minimal'],['editorial','Editorial'],['dark','Dark']].forEach(([value,label])=>{const opt=element('option','',label);opt.value=value;style.append(opt);});
-    style.addEventListener('change',()=>{stage.className='c-presentation-stage'+(style.value==='minimal'?'':' theme-'+style.value);});
-    controls.append(style,element('span','c-small-label','Select a slide and edit its text in place')); 
-    const editor=element('div','c-slide-editor');
-    const titleLabel=element('label','c-slide-field');titleLabel.append(element('span','','Title'));
-    const titleInput=element('input','c-slide-input');titleInput.type='text';titleInput.setAttribute('aria-label','Slide heading');titleLabel.append(titleInput);
-    const descLabel=element('label','c-slide-field');descLabel.append(element('span','','Description'));
-    const descInput=element('textarea','c-slide-input c-slide-textarea');descInput.setAttribute('aria-label','Slide body');descInput.rows=2;descLabel.append(descInput);
-    const editingTools=element('div','c-slide-edit-toolbar');editingTools.append(element('span','','Size'));
-    const titleSize=element('select','c-style-picker');titleSize.setAttribute('aria-label','Slide title size');
-    [22,28,32,36,42,48].forEach(n=>{const option=element('option','',n+'px');option.value=n;titleSize.append(option);});titleSize.value='36';
-    const textAlign=element('select','c-style-picker');textAlign.setAttribute('aria-label','Slide text alignment');
-    [['left','Left'],['center','Centre'],['right','Right']].forEach(([v,t])=>{const opt=element('option','',t);opt.value=v;textAlign.append(opt);});
-    editingTools.append(titleSize,textAlign);editor.append(titleLabel,descLabel,editingTools);
-    function syncInputs(){titleInput.value=slideNodes[currentSlide].querySelector('.c-slide-heading').textContent;descInput.value=slideNodes[currentSlide].querySelector('.c-slide-body').textContent;}
-    // Navigation and editor state share the same selected-slide model.
-    const thumbButtons=[...strip.querySelectorAll('button')];
-    thumbButtons.forEach((b,i)=>b.addEventListener('click',()=>{syncInputs();}));
-    titleInput.addEventListener('input',()=>{slideNodes[currentSlide].querySelector('.c-slide-heading').textContent=titleInput.value;});
-    descInput.addEventListener('input',()=>{slideNodes[currentSlide].querySelector('.c-slide-body').textContent=descInput.value;});
-    titleSize.addEventListener('change',()=>{slideNodes[currentSlide].querySelector('.c-slide-heading').style.fontSize=titleSize.value+'px';});
-    textAlign.addEventListener('change',()=>{slideNodes[currentSlide].style.textAlign=textAlign.value;slideNodes[currentSlide].style.alignItems=textAlign.value==='left'?'flex-start':textAlign.value==='center'?'center':'flex-end';});
-    let editing=false;
-    editSlides.addEventListener('click',()=>{editing=!editing;card.classList.toggle('is-slide-editing',editing);editSlides.setAttribute('aria-pressed',String(editing));editSlides.querySelector('span').textContent=editing?'Done':'Edit';if(editing)syncInputs();});
-    const toggleFullscreen=(next)=>{card.classList.toggle('is-slide-fullscreen',next);document.body.classList.toggle('c-slide-fullscreen-active',next);fullscreen.querySelector('span').textContent=next?'Minimise':'Full screen';};
-    fullscreen.addEventListener('click',()=>toggleFullscreen(!card.classList.contains('is-slide-fullscreen')));
-    closeFull.addEventListener('click',()=>toggleFullscreen(false));
-    window.addEventListener('keydown',e=>{if(e.key==='Escape'&&card.classList.contains('is-slide-fullscreen'))toggleFullscreen(false);});
-    syncInputs();
-    card.append(top,stage,strip,controls,editor);paint(()=>assistant.append(card));
-    return {card,selectSlide,changeStyle:value=>{style.value=value;style.dispatchEvent(new Event('change'));}};
+    function refreshThumb(){const thumb=filmstrip.children[current]?.querySelector('strong');if(thumb)thumb.textContent=slides[current].title||'Untitled';}
+    function selectElement(field){selected=field;canvas.querySelectorAll('.c-slide-selectable').forEach(el=>el.classList.toggle('is-element-selected',el.dataset.field===field&&editing));fontSize.value=String(field==='title'?(slides[current].titleSize||40):(slides[current].bodySize||16));}
+    const add=()=>{saveSnapshot();slides.splice(current+1,0,{title:'New slide',body:'Click to edit this text.',eyebrow:'SECTION',theme:theme.value});current++;updateCurrent();};
+    toolbar.append(button('New slide','slides',add),button('Duplicate slide','copy',()=>{saveSnapshot();slides.splice(current+1,0,{...slides[current]});current++;updateCurrent();}),button('Delete slide','file',()=>{if(slides.length===1)return;saveSnapshot();slides.splice(current,1);current=Math.min(current,slides.length-1);updateCurrent();}),button('Undo','replay',()=>{if(!history.length)return;const prev=JSON.parse(history.pop());slides.splice(0,slides.length,...prev);current=Math.min(current,slides.length-1);updateCurrent();}),element('span','c-slide-v10-divider'),fontSize,theme,align,button('Bold selected text','bold',()=>{document.execCommand('bold');}),button('Italic selected text','italic',()=>{document.execCommand('italic');}));
+    toolbar.addEventListener('mousedown',event=>{if(event.target.closest('button'))event.preventDefault();});
+    fontSize.addEventListener('change',()=>{const prop=selected==='title'?'titleSize':'bodySize';slides[current][prop]=Number(fontSize.value);const el=canvas.querySelector('[data-field="'+selected+'"]');if(el)el.style.fontSize=fontSize.value+'px';});
+    theme.addEventListener('change',()=>{slides[current].theme=theme.value;canvas.dataset.theme=theme.value;});
+    align.addEventListener('change',()=>{slides[current].align=align.value;canvas.querySelectorAll('.c-slide-selectable').forEach(e=>e.style.textAlign=align.value);});
+    inspector.append(element('p','c-slide-instructions','Choose a slide, select its title or text, and type directly to edit.'));inspector.append(toolbar);
+    const stageWrap=element('div','c-slide-stage-wrap');stageWrap.append(stage,inspector);
+    editor.append(filmstrip,stageWrap);card.append(top,editor);
+    function setEditing(next){editing=next;card.classList.toggle('is-slide-editing',editing);editBtn.setAttribute('aria-pressed',String(editing));editBtn.querySelector('span').textContent=editing?'Done':'Edit';updateCurrent();}
+    editBtn.addEventListener('click',()=>setEditing(!editing));
+    const setFullscreen=next=>{card.classList.toggle('is-slide-fullscreen',next);document.body.classList.toggle('c-slide-fullscreen-active',next);fullBtn.querySelector('span').textContent=next?'Minimise':'Full screen';};
+    fullBtn.addEventListener('click',()=>setFullscreen(!card.classList.contains('is-slide-fullscreen')));
+    window.addEventListener('keydown',e=>{if(e.key==='Escape'&&card.classList.contains('is-slide-fullscreen'))setFullscreen(false);if(!card.isConnected||!editing)return;
+      if((e.metaKey||e.ctrlKey)&&e.key==='m'){e.preventDefault();add();}
+      if((e.metaKey||e.ctrlKey)&&e.key==='z'&&history.length){e.preventDefault();slides.splice(0,slides.length,...JSON.parse(history.pop()));current=Math.min(current,slides.length-1);updateCurrent();}
+    });
+    updateCurrent();paint(()=>assistant.append(card));return {card,selectSlide:index=>{current=Math.max(0,Math.min(slides.length-1,index));updateCurrent();}};
   }
   /** Light dynamic-island music presentation. A playback event, not a playlist.
    * Real integrations provide their own track metadata and playback state.
    * The disclosure and controls are visual only in this demo. */
   function createMusicCard(){
-    const card=element('section','c-music-island');
-    card.setAttribute('aria-label','Now playing — expandable music controls');
-    const body=element('div','c-island-body');
-    const art=element('button','c-island-art');art.type='button';art.setAttribute('aria-label','Show playback details');art.innerHTML=svg('music');
-    const info=element('div','c-island-info');
-    const title=element('div','c-island-track','Quiet Momentum');
-    const artist=element('div','c-island-artist','Studio North');
-    info.append(title,artist);
-    const signal=element('span','c-island-signal');signal.setAttribute('aria-hidden','true');signal.innerHTML='<i></i><i></i><i></i><i></i>';
-    const pause=element('button','c-island-control c-island-toggle');pause.type='button';pause.setAttribute('aria-label','Play music');pause.innerHTML=svg('play');
-    const expand=element('button','c-island-control c-island-expand');expand.type='button';expand.setAttribute('aria-label','Expand music controls');expand.setAttribute('aria-expanded','false');expand.innerHTML=svg('chevron');
-    body.append(art,info,signal,pause,expand);
-    const detail=element('div','c-island-detail');
-    // Only the music details change height. The compact header never moves or resizes.
-    const detailInner=element('div','c-island-detail-inner');
-    const progress=element('div','c-island-progress');progress.append(element('span'));
-    const times=element('div','c-island-times');times.append(element('span','', '0:42'),element('span','', '3:12'));
-    const actions=element('div','c-island-actions');
-    const prev=element('button','c-island-skip');prev.type='button';prev.setAttribute('aria-label','Previous track');prev.innerHTML=svg('chevron');
-    const next=element('button','c-island-skip');next.type='button';next.setAttribute('aria-label','Next track');next.innerHTML=svg('chevron');
-    actions.append(prev,element('span','c-island-now','Now playing'),next);
-    detailInner.append(progress,times,actions);detail.append(detailInner);
-    card.append(body,detail);
-    const tracks=[['Quiet Momentum','Studio North'],['Clear Horizons','The Ambient Room'],['Open Focus','Northline']];
-    let current=0,playing=false;
-    function setPlaying(index,enabled){
-      current=(index+tracks.length)%tracks.length;playing=enabled;
-      title.textContent=tracks[current][0];artist.textContent=tracks[current][1];
-      card.classList.toggle('is-playing',playing);
-      pause.innerHTML=svg(playing?'pause':'play');
-      pause.setAttribute('aria-label',playing?'Pause music':'Play music');
-      actions.querySelector('.c-island-now').textContent=playing?'Playing':'Paused';
-    }
-    let expanded=false;
-    function setExpanded(open){
-      if(open===expanded)return;
-      expanded=open;
-      const current=detail.getBoundingClientRect().height;
-      // Measure the real content rather than animating to an arbitrary max-height.
-      const target=open?detailInner.getBoundingClientRect().height:0;
-      detail.style.height=current+'px';
-      detail.style.opacity=open?'1':'0';
-      card.classList.toggle('is-expanded',open);
-      expand.setAttribute('aria-expanded',String(open));
-      expand.setAttribute('aria-label',open?'Collapse music controls':'Expand music controls');
-      if(reducedMotion){detail.style.height=open?'auto':'0px';return;}
-      requestAnimationFrame(()=>{
-        detail.style.height=target+'px';
-      });
-    }
-    detail.addEventListener('transitionend',event=>{
-      if(event.propertyName==='height'&&expanded)detail.style.height='auto';
-    });
-    pause.addEventListener('click',()=>setPlaying(current,!playing));
-    expand.addEventListener('click',()=>setExpanded(!expanded));
-    prev.addEventListener('click',()=>setPlaying(current-1,playing));
-    next.addEventListener('click',()=>setPlaying(current+1,playing));
-    art.addEventListener('click',()=>setExpanded(!expanded));
-    art.setAttribute('title','Show playback details');
-    paint(()=>assistant.append(card));
-    return {card,setPlaying,setExpanded};
+    const card=element('section','c-music-island c-island-v10');card.setAttribute('aria-label','Now playing');
+    const art=element('span','c-island-art');art.innerHTML=svg('music');
+    const info=element('div','c-island-info');const title=element('span','c-island-track','Quiet Momentum');const artist=element('span','c-island-artist','Studio North');info.append(title,artist);
+    const play=element('button','c-island-control c-island-toggle');play.type='button';play.title='Play or pause';play.setAttribute('aria-label','Play music');play.innerHTML=svg('play');
+    const scrub=element('input','c-island-scrubber');scrub.type='range';scrub.min='0';scrub.max='192';scrub.value='42';scrub.setAttribute('aria-label','Seek song playback');
+    const elapsed=element('span','c-island-elapsed','0:42');const duration=element('span','c-island-duration','3:12');
+    const time=element('div','c-island-time');time.append(elapsed,duration);
+    const body=element('div','c-island-body');body.append(art,info,play);
+    card.append(body,scrub,time);const tracks=[['Quiet Momentum','Studio North']];let playing=false,seconds=42;
+    const update=()=>{card.classList.toggle('is-playing',playing);play.innerHTML=svg(playing?'pause':'play');play.setAttribute('aria-label',playing?'Pause music':'Play music');scrub.style.setProperty('--progress',(seconds/192*100)+'%');elapsed.textContent=Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');};
+    function setPlaying(index,enabled){playing=enabled;update();}
+    play.addEventListener('click',()=>setPlaying(0,!playing));
+    scrub.addEventListener('input',()=>{seconds=Number(scrub.value);update();});
+    const ticker=setInterval(()=>{if(!card.isConnected){clearInterval(ticker);return;}if(playing){seconds=Math.min(192,seconds+1);scrub.value=String(seconds);if(seconds===192)playing=false;update();}},1000);
+    update();paint(()=>assistant.append(card));return {card,setPlaying};
   }
   function createCommandView(command){
-    const unit=element('div','c-command-unit');
+    const unit=element('div','c-command-unit c-command-v11');
     const header=element('button','c-command-head');header.type='button';header.setAttribute('aria-expanded','true');
     header.innerHTML='<span class="c-action-icon">'+svg('terminal')+'</span><span class="c-active-shimmer c-command-label">Running command</span>';
-    header.append(element('code','c-command-text',command));header.insertAdjacentHTML('beforeend',svg('chevron','c-chevron'));
+    const commandText=element('code','c-command-text',command);header.append(commandText);
+    header.insertAdjacentHTML('beforeend',svg('chevron','c-chevron'));
     header.setAttribute('aria-label','Command: '+command);
-    const shell=element('div','c-command-shell is-open');const clip=element('div','c-command-clip');const terminal=element('div','c-terminal');
-    terminal.append(element('div','c-terminal-command','$ '+command));clip.append(terminal);shell.append(clip);unit.append(header,shell);
-    header.addEventListener('click',()=>{let open=header.getAttribute('aria-expanded')!=='true';header.setAttribute('aria-expanded',String(open));shell.classList.toggle('is-open',open);});
+    const shell=element('div','c-command-shell is-open');const clip=element('div','c-command-clip');
+    const terminal=element('div','c-terminal c-terminal-v11');
+    const bar=element('div','c-terminal-bar');bar.append(element('span','c-terminal-bar-label','Terminal output'));
+    const copy=element('button','c-terminal-copy');copy.type='button';copy.setAttribute('aria-label','Copy terminal output');copy.dataset.tooltip='Copy output';copy.innerHTML=svg('copy');
+    bar.append(copy);terminal.append(bar,element('div','c-terminal-command','$ '+command));
+    const output=element('div','c-terminal-output');output.setAttribute('aria-live','polite');terminal.append(output);
+    copy.addEventListener('click',async()=>{const ok=await writeClipboard('$ '+command+'\n'+output.innerText);if(ok){copy.innerHTML=svg('check');setTimeout(()=>copy.innerHTML=svg('copy'),1000);}});
+    clip.append(terminal);shell.append(clip);unit.append(header,shell);
+    header.addEventListener('click',()=>{const on=header.getAttribute('aria-expanded')!=='true';header.setAttribute('aria-expanded',String(on));shell.classList.toggle('is-open',on);});
     paint(()=>assistant.append(unit));
-    return {line:txt=>paint(()=>{const line=element('div','c-terminal-line');line.append(element('span','c-terminal-prompt','›'),document.createTextNode(txt));terminal.append(line);}),
-      finish:()=>{header.querySelector('.c-command-label').classList.remove('c-active-shimmer');updateLabel(header.querySelector('.c-command-label'),'Ran command');header.setAttribute('aria-expanded','false');shell.classList.remove('is-open');}};
+    return {
+      line:txt=>paint(()=>{const line=element('div','c-terminal-line');line.append(element('span','c-terminal-prompt','›'),document.createTextNode(txt));output.append(line);}),
+      finish:()=>{header.querySelector('.c-command-label').classList.remove('c-active-shimmer');updateLabel(header.querySelector('.c-command-label'),'Ran command');header.setAttribute('aria-expanded','false');shell.classList.remove('is-open');}
+    };
+  }
+  /** Demonstration code block. A host must mount its existing code-block renderer instead.
+   * The Run control intentionally SIMULATES output; it does not evaluate untrusted code. */
+  function addCodeBlock(){
+    const raw=`const status = { ready: true, files: 18 };\nif (status.ready) {\n  console.log("All checks passed");\n}`;
+    const block=element('section','c-code-demo');block.setAttribute('aria-label','Code example');
+    const head=element('div','c-code-demo-head');head.append(element('span','c-code-demo-lang','JavaScript'));
+    const actions=element('div','c-code-demo-actions');
+    const copy=element('button','c-code-demo-button');copy.type='button';copy.dataset.tooltip='Copy code';copy.setAttribute('aria-label','Copy code');copy.innerHTML=svg('copy')+'<span>Copy</span>';
+    const run=element('button','c-code-demo-button');run.type='button';run.dataset.tooltip='Run sample';run.setAttribute('aria-label','Run sample');run.innerHTML=svg('run')+'<span>Run</span>';
+    actions.append(copy,run);head.append(actions);
+    const pre=element('pre','c-code-demo-pre');const code=element('code','c-code-demo-code');
+    const highlighted=raw.split('\n').map(line=>line.split(/("[^"]*"|\b(?:const|if|true)\b)/g).map(part=>{
+      const escaped=part.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      return /^"/.test(part)?'<span class="c-code-token-string">'+escaped+'</span>':/^(const|if|true)$/.test(part)?'<span class="c-code-token-keyword">'+escaped+'</span>':escaped;
+    }).join('')).join('\n');code.innerHTML=highlighted;pre.append(code);
+    const output=element('div','c-code-demo-output');output.hidden=true;block.append(head,pre,output);
+    copy.addEventListener('click',async()=>{if(await writeClipboard(raw)){copy.innerHTML=svg('check')+'<span>Copied</span>';setTimeout(()=>{copy.innerHTML=svg('copy')+'<span>Copy</span>';},1050);}});
+    run.addEventListener('click',()=>{output.hidden=false;output.textContent='› All checks passed  ·  Demo output';run.setAttribute('aria-label','Run sample again');});
+    paint(()=>assistant.append(block));return block;
   }
   /** A single restrained tool status rather than another nested three-stage plan.
    * Hosts trigger finish() when their own real tool event completes; they own
@@ -977,6 +935,7 @@
     const token=++session;userScrollTakeover=false;clearTimeout(copyResetTimer);
     if(followFrame){cancelAnimationFrame(followFrame);followFrame=0;}
     assistant.replaceChildren();assistant.setAttribute('aria-busy','true');viewport.scrollTop=0;
+    composerSend.disabled=true;composerSend.setAttribute('aria-label','Running demonstration');
     document.body.classList.remove('c-document-expanded','c-plan-open');planToggle.setAttribute('aria-expanded','false');
     const delay=ms=>sleep(reducedMotion?Math.round(ms*.55):ms,token);
     try {
@@ -1032,7 +991,7 @@
         'Arranged the information into a readable editorial hierarchy',
         'Applied restrained headings, generous paragraph spacing and neutral typography',
         'Prepared a document that can be copied, expanded or edited in place'
-      ],token,delay,'filePen');
+      ],token,delay,'edit');
       const writing=addWritingCard();
       await writing.revealAndType(token,delay);
       await delay(340);
@@ -1094,12 +1053,20 @@
         'The compact task list stays separate from the response, while small activity rows show what happened inside the work. ',
         'In a real application, these components should react to genuine agent events and preserve the application’s existing chat bubbles, composer, scrolling and message lifecycle.'
       ],token);
+      addCodeBlock();
       todo.advance();
       await delay(300);addSourcesFooter();
       await delay(210);addFooter();
-      assistant.setAttribute('aria-busy','false');
-    }catch(e){if(token===session){assistant.setAttribute('aria-busy','false');console.error(e);}}
+      assistant.setAttribute('aria-busy','false');composerSend.disabled=false;
+    }catch(e){if(token===session){assistant.setAttribute('aria-busy','false');composerSend.disabled=false;console.error(e);}}
   }
-  // DEMO AUTO-PLAY ONLY. Host apps own execution and must not copy this call.
-  if (window.CLYRA_DEMO_MODE !== false) runDemo();
+  // Standalone demo composer: triggers only the visual fixture. Host apps must keep their own composer.
+  composerForm.addEventListener('submit',event=>{
+    event.preventDefault();const content=composerInput.value.trim();if(!content)return;
+    composerInput.value='';const bubble=element('div','c-demo-user-prompt',content);
+    document.getElementById('demoUserMessage').replaceChildren(bubble);
+    runDemo();
+  });
+  composerInput.addEventListener('input',()=>{composerSend.disabled=!composerInput.value.trim();});
+  composerSend.disabled=true;
 })();
