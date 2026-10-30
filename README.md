@@ -176,3 +176,16 @@ The currently committed demo includes:
 - **Sources:** clicking reveals a short, steady horizontal icon strip. Hovering/focusing a website shows a floating name pill while the other icons stay put; clicking opens the actual website.
 - **Verification:** desktop/mobile rendering and behavior should be reviewed alongside `npm test` and the full browser CI suite. A layout-only visual preview is not a substitute for testing the full live app.
 
+
+
+## Editor & micro-interaction refinement (October 30, 2026)
+
+- The todo uses a **stable, centred 280px layout slot**. Collapsed appearance is a single 44px circular progress button; the checklist no longer squeezes sideways while closing.
+- The **Presentation Builder** tool row retains its active shimmer and finished status without opening a dropdown beneath it.
+- The music capsule now has Previous, Play/Pause and Next, with a seek slider. Previous restarts the track if playback is beyond 3 seconds; otherwise it selects the previous track. There are no hover-name/tool-tip popups on music controls. All tracks in this visual fixture are fictional labels; playback is simulated.
+- The Sources control has a clear chevron indicating expand/collapse, with a reversible, staggered horizontal reveal. Website icons keep fixed hit targets and labels float without moving neighbours.
+- The local presentation editor's **Edit mode** now puts a filename field and nine familiar command menus across the top: File, Edit, View, Insert, Slide, Format, Arrange, Tools, Help. A contextual formatting bar appears **above** the canvas (rather than underneath), beside a thumbnail filmstrip. Actions include slide management, fonts, editable text, tables, lines, shapes, images, alignment, background/theme, title/body layouts, transitions, notes, layer ordering, zoom, JSON import/export and PNG export for the current slide. Most actions operate on local, temporary demo state.
+- **Not a literal clone:** no native PPTX fidelity, Google Slides cloud sync, collaboration, embedded media timeline, complex charting or full master-template support. The real Clyra application must reuse its own presentation editor and persistence layer.
+
+The menu structure, themes/layout and shortcuts were informed by Google Workspace's official Slides documentation. The [Reverse Engineer Anything](https://github.com/teonett/Reverse-Engineer-Anything) skill was reviewed, but it advises normal source analysis for regular source repositories and the REA runtime-analysis pathway only for a supplied target/binary or captured runtime evidence. No invasive Google application inspection or REA installation was used.
+
