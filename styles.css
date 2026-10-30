@@ -2834,3 +2834,21 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
 @media(prefers-reduced-motion:reduce){
  .c-workspace .c-rich-response > *, .c-workspace .c-rich-chart-bar{animation:none!important}
 }
+
+/* Specificity fix: earlier circular-collapse rules hid pill labels and forced
+   zero-width flex items. Keep all pill content visible in the closed state. */
+.c-workspace .c-composer-dock .c-todo.c-todo-v8:not(.is-open) .c-todo-v8-trigger .c-todo-v8-title{
+  display:block!important;opacity:1!important;visibility:visible!important;
+  flex:1 1 auto!important;max-width:150px!important;min-width:0!important;
+  padding:0!important;margin:0!important;overflow:visible!important;
+}
+.c-workspace .c-composer-dock .c-todo.c-todo-v8:not(.is-open) .c-todo-v8-trigger .c-todo-v8-counter{
+  display:block!important;opacity:1!important;visibility:visible!important;
+  flex:0 0 auto!important;max-width:50px!important;min-width:24px!important;
+  padding:0!important;margin:0!important;overflow:visible!important;
+}
+.c-workspace .c-composer-dock .c-todo.c-todo-v8:not(.is-open) .c-todo-v8-trigger .c-todo-v8-chevron{
+  display:grid!important;opacity:.65!important;visibility:visible!important;
+  flex:0 0 13px!important;max-width:13px!important;min-width:13px!important;
+  padding:0!important;margin:0!important;overflow:visible!important;
+}
