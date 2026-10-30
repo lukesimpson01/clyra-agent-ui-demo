@@ -533,7 +533,7 @@
     clip.setAttribute('aria-hidden','true');clip.inert=true;
     const links=element('div','c-sources-inline-links');
     SOURCES.forEach((source,index)=>{
-      const slot=element('span','c-sources-inline-slot');
+      const slot=element('span','c-sources-inline-slot');slot.style.setProperty('--source-index',index);
       const a=element('a','c-sources-inline-link');a.href=source.href;a.target='_blank';a.rel='noopener noreferrer';
       a.setAttribute('aria-label','Open '+source.name);
       a.style.setProperty('--source-index',index);
