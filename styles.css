@@ -2107,3 +2107,8 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
 .c-workspace [data-tooltip]:is(button,select,input):hover::after,.c-workspace [data-tooltip]:is(button,select,input):focus-visible::after{opacity:1!important;transform:translate(-50%,0)!important}
 .c-workspace .c-writing-format-btn::after,.c-workspace .c-editor-font-button::after,.c-workspace .c-terminal-copy::after,.c-workspace .c-code-demo-button::after{background:#fff!important;color:#57575f!important;border:1px solid #e7e7eb!important;box-shadow:0 6px 16px rgba(14,14,18,.07)!important}
 @media(prefers-reduced-motion:reduce){.c-workspace .c-todo,.c-workspace .c-todo-v8-disclosure,.c-workspace .c-sources-inline-clip,.c-workspace .c-sources-inline-link,.c-workspace .c-slide-object,.c-demo-composer{transition:none!important;animation:none!important}}
+
+/* White, anchored tool names for native selects and colour inputs. */
+.c-workspace .c-slide-v14-toolwrap{position:relative;display:inline-flex;align-items:center}
+.c-workspace .c-slide-v14-toolwrap::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 7px);left:50%;transform:translate(-50%,4px);opacity:0;pointer-events:none;z-index:900;border:1px solid #e8e8eb;border-radius:9px;background:#fff;color:#57575f;box-shadow:0 6px 16px rgba(14,14,18,.07);padding:5px 8px;font:400 11px/15px var(--c-font);white-space:nowrap;transition:transform .2s cubic-bezier(.22,1,.36,1),opacity .17s ease}
+.c-workspace .c-slide-v14-toolwrap:hover::after,.c-workspace .c-slide-v14-toolwrap:focus-within::after{opacity:1;transform:translate(-50%,0)}
