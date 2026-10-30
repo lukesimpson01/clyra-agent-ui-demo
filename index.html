@@ -11,7 +11,9 @@
 <div class="c-workspace">
 <main class="conversation-content" id="conversationViewport" aria-label="Demonstration chat conversation">
   <div class="c-lane" id="conversationLane">
-    <!-- DESIGN REFERENCE ONLY: no fake user bubble or composer.
+    <div id="demoUserMessage" class="c-demo-user-message"></div>
+    <div id="demoUserMessage" class="c-demo-user-message"></div>
+    <!-- DESIGN REFERENCE ONLY: the demo composer is outside the assistant response.
          The host application supplies and preserves all user/assistant message wrappers,
          message positioning, scroll ownership, streaming architecture and transitions.
          This fixture isolates assistant response and agent tool/activity rendering. -->
@@ -26,6 +28,10 @@
     <div id="planMount"></div>
   </div>
 </aside>
+<form id="demoComposer" class="c-demo-composer" aria-label="Demo message input">
+  <label class="c-demo-input-wrap"><span class="sr-only">Message</span><textarea id="demoInput" rows="1" placeholder="Ask Clyra to work on something…" aria-label="Message"></textarea></label>
+  <button id="demoSend" class="c-demo-send" type="submit" aria-label="Send message" disabled>↑</button>
+</form>
 <button type="button" class="c-plan-close" id="planClose" hidden aria-label="Close plan">×</button>
 <button type="button" class="c-plan-fab" id="planToggle" aria-label="Show task plan" aria-expanded="false">☷ <span>Plan</span></button>
 <div class="c-plan-scrim" id="planScrim" aria-hidden="true"></div>
