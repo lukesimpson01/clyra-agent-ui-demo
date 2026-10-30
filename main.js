@@ -236,7 +236,7 @@
     for(let n=2;n<=5;n++){
       await sleep(3000,token);
       paint(()=>{
-        [...status.bars.querySelectorAll('.c-wifi-arc')].forEach((arc,i)=>arc.classList.toggle('is-live',i<n));
+        [...status.bars.querySelectorAll('.c-wifi-arc')].forEach((arc,i)=>{const rising=i<n&&!arc.classList.contains('is-live');arc.classList.toggle('is-live',i<n);if(rising&&!reducedMotion)arc.animate([{opacity:.2,strokeDashoffset:22},{opacity:1,strokeDashoffset:0}],{duration:600,easing:'cubic-bezier(.22,1,.36,1)'});});
         updateReconnectLabel(status.label,'Reconnecting · '+n+'/5');
       });
     }
@@ -546,36 +546,38 @@
     p.appendChild(a);block.appendChild(p);paint(()=>assistant.appendChild(block));
   }
   function addSourcesFooter(){
-    // Website citations remain collapsed until a user opens them.
-    const root=element('section','c-sources-disclosure');
-    root.setAttribute('aria-label','Sources referenced in this response');
-    const trigger=element('button','c-sources-disclosure-trigger');
+    // Sources expand *horizontally* beside the trigger; website links are live,
+    // but never open automatically. The demo data is illustrative.
+    const root=element('section','c-sources-inline');
+    root.setAttribute('aria-label','Referenced sources');
+    const trigger=element('button','c-sources-inline-trigger');
     trigger.type='button';trigger.setAttribute('aria-expanded','false');
-    const panelId='c-sources-detail-'+session;
-    trigger.setAttribute('aria-controls',panelId);
+    trigger.setAttribute('aria-controls','c-sources-inline-items-'+session);
     const logos=element('span','c-sources-logos');
     SOURCES.forEach(source=>logos.appendChild(sourceLogo(source,'c-sources-logo')));
-    const title=element('span','c-sources-disclosure-label','Sources');
-    const count=element('span','c-sources-disclosure-count',String(SOURCES.length));
-    const arrow=element('span','c-sources-disclosure-arrow');arrow.innerHTML=svg('caret');
-    trigger.append(logos,title,count,arrow);
-    const panel=element('div','c-sources-disclosure-panel');panel.id=panelId;
-    panel.setAttribute('role','region');panel.setAttribute('aria-label','Referenced websites');
-    panel.setAttribute('aria-hidden','true');panel.inert=true;
-    const clip=element('div','c-sources-disclosure-clip');
-    const links=element('div','c-sources-disclosure-links');
-    SOURCES.forEach(source=>links.appendChild(sourceLink(source)));
-    clip.append(links);panel.append(clip);root.append(trigger,panel);
+    trigger.append(logos,element('span','c-sources-inline-heading','Sources'),element('span','c-sources-inline-count',String(SOURCES.length)));
+    const clip=element('div','c-sources-inline-clip');clip.id='c-sources-inline-items-'+session;
+    clip.setAttribute('aria-hidden','true');clip.inert=true;
+    const links=element('div','c-sources-inline-links');
+    SOURCES.forEach((source,index)=>{
+      const a=element('a','c-sources-inline-link');a.href=source.href;a.target='_blank';a.rel='noopener noreferrer';
+      a.setAttribute('aria-label','Open '+source.name);
+      a.style.setProperty('--source-index',index);
+      a.append(sourceLogo(source,'c-sources-inline-favicon'),element('span','c-sources-inline-site',source.name));
+      links.append(a);
+    });
+    clip.append(links);root.append(trigger,clip);
     trigger.addEventListener('click',()=>{
       const open=trigger.getAttribute('aria-expanded')!=='true';
       trigger.setAttribute('aria-expanded',String(open));
-      panel.setAttribute('aria-hidden',String(!open));
-      panel.inert=!open;
+      clip.setAttribute('aria-hidden',String(!open));
+      clip.inert=!open;
       paint(()=>root.classList.toggle('is-open',open));
     });
     paint(()=>assistant.append(root));
     return root;
   }
+
   function addResults(){
     const block=element('div','c-stream-block');
     const header=element('h3','c-result-heading','Changes applied');
@@ -757,7 +759,7 @@
     });
     inner.append(list);disclosure.append(inner);card.append(trigger,disclosure);planMount.replaceChildren(card);
     let done=0,open=false;setOpen(false);
-    function setOpen(next){open=next;trigger.setAttribute('aria-expanded',String(open));disclosure.classList.toggle('is-open',open);}
+    function setOpen(next){open=next;trigger.setAttribute('aria-expanded',String(open));card.classList.toggle('is-open',open);disclosure.classList.toggle('is-open',open);}
     trigger.addEventListener('click',()=>setOpen(!open));
     function render(){
       const all=done===items.length;
@@ -773,6 +775,7 @@
           {opacity:.35,filter:'blur(1.5px)'},{opacity:1,filter:'blur(0)'}
         ],{duration:440,easing:'cubic-bezier(.22,1,.36,1)'});
       }
+      mark.style.setProperty('--todo-percentage',(items.length?Math.round(done/items.length*100):0)+'%');
       mark.classList.toggle('is-all-done',all);mark.classList.toggle('is-working',!all&&done<items.length);
       if(all){setTimeout(()=>{if(done===items.length&&card.isConnected)setOpen(false);},600);}
       // Keep the compact collapsed plan stable unless the user opens it.
@@ -1101,6 +1104,8 @@
     }catch(e){if(token===session){assistant.setAttribute('aria-busy','false');composerSend.disabled=false;console.error(e);}}
   }
   // Standalone demo composer: triggers only the visual fixture. Host apps must keep their own composer.
+  // Shift+Enter inserts a line break. Enter sends, except while composing with an IME.
+  composerInput.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();if(composerInput.value.trim())composerForm.requestSubmit();}});
   composerForm.addEventListener('submit',event=>{
     event.preventDefault();const content=composerInput.value.trim();if(!content)return;
     composerInput.value='';const bubble=element('div','c-demo-user-prompt',content);
