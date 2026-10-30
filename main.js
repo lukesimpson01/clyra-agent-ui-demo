@@ -940,7 +940,11 @@
       filmstrip.replaceChildren(...slides.map(renderThumbnail));
       notes.value=slide.notes||'';updateSelections();
     }
-    const toolbarGroup=(...els)=>{const group=element('span','c-slide-v14-group');group.append(...els);return group;};
+    const toolbarGroup=(...els)=>{const group=element('span','c-slide-v14-group');
+      els.forEach(control=>{if(control.matches('select,input')){const wrapper=element('span','c-slide-v14-toolwrap');
+        wrapper.dataset.tooltip=control.getAttribute('aria-label')||control.dataset.tooltip||'Formatting';
+        control.removeAttribute('data-tooltip');wrapper.append(control);group.append(wrapper);
+      }else group.append(control);});return group;};
     toolbar.append(
       toolbarGroup(tool('New slide','slides',addSlide),tool('Duplicate','copy',duplicateSlide),tool('Delete slide','file',removeSlide),tool('Move up','chevron',()=>moveSlide(-1)),tool('Move down','caret',()=>moveSlide(1))),
       toolbarGroup(tool('Undo','replay',undo),tool('Redo','replay',redo)),
