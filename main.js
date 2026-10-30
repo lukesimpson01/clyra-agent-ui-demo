@@ -828,6 +828,7 @@
       {title:'Made to move.',body:'Bring documents and actions into focus.',eyebrow:'OUTCOME',theme:'minimal',objects:[],notes:''}
     ];
     let current=0,editing=false,selected={field:'title',id:null},showNotes=false;
+    let draggedSlideIndex=null;
     let history=[],future=[],nextObjectId=1;
     const clone=()=>JSON.parse(JSON.stringify({slides,current}));
     function snapshot(){history.push(clone());if(history.length>80)history.shift();future=[];}
@@ -863,6 +864,18 @@
         color:type==='text'?'#222228':'#d5dbe8',text:type==='text'?'New text box':''};
       slides[current].objects.push(obj);selected={field:'object',id:obj.id};render();
     }
+    function moveObjectLayer(direction){
+      if(selected.field!=='object')return;
+      const objects=slides[current].objects,index=objects.findIndex(o=>o.id===selected.id);
+      const target=index+direction;if(index<0||target<0||target>=objects.length)return;
+      snapshot();[objects[index],objects[target]]=[objects[target],objects[index]];render();
+    }
+    function duplicateObject(){
+      if(selected.field!=='object')return;
+      const original=slides[current].objects.find(o=>o.id===selected.id);if(!original)return;
+      snapshot();const next={...original,id:nextObjectId++,x:Math.min(90,original.x+4),y:Math.min(90,original.y+4)};
+      slides[current].objects.push(next);selected={field:'object',id:next.id};render();
+    }
     function removeObject(){
       if(selected.field!=='object')return;
       snapshot();slides[current].objects=slides[current].objects.filter(o=>o.id!==selected.id);
@@ -896,6 +909,14 @@
     function renderThumbnail(slide,index){
       const btn=element('button','c-slide-film-item c-slide-mini'+(index===current?' is-selected':''));btn.type='button';
       btn.setAttribute('aria-label','Open slide '+(index+1)+': '+slide.title);
+      btn.draggable=editing;
+      btn.addEventListener('dragstart',event=>{if(!editing)return;draggedSlideIndex=index;event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',String(index));btn.classList.add('is-dragging');});
+      btn.addEventListener('dragend',()=>{draggedSlideIndex=null;btn.classList.remove('is-dragging');});
+      btn.addEventListener('dragover',event=>{if(!editing||draggedSlideIndex===null)return;event.preventDefault();event.dataTransfer.dropEffect='move';});
+      btn.addEventListener('drop',event=>{event.preventDefault();if(!editing||draggedSlideIndex===null||draggedSlideIndex===index)return;
+        snapshot();const from=draggedSlideIndex;const moved=slides.splice(from,1)[0];slides.splice(index,0,moved);
+        current=current===from?index:current>from&&current<=index?current-1:current<from&&current>=index?current+1:current;
+        draggedSlideIndex=null;render();});
       const number=element('span','c-slide-mini-number',String(index+1));
       const miniature=element('span','c-slide-mini-frame');miniature.dataset.theme=slide.theme||'minimal';
       miniature.style.background=slide.bg||'';
@@ -917,7 +938,11 @@
         item.contentEditable=String(editing);item.spellcheck=false;
         item.addEventListener('click',()=>selectElement(field));
         item.addEventListener('focus',()=>selectElement(field));
-        item.addEventListener('input',()=>{slide[field]=item.innerText;filmstrip.replaceChildren(...slides.map(renderThumbnail));});
+        item.addEventListener('input',()=>{
+          slide[field]=item.innerText;
+          const thumb=filmstrip.children[current]?.querySelector(field==='title'?'.c-slide-mini-title':'.c-slide-mini-body');
+          if(thumb)thumb.textContent=slide[field];
+        });
         const pre=field==='title'?'title':'body';
         item.style.fontSize=(slide[pre+'Size']||(field==='title'?40:16))+'px';
         item.style.fontFamily=slide[pre+'Font']||'system-ui';
@@ -968,7 +993,7 @@
     toolbar.append(
       toolbarGroup(tool('New slide','slides',addSlide),tool('Duplicate','copy',duplicateSlide),tool('Delete slide','file',removeSlide),tool('Move up','chevron',()=>moveSlide(-1)),tool('Move down','caret',()=>moveSlide(1))),
       toolbarGroup(tool('Undo','replay',undo),tool('Redo','replay',redo)),
-      toolbarGroup(tool('Insert text box','type',()=>addObject('text')),tool('Insert rectangle','box',()=>addObject('rect')),tool('Insert ellipse','circle',()=>addObject('ellipse')),tool('Remove selected object','x',removeObject)),
+      toolbarGroup(tool('Insert text box','type',()=>addObject('text')),tool('Insert rectangle','box',()=>addObject('rect')),tool('Insert ellipse','circle',()=>addObject('ellipse')),tool('Duplicate object','copy',duplicateObject),tool('Bring object forward','layers',()=>moveObjectLayer(1)),tool('Send object backward','layers',()=>moveObjectLayer(-1)),tool('Remove selected object','x',removeObject)),
       toolbarGroup(fontFamily,fontSize,align),
       toolbarGroup(tool('Bold','bold',()=>{if(selected.field==='object')return;document.execCommand('bold');}),tool('Italic','italic',()=>{if(selected.field==='object')return;document.execCommand('italic');}),textColour,backgroundColour,theme),
       toolbarGroup(tool('Speaker notes','file',()=>{showNotes=!showNotes;notes.classList.toggle('is-visible',showNotes);}),tool('Export slides as JSON','download',()=>{
@@ -981,7 +1006,8 @@
     fontFamily.addEventListener('change',()=>applySelected('font',fontFamily.value));
     align.addEventListener('change',()=>applySelected('align',align.value));
     textColour.addEventListener('input',()=>applySelected('color',textColour.value));
-    backgroundColour.addEventListener('input',()=>{snapshot();slides[current].bg=backgroundColour.value;canvas.style.background=backgroundColour.value;});
+    backgroundColour.addEventListener('change',()=>{snapshot();slides[current].bg=backgroundColour.value;render();});
+    backgroundColour.addEventListener('input',()=>{canvas.style.background=backgroundColour.value;});
     theme.addEventListener('change',()=>{snapshot();slides[current].theme=theme.value;render();});
     notes.addEventListener('input',()=>{slides[current].notes=notes.value;});
     inspector.append(element('p','c-slide-instructions','Select a slide, edit text, insert shapes or add speaker notes.'));
@@ -999,6 +1025,8 @@
       if(!card.isConnected||!editing)return;
       // Let the native contenteditable engine undo/redo the user's text edits.
       if(event.target?.isContentEditable&&(event.metaKey||event.ctrlKey)&&['z','y'].includes(event.key.toLowerCase()))return;
+      if((event.key==='Delete'||event.key==='Backspace')&&selected.field==='object'&&!event.target?.isContentEditable&&event.target?.tagName!=='INPUT'&&event.target?.tagName!=='TEXTAREA'){event.preventDefault();removeObject();}
+      if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='d'&&selected.field==='object'&&!event.target?.isContentEditable){event.preventDefault();duplicateObject();}
       if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='m'){event.preventDefault();addSlide();}
       if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='z'&&!event.shiftKey){event.preventDefault();undo();}
       if((event.metaKey||event.ctrlKey)&&((event.key.toLowerCase()==='y')||(event.key.toLowerCase()==='z'&&event.shiftKey))){event.preventDefault();redo();}
