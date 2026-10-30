@@ -82,3 +82,16 @@ The three scripted phases and sample text exist solely for demonstration. They a
 ### v11 additions
 
 Refined pencil and terminal UI; richer white document editing toolbar (15 searchable fonts, two colour palettes, list styles and table grid); demo code block with Copy and simulated Run. These are visual integration references rather than a new backend/editor harness.
+
+## Recent UI refinements (October 2026)
+
+- Composer: quiet rounded white, two-row demo input with Enter to submit and Shift+Enter to insert a line break. This is a demo-only control; integrations must use the host application's existing composer and message behaviour.
+- Plan: starts as a small circular progress indicator, unfolds into a checklist when the demo work begins, and collapses when finished.
+- Reconnect: iOS-inspired nested Wi-Fi curves reveal strength progressively without a bouncing spinner.
+- Citations: clicking Sources glides real site links horizontally; each circular favicon expands to a small site-name pill on hover/focus. Clicking a site navigates to its URL.
+- Presentation fixture: miniature left-hand slide previews, text formatting, insertable/draggable/resizable shapes and text boxes, speaker notes, slide order and history controls, fullscreen, and JSON export. This fixture is not Google Slides or PowerPoint file-format parity and is not a production slide editor.
+- Toolbar descriptions: lightweight white anchored labels instead of dark cursor-following tooltips.
+
+## Smoke tests
+
+Run `node scripts/smoke-test.mjs` to check HTML IDs, JavaScript parseability, key UI hooks and the actual local development server with no dependency installation. GitHub Actions runs this check on pushes and pull requests. Interactive browser tests are still useful before integrating these demo components into a real application.
