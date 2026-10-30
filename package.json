@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node server.js",
     "test": "node scripts/smoke-test.mjs",
-    "test:browser": "node scripts/browser-test.mjs"
+    "test:browser": "node scripts/browser-test.mjs",
+    "setup:git": "node scripts/setup-git.mjs"
   }
 }
