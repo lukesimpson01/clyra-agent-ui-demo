@@ -225,12 +225,14 @@
     const row=element('div','c-reconnect');row.setAttribute('role','status');
     // Each level lights a curved wireless arc; this deliberately avoids cellular-style bars.
     const bars=element('span','c-wifi-curves');bars.setAttribute('aria-hidden','true');
-    bars.innerHTML='<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'+
-      '<path class="c-wifi-arc is-live" d="M13 20.5h.01" stroke-width="3.6"/>'+
-      '<path class="c-wifi-arc" d="M9.6 17.5a5 5 0 0 1 6.8 0"/>'+
-      '<path class="c-wifi-arc" d="M6.5 14.2a9.5 9.5 0 0 1 13 0"/>'+
-      '<path class="c-wifi-arc" d="M3.5 10.8a14 14 0 0 1 19 0"/>'+
-      '<path class="c-wifi-arc" d="M1.8 7.8a18 18 0 0 1 22.4 0"/>'+'</svg>';
+    // Five independently animated layers: central point and four increasingly wide arcs.
+    // Entire symbol stays stationary, following variable-strength SF Symbol behaviour.
+    bars.innerHTML='<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'+
+      '<circle class="c-wifi-arc is-live c-wifi-dot" cx="14" cy="23" r="1.65" fill="currentColor" stroke="none"/>'+
+      '<path class="c-wifi-arc" d="M11 20a4.25 4.25 0 0 1 6 0"/>'+
+      '<path class="c-wifi-arc" d="M8 17a8.5 8.5 0 0 1 12 0"/>'+
+      '<path class="c-wifi-arc" d="M5 14a12.7 12.7 0 0 1 18 0"/>'+
+      '<path class="c-wifi-arc" d="M2.5 10.5a16.25 16.25 0 0 1 23 0"/>'+'</svg>';
     const label=element('span','c-reconnect-label c-active-shimmer','Reconnecting · 1/5');
     row.append(bars,label);paint(()=>assistant.appendChild(row));
     return {row,bars,label};
@@ -241,7 +243,7 @@
     for(let n=2;n<=5;n++){
       await sleep(3000,token);
       paint(()=>{
-        [...status.bars.querySelectorAll('.c-wifi-arc')].forEach((arc,i)=>{const rising=i<n&&!arc.classList.contains('is-live');arc.classList.toggle('is-live',i<n);if(rising&&!reducedMotion)arc.animate([{opacity:.2,strokeDashoffset:22},{opacity:1,strokeDashoffset:0}],{duration:600,easing:'cubic-bezier(.22,1,.36,1)'});});
+        [...status.bars.querySelectorAll('.c-wifi-arc')].forEach((arc,i)=>{const rising=i<n&&!arc.classList.contains('is-live');arc.classList.toggle('is-live',i<n);if(rising&&!reducedMotion)arc.animate([{opacity:.16},{opacity:1}],{duration:580,easing:'cubic-bezier(.22,1,.36,1)'});});
         updateReconnectLabel(status.label,'Reconnecting · '+n+'/5');
       });
     }
@@ -611,7 +613,7 @@
     const title=element('span','c-writing-header-title','Writing');
     const actions=element('div','c-writing-header-actions');
     function headButton(icon,label,text=''){
-      const b=element('button','c-writing-head-btn');b.type='button';b.setAttribute('aria-label',label);b.title=label;
+      const b=element('button','c-writing-head-btn');b.type='button';b.setAttribute('aria-label',label);b.dataset.tooltip=label;
       b.innerHTML=svg(icon)+(text?'<span>'+text+'</span>':'');return b;
     }
     const copy=headButton('copy','Copy writing');
@@ -748,7 +750,7 @@
     const trigger=element('button','c-todo-v8-trigger');trigger.type='button';trigger.id=titleId;
     trigger.setAttribute('aria-expanded','true');trigger.setAttribute('aria-controls',contentId);
     const mark=element('span','c-todo-v8-headicon');
-    mark.innerHTML='<span class="c-todo-glyph c-todo-glyph-list">'+svg('listTodo')+'</span><span class="c-todo-progress-ring" aria-hidden="true"></span><span class="c-todo-glyph c-todo-glyph-complete">'+svg('check')+'</span>';
+    mark.innerHTML='<span class="c-todo-glyph c-todo-glyph-list">'+svg('listTodo')+'</span><svg class="c-todo-progress-svg" viewBox="0 0 28 28" aria-hidden="true"><circle class="c-todo-progress-track" cx="14" cy="14" r="11"/><circle class="c-todo-progress-value" cx="14" cy="14" r="11"/></svg><span class="c-todo-glyph c-todo-glyph-complete">'+svg('check')+'</span>';
     const label=element('span','c-todo-v8-title','To-dos');
     const counter=element('span','c-todo-v8-counter');counter.textContent='0/'+items.length;
     const chevron=element('span','c-todo-v8-chevron');chevron.innerHTML=svg('chevron');
@@ -782,7 +784,9 @@
           {opacity:.35,filter:'blur(1.5px)'},{opacity:1,filter:'blur(0)'}
         ],{duration:440,easing:'cubic-bezier(.22,1,.36,1)'});
       }
-      mark.style.setProperty('--todo-percentage',(items.length?Math.round(done/items.length*100):0)+'%');
+      const fraction=items.length?done/items.length:0;
+      mark.style.setProperty('--todo-percentage',Math.round(fraction*100)+'%');
+      mark.querySelector('.c-todo-progress-value')?.style.setProperty('stroke-dashoffset',String(69.115*(1-fraction)));
       mark.classList.toggle('is-all-done',all);mark.classList.toggle('is-working',!all&&done<items.length);
       if(all){setTimeout(()=>{if(done===items.length&&card.isConnected)setOpen(false);},600);}
       // Keep the compact collapsed plan stable unless the user opens it.
@@ -1263,10 +1267,12 @@
   composerInput.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();if(composerInput.value.trim())composerForm.requestSubmit();}});
   composerForm.addEventListener('submit',event=>{
     event.preventDefault();const content=composerInput.value.trim();if(!content)return;
-    composerInput.value='';const bubble=element('div','c-demo-user-prompt',content);
+    composerInput.value='';composerInput.style.height='auto';const bubble=element('div','c-demo-user-prompt',content);
     document.getElementById('demoUserMessage').replaceChildren(bubble);
     runDemo();
   });
-  composerInput.addEventListener('input',()=>{composerSend.disabled=!composerInput.value.trim();});
+  const resizeDemoInput=()=>{composerInput.style.height='auto';composerInput.style.height=Math.min(composerInput.scrollHeight,130)+'px';};
+  composerInput.addEventListener('input',()=>{composerSend.disabled=!composerInput.value.trim();resizeDemoInput();});
+  resizeDemoInput();
   composerSend.disabled=true;
 })();
