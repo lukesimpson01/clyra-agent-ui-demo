@@ -1961,3 +1961,32 @@ body.c-slide-fullscreen-active {overflow:hidden!important;}
 .c-workspace .c-writing-toolbar-shell.is-open .c-writing-toolbar-clip{overflow:visible!important}
 .c-workspace .c-writing-card.is-editing{z-index:2;position:relative}
 @media(min-width:840px){.c-workspace .c-writing-toolbar{flex-wrap:nowrap!important}}
+
+/* V12 — centre the demo reading lane only. Host applications retain their own chat layout. */
+.c-workspace > .conversation-content .c-lane{width:min(760px,calc(100% - 44px))!important;max-width:760px!important;margin-inline:auto!important}
+.c-workspace .c-digit-column{transition-property:transform!important;transition-duration:2150ms!important;transition-timing-function:cubic-bezier(.22,.72,.26,1)!important;transition-delay:0ms!important}
+.c-workspace .c-digit-column.is-secondary{transition-duration:2200ms!important}
+@media(prefers-reduced-motion:reduce){.c-workspace .c-digit-column,.c-workspace .c-digit-column.is-secondary{transition:none!important}}
+/* V12.1 — compact sources disclosure, closed until a user clicks. */
+.c-workspace .c-sources-disclosure{margin:14px 0 5px;max-width:min(100%,540px);animation:v10-in .34s cubic-bezier(.22,1,.36,1) both}
+.c-workspace .c-sources-disclosure-trigger{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:4px 9px 4px 6px;border:1px solid #ededf0;border-radius:999px;background:#fff;color:#64646b;font:400 12px/18px var(--c-font);cursor:pointer;transition:background-color .2s ease,border-color .2s ease,color .2s ease;outline-offset:3px}
+.c-workspace .c-sources-disclosure-trigger:hover{background:#f8f8f9;border-color:#e5e5e8;color:#38383d}
+.c-workspace .c-sources-disclosure-trigger:focus-visible{outline:2px solid #8a8a8f}
+.c-workspace .c-sources-logos{display:inline-flex;align-items:center;padding-left:1px}
+.c-workspace .c-sources-logo{width:19px;height:19px;display:grid;place-items:center;border-radius:50%;background:#fff;border:1.5px solid #fff;overflow:hidden;flex-shrink:0}
+.c-workspace .c-sources-logo+.c-sources-logo{margin-left:-6px}
+.c-workspace .c-sources-logo svg{width:100%;height:100%}
+.c-workspace .c-sources-disclosure-count{font-size:11px;color:#9a9aa0;font-variant-numeric:tabular-nums}
+.c-workspace .c-sources-disclosure-arrow{width:12px;height:12px;display:grid;place-items:center;color:#9a9aa0;transition:transform .34s cubic-bezier(.22,1,.36,1)}
+.c-workspace .c-sources-disclosure-arrow svg{width:12px;height:12px}
+.c-workspace .c-sources-disclosure.is-open .c-sources-disclosure-arrow{transform:rotate(180deg)}
+.c-workspace .c-sources-disclosure-panel{display:grid;grid-template-rows:0fr;opacity:0;visibility:hidden;transition:grid-template-rows .4s cubic-bezier(.22,1,.36,1),opacity .26s ease,visibility .4s}
+.c-workspace .c-sources-disclosure.is-open .c-sources-disclosure-panel{grid-template-rows:1fr;opacity:1;visibility:visible}
+.c-workspace .c-sources-disclosure-clip{min-height:0;overflow:hidden}
+.c-workspace .c-sources-disclosure-links{margin:8px 0 2px;padding:5px;border:1px solid #eaeaec;border-radius:17px;background:#fff;transform:translateY(-8px);opacity:0;transition:transform .4s cubic-bezier(.22,1,.36,1),opacity .3s ease}
+.c-workspace .c-sources-disclosure.is-open .c-sources-disclosure-links{transform:translateY(0);opacity:1}
+.c-workspace .c-sources-disclosure-links .c-source-link{border-radius:12px;padding:9px 10px}
+.c-workspace .c-sources-disclosure-links .c-source-link:hover{background:#f7f7f8}
+.c-workspace .c-sources-disclosure-links .c-source-link-title{font:400 12px/18px var(--c-font)}
+.c-workspace .c-sources-disclosure-links .c-source-link-domain{font:400 11px/16px var(--c-font)}
+@media(prefers-reduced-motion:reduce){.c-workspace .c-sources-disclosure,.c-workspace .c-sources-disclosure-panel,.c-workspace .c-sources-disclosure-links,.c-workspace .c-sources-disclosure-arrow{animation:none!important;transition:none!important}}
