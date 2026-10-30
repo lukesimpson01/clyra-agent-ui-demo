@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {setTimeout as pause} from 'node:timers/promises';
 import {chromium} from 'playwright';
-const port=52681,base='http://127.0.0.1:'+port;
+const port=52681,base='http://localhost:'+port;
 const server=spawn(process.execPath,['server.js'],{cwd:new URL('../',import.meta.url),env:{...process.env,PORT:String(port)},stdio:['ignore','pipe','pipe']});
 let log='';server.stderr.on('data',chunk=>log+=chunk);
 let browser;
