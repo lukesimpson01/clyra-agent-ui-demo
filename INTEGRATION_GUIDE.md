@@ -102,3 +102,13 @@ The three scripted phases and sample text exist solely for demonstration. They a
 ## v11 visuals to import selectively
 
 Replace only the visual **file-edit pencil, terminal disclosure, document toolbar design, and code-block chrome**. The table picker and code block in this repository are demos: **prefer the existing user project's table component and code-block component**, even if its implementation differs. Keep all real editor state, text selection, permissions, keyboard shortcuts, code execution flow, composer and message renderers.
+
+## v18: rich response and visual browser mapping
+
+The **demo-specific browser** runs a fixed 10-second illustrated sequence: grey shimmer for the first 3 seconds, blue working glow and pointer until 10 seconds, then fade/collapse. It does not open a web page. In production, bind `loading`, `working`, `cursor-position`, `completed`, `error`, `takeover` and `cancelled` to the real browser-agent event stream; do not transplant the scripted 3s/10s timers or dummy cursor route.
+
+The **rich response showcase** is a compact example, not a full Markdown parser. Use the host's existing renderer for headings, emphasis, linked sources, task lists, tables, quotes, accessible charts, MathML/LaTeX equations, syntax-highlighted code, file edits, terminal output and interactive artifacts. Demo equations use actual browser-native MathML offline. User-requested TeX rendering can lazily load KaTeX 0.19.1 from jsDelivr; production should bundle and pin the renderer, fonts and CSP if it requires reliable offline arbitrary TeX. Sanitize untrusted Markdown/HTML and keep KaTeX `trust:false`.
+
+The **welcome composer** in the demo begins centred (565px maximum) and settles into a 600px bottom dock upon sending, while assistant text retains a 760px reading lane. This is only a visual fixture: keep the host's own composer, message wrappers, scroll ownership, keyboard shortcuts and route; integrate only the requested appearance/interactions through the host's existing components. The closed plan is a horizontal progress pill with a visible title and count, expanding the checklist vertically; update it from actual task events, not demo timers.
+
+Every imported component must match the host's current design tokens, typography, icon weights, motion language and accessible interaction patterns. Do not copy any UI that looks off-theme simply because this demo contains it. Test real mobile/desktop layouts and tool-event transitions.
