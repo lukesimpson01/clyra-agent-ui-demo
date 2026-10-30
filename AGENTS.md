@@ -1,3 +1,5 @@
+> **This repository's local development requirement:** Read [DEMO_PROJECT_RULES.md](./DEMO_PROJECT_RULES.md) before changing or publishing this standalone demo. The requirement to keep `git pull` followed by `npm run dev` working applies **only to this demo repository**, never to projects that import its response/activity UI.
+
 # Agent instructions — Clyra Response UI Kit
 
 You are looking at a **visual fixture**, not a replacement chat application. **DO NOT copy this demonstration's entire page, timeline or harness into the host project.**
