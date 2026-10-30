@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Clyra — Response & Activity Design Kit</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="c-workspace">
+<main class="conversation-content" id="conversationViewport" aria-label="Demonstration chat conversation">
+  <div class="c-lane" id="conversationLane">
+    <!-- DESIGN REFERENCE ONLY: no fake user bubble or composer.
+         The host application supplies and preserves all user/assistant message wrappers,
+         message positioning, scroll ownership, streaming architecture and transitions.
+         This fixture isolates assistant response and agent tool/activity rendering. -->
+    <article class="c-assistant-turn" id="assistantTurn" aria-label="Assistant response" aria-busy="true"></article>
+  </div>
+</main>
+<aside class="c-plan-rail" id="planRail" aria-label="Agent task plan">
+  <div class="c-plan-rail-inner">
+    <!-- Demo placement: a small task disclosure above the host composer location.
+         Production integration: mount inside the host composer-adjacent overlay;
+         never copy the demo placement, scroll ownership or composer itself. -->
+    <div id="planMount"></div>
+  </div>
+</aside>
+<button type="button" class="c-plan-close" id="planClose" hidden aria-label="Close plan">×</button>
+<button type="button" class="c-plan-fab" id="planToggle" aria-label="Show task plan" aria-expanded="false">☷ <span>Plan</span></button>
+<div class="c-plan-scrim" id="planScrim" aria-hidden="true"></div>
+</div>
+<!-- main.js auto-plays a SAMPLE sequence solely for visual inspection.
+     Integrating into a host app? Do not copy this HTML shell or its sample timeline.
+     Use INTEGRATION_GUIDE.md to migrate only the response/artifact components. -->
+<script src="./main.js"></script>
+</body>
+</html>
