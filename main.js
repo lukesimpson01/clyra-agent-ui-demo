@@ -226,11 +226,15 @@
     header.innerHTML='<span class="c-action-icon">'+svg('browser')+'</span><span class="c-browser-label c-active-shimmer">Working in browser</span>'+svg('chevron','c-chevron');
     const shell=element('div','c-browser-detail-shell is-open');
     const clip=element('div','c-browser-detail-clip');const inside=element('div','c-browser-detail-inner');
-    // Deliberately blank: this represents a live viewport before pixels are available.
-    // No pretend app controls, cursor or made-up browser page.
-    const placeholder=element('div','c-browser-placeholder');
-    placeholder.setAttribute('role','img');placeholder.setAttribute('aria-label','Browser viewport loading, grey shimmer preview');
+    // Fixture-only visualisation: grey shimmer for 3s, animated blue browser
+    // work glow and a moving pointer, fade/collapse at ~10s. No real browsing.
+    const placeholder=element('div','c-browser-placeholder c-browser-v18');
+    placeholder.setAttribute('role','img');placeholder.setAttribute('aria-label','Simulated browser: loading, then glowing blue while an agent cursor moves');
     placeholder.appendChild(element('div','c-browser-placeholder-shimmer'));
+    placeholder.appendChild(element('div','c-browser-blue-field'));
+    const cursor=element('div','c-browser-agent-cursor');cursor.setAttribute('aria-hidden','true');
+    cursor.innerHTML=svg('pointer')+'<span class="c-browser-agent-halo"></span>';
+    placeholder.appendChild(cursor);
     const actions=element('div','c-browser-action-list');actions.setAttribute('aria-label','Browser actions');
     inside.append(placeholder,actions);clip.appendChild(inside);shell.appendChild(clip);
     const id='browser-demo-detail';shell.id=id;header.setAttribute('aria-controls',id);
@@ -246,11 +250,18 @@
       paint(()=>{actions.appendChild(row);if(actions.children.length>3){actions.classList.add('is-scrollable');actions.scrollTo({top:actions.scrollHeight,behavior:reducedMotion?'instant':'smooth'});}});return {row,name};
     }
     function finishAction(item,description){item.name.classList.remove('c-active-shimmer');item.row.classList.add('is-finished');updateLabel(item.name,description);}
-    function finish(){placeholder.classList.add('is-complete');setLabel('Used browser · 5 actions',false);expand(false);}
-    return {outer,header,shell,addAction,finishAction,finish};
+    function activate(){placeholder.classList.add('is-agent-working');placeholder.setAttribute('aria-label','Simulated agent cursor working in browser');}
+    function finish(){
+      placeholder.classList.remove('is-agent-working');placeholder.classList.add('is-agent-closing');
+      setLabel('Used browser · 5 actions',false);
+      setTimeout(()=>{if(outer.isConnected)expand(false);},450);
+    }
+    return {outer,header,shell,addAction,finishAction,activate,finish};
   }
   async function playBrowserAgent(token,delay){
     const browser=createBrowserPreview();
+    // 0–3s: grey shimmer; 3–10s: blue agent highlight + Codex-like pointer.
+    await delay(3000);browser.activate();
     const steps=[
       ['browser','Opening browser session','Opened browser session',860],
       ['globe','Loading page','Loaded page',840],
@@ -262,7 +273,8 @@
       const action=browser.addAction(icon,active);
       await delay(ms);browser.finishAction(action,done);await delay(230);
     }
-    await delay(480);browser.finish();await delay(530);return browser;
+    // 3000ms + 4620ms of actions + 1150ms between actions + 1230ms = 10s.
+    await delay(1230);browser.finish();await delay(530);return browser;
   }
 
   async function streamParagraph(chunks, token){
