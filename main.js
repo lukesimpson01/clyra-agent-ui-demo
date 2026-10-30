@@ -565,6 +565,70 @@
     return root;
   }
 
+
+  /* Native MathML works offline. Optional, on-demand KaTeX expands the demo to
+     arbitrary TeX without altering npm run dev. Production uses its own renderer. */
+  function addRichResponseShowcase(){
+    const wrap=element('section','c-rich-response');wrap.setAttribute('aria-label','Response formatting');
+    const title=element('div','c-rich-heading');title.append(element('h3','','Rich response formatting'),element('span','c-rich-subtitle','Mathematics · data · writing'));wrap.append(title);
+    const math=element('section','c-rich-math-card');math.append(element('h4','','Equations & fractions'));
+    const inline=element('p','c-rich-inline-math');inline.append(document.createTextNode('Quadratic formula: '));
+    inline.insertAdjacentHTML('beforeend','<math xmlns="http://www.w3.org/1998/Math/MathML" aria-label="Quadratic formula"><mi>x</mi><mo>=</mo><mfrac><mrow><mo>−</mo><mi>b</mi><mo>±</mo><msqrt><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>4</mn><mi>a</mi><mi>c</mi></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math>');
+    const display=element('div','c-rich-math-display');
+    display.innerHTML='<math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Integral from zero to one x squared dx equals one third"><msubsup><mo>∫</mo><mn>0</mn><mn>1</mn></msubsup><msup><mi>x</mi><mn>2</mn></msup><mi>d</mi><mi>x</mi><mo>=</mo><mfrac><mn>1</mn><mn>3</mn></mfrac></math>';
+    const more=element('div','c-rich-math-secondary');
+    more.innerHTML='<math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Two by two matrix"><mi>A</mi><mo>=</mo><mo>(</mo><mtable><mtr><mtd><mn>1</mn></mtd><mtd><mn>2</mn></mtd></mtr><mtr><mtd><mn>3</mn></mtd><mtd><mn>4</mn></mtd></mtr></mtable><mo>)</mo></math><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Sum of i from one to n"><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>i</mi><mo>=</mo><mfrac><mrow><mi>n</mi><mo>(</mo><mi>n</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow><mn>2</mn></mfrac></math>';
+    const buttons=element('div','c-rich-math-actions');
+    const copy=element('button','c-rich-minibutton','Copy LaTeX');copy.type='button';copy.setAttribute('aria-label','Copy formula LaTeX');
+    copy.addEventListener('click',async()=>{if(await writeClipboard('x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}')){copy.textContent='Copied';setTimeout(()=>copy.textContent='Copy LaTeX',1200);}});
+    const toggle=element('button','c-rich-minibutton','Try LaTeX');toggle.type='button';toggle.setAttribute('aria-expanded','false');
+    const inputArea=element('div','c-rich-tex-editor');inputArea.hidden=true;
+    const input=element('textarea','c-rich-tex-input');input.rows=2;input.value='\\frac{\\sqrt{x^2+1}}{1+\\alpha}';input.setAttribute('aria-label','LaTeX expression');
+    const render=element('button','c-rich-minibutton','Render equation');render.type='button';
+    const result=element('div','c-rich-tex-result');result.setAttribute('aria-live','polite');
+    const status=element('span','c-rich-math-status','MathML samples render offline. Optional LaTeX requires a network connection.');
+    inputArea.append(input,render,result,status);
+    toggle.addEventListener('click',()=>{inputArea.hidden=!inputArea.hidden;toggle.setAttribute('aria-expanded',String(!inputArea.hidden));if(!inputArea.hidden)input.focus();});
+    let loadPromise=null;
+    const loadKaTeX=()=>{
+      if(window.katex)return Promise.resolve(window.katex);
+      if(loadPromise)return loadPromise;
+      loadPromise=new Promise((resolve,reject)=>{
+        if(!document.querySelector('link[data-clyra-math]')){
+          const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href='https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css';sheet.dataset.clyraMath='yes';document.head.append(sheet);
+        }
+        const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js';script.async=true;
+        script.onload=()=>window.katex?resolve(window.katex):reject(Error('KaTeX not loaded'));script.onerror=()=>reject(Error('KaTeX unavailable'));document.head.append(script);
+      }).catch(error=>{loadPromise=null;throw error;});
+      return loadPromise;
+    };
+    render.addEventListener('click',async()=>{render.disabled=true;status.textContent='Rendering…';
+      try{(await loadKaTeX()).render(input.value,result,{displayMode:true,throwOnError:false,trust:false});
+        status.textContent='Rendered using KaTeX.';}
+      catch{result.textContent=input.value;status.textContent='TeX renderer unavailable offline; native MathML examples remain visible.';}
+      finally{render.disabled=false;}
+    });
+    buttons.append(copy,toggle);math.append(inline,display,more,buttons,inputArea);wrap.append(math);
+    const data=element('section','c-rich-data');data.append(element('h4','','Structured data'));
+    const table=element('table','c-rich-table');
+    table.innerHTML='<caption>Illustrative metrics</caption><thead><tr><th>Metric</th><th>Before</th><th>After</th></tr></thead><tbody><tr><th>Completion</th><td>68%</td><td>91%</td></tr><tr><th>Accuracy</th><td>82%</td><td>95%</td></tr><tr><th>Latency</th><td>2.1s</td><td>1.4s</td></tr></tbody>';
+    data.append(table);
+    const chart=element('div','c-rich-mini-chart');chart.setAttribute('role','img');chart.setAttribute('aria-label','Illustrative completion 68 percent before and 91 percent after');
+    for(const [name,value,color] of [['Before','68%','base'],['After','91%','updated']]){
+      const row=element('div','c-rich-chart-row');row.append(element('span','c-rich-chart-label',name));
+      const track=element('span','c-rich-chart-track');const bar=element('span','c-rich-chart-bar '+color);bar.style.width=value;track.append(bar);
+      row.append(track,element('span','c-rich-chart-value',value));chart.append(row);
+    }
+    data.append(chart);wrap.append(data);
+    const editorial=element('section','c-rich-editorial');
+    editorial.append(element('h4','','Editorial content'));
+    editorial.append(element('blockquote','c-rich-quote','Clear answers make evidence, decisions and next steps easy to inspect.'));
+    const list=element('ul','c-rich-list');
+    ['Headings, emphasis, quotes and linked sources','Equations, code, tables and visual comparisons','Editable documents, slides and tool activity'].forEach(t=>list.append(element('li','',t)));
+    editorial.append(list);wrap.append(editorial);
+    paint(()=>assistant.append(wrap));return wrap;
+  }
+
   function addResults(){
     const block=element('div','c-stream-block');
     const header=element('h3','c-result-heading','Changes applied');
@@ -1471,6 +1535,8 @@
       ],token);
       await actionPause();
       addCodeBlock();
+      await actionPause();
+      addRichResponseShowcase();
       todo.advance();
       await actionPause();addSourcesFooter();
       await actionPause();addFooter();
