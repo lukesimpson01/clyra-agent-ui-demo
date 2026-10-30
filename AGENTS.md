@@ -212,3 +212,12 @@ These constraints are for the standalone demo repository **only**, not the main 
 - Validate the real app at desktop/mobile, hover/click/touch and keyboard states. Check `npm run dev`, `npm test`, `npm run test:browser` before saying “fully tested”. If unavailable, disclose clearly.
 
 Applies to **this demo only**. The production Clyra application keeps its existing composer, message layout, agent harness and apps.
+
+
+## V20 — Complete capability coverage, adaptive layout and release closure
+
+Before ANY further changes, read [CAPABILITY_AND_RESPONSIVE_CONTRACT.md](./CAPABILITY_AND_RESPONSIVE_CONTRACT.md) along with this file, `INTEGRATION_GUIDE.md` and `DEMO_PROJECT_RULES.md`. It carries the preserved v13–v14 inventory: every ChatGPT/Claude/Manus/Codex-style function and dedicated UI state, explicit no-fake-runtime requirements, genuine multi-step plans and task-labelled dividers, commercial provider policies, container-aware mobile/desktop/fullscreen/split-pane QA, and mandatory remote commit/push confirmation.
+
+**Never overwrite v19 or subsequent demo work with the older v14 ZIP.** Compare changes feature by feature and port only missing parts. The current repository has v19 slides/music/weather/map implementations plus the v20 fullscreen document and responsive refinements; it remains a standalone visual reference, not a production agent. A successful screenshot or synthetic demo event is never proof of a genuine backend integration.
+
+Before marking done: inspect actual browser rendering at 280px through ultrawide sizes and short windows, run existing npm/browser tests and required CI, preserve all existing features, and commit + push to the verified `lukesimpson01/clyra-agent-ui-demo` repository using a safe branch/PR. Report unverified services honestly.

@@ -214,3 +214,10 @@ Before accepting any future UI change, follow [DEMO_PROJECT_RULES.md](./DEMO_PRO
 **Public API limits matter:** Open-Meteo's free hosted API is restricted to non-commercial usage, and public OSM tile services have usage policies. Production Clyra should use a compliant commercial or self-hosted provider; the standalone demo makes no availability guarantees.
 
 As usual, after an already-correctly-cloned setup: `git pull` followed by `npm run dev`.
+
+
+## v20 — Preserved capability requirements and universal responsive behavior
+
+See [CAPABILITY_AND_RESPONSIVE_CONTRACT.md](./CAPABILITY_AND_RESPONSIVE_CONTRACT.md) for the complete non-duplicative feature inventory, real-tool/no-fake acceptance requirements, adaptable multi-step task UI, full-screen document/slide handling and responsive QA matrix. This contract augments the existing v19 components; it does **not** replace or remove the working demo components.
+
+The document can now enter fullscreen (Edit or Full screen), and closes with Done, Close or Escape; slide, map and card styling has additional component-width-aware reflow for narrow windows, mobile and split views. Browser regressions verify those interactions. The standalone example still uses simulated tool/media activity; use real Clyra integrations according to `INTEGRATION_GUIDE.md`. The demo still runs without installing runtime packages after `git pull` and `npm run dev`.

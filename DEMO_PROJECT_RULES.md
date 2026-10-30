@@ -170,3 +170,8 @@ New required states:
 - Preserve the production host's own composer, scroll, tool orchestrator, document/slide editor, music backend, auth state, maps and weather provider configuration.
 
 **Scope:** none of these demo-specific npm or scripted animation rules transfer into the real Clyra host.
+
+
+## v20 — safe non-destructive sync from prior ZIP work
+
+This repository's newer code is authoritative. When a previous standalone ZIP contains extra requirements, merge those requirements **additively** and do not overwrite newer UI/JS/CSS or strip features. Compare upstream, use a feature branch, review changed files, update browser regression tests, run local/CI verification, then merge by the approved GitHub workflow. The full inventory and adaptive QA matrix live in [CAPABILITY_AND_RESPONSIVE_CONTRACT.md](./CAPABILITY_AND_RESPONSIVE_CONTRACT.md). Existing `git pull` and `npm run dev` must remain supported for correctly tracked clones.
