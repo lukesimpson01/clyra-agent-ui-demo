@@ -143,7 +143,7 @@ try {
   await slides.locator('img.c-slide-object-image').waitFor({state:'attached',timeout:6000});
   assert((await slides.locator('img.c-slide-object-image').count())===1,'Image inserted');
   await page.screenshot({path:join(shots,'03-slide-editor.png')});
-  await slides.locator('[aria-label="Speaker notes"]').click();
+  await slides.locator('button[aria-label="Speaker notes"]').click();
   assert(await slides.locator('.c-slide-v14-notes').evaluate(el=>el.classList.contains('is-visible')),'Notes opened');
   assert(await slides.evaluate(el=>el.classList.contains('is-slide-fullscreen')),'Editor remains full screen');
   await slides.locator('[aria-label="Close full screen"]').click();
