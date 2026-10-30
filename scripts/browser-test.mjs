@@ -28,8 +28,13 @@ try {
   page.on('console',message=>{if(message.type()==='error'&&!/favicon\.ico|404 \(Not Found\)/i.test(message.text()))errors.push(message.text());});
   await page.goto(base+'/',{waitUntil:'domcontentloaded'});
   assert.equal(await page.title(),'Clyra — Response & Activity Design Kit');
+  const welcome=await page.evaluate(()=>{const r=document.querySelector('#demoComposer').getBoundingClientRect();return {centerY:r.y+r.height/2,width:r.width,viewH:innerHeight}});
+  assert(welcome.centerY>welcome.viewH*.32&&welcome.centerY<welcome.viewH*.68,'Welcome composer must start centred');
+  assert(welcome.width<=590,'Welcome composer must be narrower than 760px chat lane');
+  await page.screenshot({path:join(shots,'00-welcome-centered.png')});
   await page.locator('#demoInput').fill('Build a short report, slides and a small UI demo');
   await page.locator('#demoSend').click();
+  assert(await page.locator('#demoComposerDock').evaluate(el=>el.classList.contains('is-active')),'Dock should enter active state after submission');
   await page.locator('.c-todo-v8-trigger').waitFor({timeout:15000});
   await page.waitForTimeout(700);
   assert(await page.locator('.c-todo-v8-trigger').getAttribute('aria-expanded')==='true','Todo should unfold when task starts');
@@ -48,9 +53,20 @@ try {
   await todo.click();
   assert.equal(await todo.getAttribute('aria-expanded'),'false');
   const collapsedWidth=await page.locator('.c-todo-v8').evaluate(el=>el.getBoundingClientRect().width);
-  assert(Math.abs(todoWidth-collapsedWidth)<2,'Collapsed todo must remain centred without horizontal width compression');
+  assert(Math.abs(todoWidth-collapsedWidth)<2,'Collapsed todo must retain horizontal pill width');
+  assert(await page.locator('.c-todo-v8-title').isVisible(),'Collapsed todo must retain visible text label');
+  const pillText=await page.locator('.c-todo-v8-title').evaluate(el=>({opacity:getComputedStyle(el).opacity,width:el.getBoundingClientRect().width}));
+  assert(Number(pillText.opacity)>0.9&&pillText.width>25,'Collapsed plan label cannot be hidden by legacy circular CSS');
   await todo.click();
   assert.equal(await todo.getAttribute('aria-expanded'),'true');
+  const browserViewport=page.locator('.c-browser-v18');
+  await browserViewport.waitFor({state:'attached',timeout:120000});
+  assert(!(await browserViewport.evaluate(el=>el.classList.contains('is-agent-working'))),'Browser preview must begin with grey shimmer');
+  await browserViewport.locator('.c-browser-blue-field').waitFor({state:'attached'});
+  await page.waitForTimeout(900);
+  assert(!(await browserViewport.evaluate(el=>el.classList.contains('is-agent-working'))),'Grey shimmer must last approximately 3 seconds');
+  await page.waitForFunction(()=>document.querySelector('.c-browser-v18')?.classList.contains('is-agent-working'),{timeout:7000});
+  await page.screenshot({path:join(shots,'01-browser-blue-cursor.png')});
   await page.locator('.c-browser-action-list .c-browser-action').nth(3).waitFor({state:'attached',timeout:120000});
   await page.waitForTimeout(500);
   const browserScroll=await page.locator('.c-browser-action-list').evaluate(el=>({scroll:el.scrollTop,scrollHeight:el.scrollHeight,clientHeight:el.clientHeight}));
@@ -58,6 +74,7 @@ try {
   assert(browserScroll.scroll>0,'Browser action list should automatically follow later rows');
   assert.equal(await page.locator('.c-reconnect').count(),0,'Reconnect activity removed from demo');
   await page.locator('.c-writing-card').waitFor({state:'visible',timeout:220000});
+  assert(await page.locator('.c-browser-toggle').getAttribute('aria-expanded')==='false','Browser preview should collapse after ~10s');
   const writing=page.locator('.c-writing-card');
   assert.equal(await writing.locator('[aria-label="Expand writing"]').count(),0,'No document expand dropdown');
   assert(!(await writing.evaluate(el=>el.classList.contains('is-document-folded'))),'Document is never folded');
@@ -130,6 +147,13 @@ try {
   assert(href?.startsWith('https://'),'Sources have external URLs');
   await sources.click();
   assert.equal(await sources.getAttribute('aria-expanded'),'false');
+  const rich=page.locator('.c-rich-response');await rich.waitFor({state:'attached',timeout:120000});
+  assert((await rich.locator('math').count())>=4,'Math fractions, calculus, matrices and sums must render as MathML');
+  assert((await rich.locator('.c-rich-table tbody tr').count())===3,'Structured table must contain rows');
+  assert((await rich.locator('.c-rich-chart-row').count())===2,'Compact chart must render');
+  await rich.locator('button').filter({hasText:'Try LaTeX'}).click();
+  assert(await rich.locator('.c-rich-tex-input').isVisible(),'LaTeX editor opens on demand');
+  await page.screenshot({path:join(shots,'06-rich-response-maths.png')});
   assert.equal(await page.locator('.c-footer-actions [aria-label="Regenerate response"]').count(),1);
   // Check responsive layout after completing the same live session.
   await page.setViewportSize({width:390,height:844});
